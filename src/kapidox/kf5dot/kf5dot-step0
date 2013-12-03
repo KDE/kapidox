@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+for tier in ~/src/kf5/kdelibs/tier? ; do
+    for fw in $tier/*/ ; do
+        echo $fw
+        bfw=$PWD/$(basename $tier)/$(basename $fw)
+        mkdir -p $bfw
+        ( cd $bfw ; cmake $fw --graphviz=$(basename $fw).dot > /dev/null )
+    done
+done
