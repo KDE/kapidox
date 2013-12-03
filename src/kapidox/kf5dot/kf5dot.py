@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import argparse
+import itertools
 import os
 import re
 import shutil
@@ -105,16 +106,18 @@ digraph Root {
 """
         self.out.write(PROLOG)
         qt_nodes = set([])
-        for fw in self.frameworks:
-            self.out.write("Subgraph cluster_" + fw.tier + " {\n")
-            self.out.write("label = \"{}\";\n".format(fw.tier))
-            self.out.write("color = lightgrey;\n")
-            self.out.write("style = filled;\n")
-            self.write_subgraph(fw.name, fw.targets)
-            for edge in fw.edges:
-                head = edge[1]
-                if head.startswith("Qt"):
-                    qt_nodes.add(head)
+
+        for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
+            self.out.write("Subgraph cluster_" + tier + " {\n")
+            self.out.write("    label = \"{}\";\n".format(tier))
+            self.out.write("    color = lightgrey;\n")
+            self.out.write("    style = filled;\n")
+            for fw in frameworks:
+                self.write_subgraph(fw.name, fw.targets)
+                for edge in fw.edges:
+                    head = edge[1]
+                    if head.startswith("Qt"):
+                        qt_nodes.add(head)
             self.out.write("}\n")
 
         self.write_subgraph("Qt", qt_nodes)
