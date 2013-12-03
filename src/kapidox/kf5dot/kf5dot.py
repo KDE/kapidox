@@ -87,6 +87,10 @@ class Framework(object):
             return False
         if name.endswith("Test") or name.endswith("Tests"):
             return False
+        if name.startswith("Phonon"):
+            return False
+        if name.startswith("LibAttica"):
+            return False
         return True
 
 
