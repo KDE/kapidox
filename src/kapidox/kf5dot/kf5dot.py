@@ -2,6 +2,7 @@
 # encoding: utf-8
 import argparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -15,10 +16,26 @@ def preprocess(fname):
     lst = []
     gfx = yapgvb.Graph().read(fname)
     txt = open(fname).read()
+    targets = []
     for node in gfx.nodes:
         label = node.label.replace("KF5::", "")
+        if node.shape == Framework.TARGET_SHAPE:
+            targets.append(label)
         txt = txt.replace('"' + node.name + '"', '"' + label + '"')
 
+    # Sometimes cmake will generate an entry for the target alias, something
+    # like this:
+    #
+    # "node9" [ label="KParts" shape="polygon"];
+    # ...
+    # "node15" [ label="KF5::KParts" shape="ellipse"];
+    # ...
+    #
+    # After our node renaming, this ends up with a second "KParts" node
+    # definition, which we need to get rid of.
+    for target in targets:
+        rx = r' *"' + target + '".*label="KF5::' + target + '".*shape="ellipse".*;'
+        txt = re.sub(rx, '', txt)
     return txt
 
 
