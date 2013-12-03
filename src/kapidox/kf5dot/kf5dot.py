@@ -53,12 +53,15 @@ class Framework(object):
     DEPS_SHAPE = "ellipse"
 
     def __init__(self, fname, options):
-        lst = os.path.basename(fname).split("-")
         self.options = options
+
+        lst = os.path.basename(fname).split("-")
         self.tier = lst[0]
         self.name = lst[1].replace(".dot", "")
+
         # Target names
         self.targets = set([])
+
         # lists of (tail, head) tuples
         self.edges = []
 
