@@ -52,8 +52,9 @@ class Framework(object):
     TARGET_SHAPE = "polygon"
     DEPS_SHAPE = "ellipse"
 
-    def __init__(self, fname):
+    def __init__(self, fname, options):
         lst = os.path.basename(fname).split("-")
+        self.options = options
         self.tier = lst[0]
         self.name = lst[1].replace(".dot", "")
         # Target names
@@ -67,17 +68,18 @@ class Framework(object):
             if node.shape == self.TARGET_SHAPE:
                 self.targets.add(node.name)
         for edge in src.edges:
-            if Framework.want(edge.head) and Framework.want(edge.tail):
+            if self.want(edge.head) and self.want(edge.tail):
                 self.edges.append((edge.tail.name, edge.head.name))
 
-    @staticmethod
-    def want(node):
+    def want(self, node):
         if node.shape not in (Framework.TARGET_SHAPE, Framework.DEPS_SHAPE):
             return False
         name = node.name
         if not name[0].isupper():
             return False
         if "test" in name:
+            return False
+        if not self.options.qt and name.startswith("Qt"):
             return False
         if name.endswith("Test") or name.endswith("Tests"):
             return False
@@ -139,6 +141,9 @@ def main():
     parser.add_argument("-o", "--output", dest="output",
         help="Output to FILE", metavar="FILE")
 
+    parser.add_argument("--qt", dest="qt", action="store_true",
+        help="Show Qt libraries")
+
     parser.add_argument("dot_files", nargs="+")
 
     args = parser.parse_args()
@@ -146,7 +151,7 @@ def main():
     tmpdir = tempfile.mkdtemp(prefix="kf5dot")
     try:
         input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in args.dot_files]
-        frameworks = [Framework(x) for x in input_files]
+        frameworks = [Framework(x, args) for x in input_files]
     finally:
         shutil.rmtree(tmpdir)
 
