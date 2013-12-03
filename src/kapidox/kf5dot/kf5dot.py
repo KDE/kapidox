@@ -46,10 +46,11 @@ class Framework(object):
 
         src = yapgvb.Graph().read(fname)
 
+        for node in src.nodes:
+            if node.shape == self.TARGET_SHAPE:
+                self.targets.add(node.name)
         for edge in src.edges:
             if Framework.want(edge.head) and Framework.want(edge.tail):
-                if edge.tail.shape == self.TARGET_SHAPE:
-                    self.targets.add(edge.tail.name)
                 self.edges.append((edge.tail.name, edge.head.name))
 
     @staticmethod
