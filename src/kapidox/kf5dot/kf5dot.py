@@ -78,32 +78,21 @@ digraph Root {
 
 """
         self.out.write(PROLOG)
+        qt_nodes = set([])
         for fw in self.frameworks:
             self.write_subgraph(fw.name, fw.targets)
+            for edge in fw.edges:
+                head = edge[1]
+                if head.startswith("Qt"):
+                    qt_nodes.add(head)
 
-        # turns self.edges into a flat set
-        #nodes = set([y for x in self.edges for y in x])
-
-        #nodes = self.write_qt_subgraph(nodes)
-
-        #self.write_nodes(nodes)
+        self.write_subgraph("Qt", qt_nodes)
 
         self.out.write("    // Relations\n");
         for fw in self.frameworks:
             for edge in fw.edges:
                 self.out.write('    "{}" -> "{}";\n'.format(edge[0], edge[1]))
         self.out.write("}\n")
-
-    def write_qt_subgraph(self, in_nodes):
-        out_nodes = []
-        qt_nodes = []
-        for node in in_nodes:
-            if node.startswith("Qt"):
-                qt_nodes.append(node)
-            else:
-                out_nodes.append(node)
-        self.write_subgraph("Qt", qt_nodes)
-        return out_nodes
 
     def write_subgraph(self, title, nodes):
         self.out.write("Subgraph cluster_{} {{\n".format(title))
