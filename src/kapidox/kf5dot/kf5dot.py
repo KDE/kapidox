@@ -101,6 +101,7 @@ class DotWriter(object):
 digraph Root {
     node [
         fontsize = "12"
+        shape = "box"
     ];
 
 """
@@ -108,19 +109,20 @@ digraph Root {
         qt_nodes = set([])
 
         for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
-            self.out.write("Subgraph cluster_" + tier + " {\n")
-            self.out.write("    label = \"{}\";\n".format(tier))
-            self.out.write("    color = lightgrey;\n")
-            self.out.write("    style = filled;\n")
+            self.start_subgraph(tier, style="dashed")
             for fw in frameworks:
-                self.write_subgraph(fw.name, fw.targets)
+                self.start_subgraph(fw.name, style="filled", color="lightgrey")
+                self.write_nodes(fw.targets)
+                self.close_block()
                 for edge in fw.edges:
                     head = edge[1]
                     if head.startswith("Qt"):
                         qt_nodes.add(head)
-            self.out.write("}\n")
+            self.close_block()
 
-        self.write_subgraph("Qt", qt_nodes)
+        self.start_subgraph("Qt", style="dashed")
+        self.write_nodes(qt_nodes)
+        self.close_block()
 
         self.out.write("    // Relations\n");
         for fw in self.frameworks:
@@ -128,12 +130,13 @@ digraph Root {
                 self.out.write('    "{}" -> "{}";\n'.format(edge[0], edge[1]))
         self.out.write("}\n")
 
-    def write_subgraph(self, title, nodes):
+    def start_subgraph(self, title, **attrs):
         self.out.write("Subgraph cluster_{} {{\n".format(title))
-        self.out.write("node [shape = box];\n")
-        self.out.write("style = dashed;\n")
         self.out.write("label = \"{}\";\n".format(title))
-        self.write_nodes(nodes)
+        for key, value in attrs.items():
+            self.out.write("{} = {};\n".format(key, value))
+
+    def close_block(self):
         self.out.write("}\n")
 
     def write_nodes(self, nodes):
