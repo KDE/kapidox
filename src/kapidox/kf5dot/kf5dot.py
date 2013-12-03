@@ -23,7 +23,8 @@ def preprocess(fname):
 
 
 def to_temp_file(dirname, fname, content):
-    path = os.path.join(dirname, os.path.basename(fname))
+    tier = fname.split("/")[-3]
+    path = os.path.join(dirname, tier + "-" + os.path.basename(fname))
     if os.path.exists(path):
         raise Exception("{} already exists".format(path))
     open(path, "w").write(content)
@@ -35,7 +36,9 @@ class Framework(object):
     DEPS_SHAPE = "ellipse"
 
     def __init__(self, fname):
-        self.name = os.path.basename(fname).replace(".dot", "")
+        lst = os.path.basename(fname).split("-")
+        self.tier = lst[0]
+        self.name = lst[1].replace(".dot", "")
         # Target names
         self.targets = set([])
         # lists of (tail, head) tuples
@@ -80,11 +83,16 @@ digraph Root {
         self.out.write(PROLOG)
         qt_nodes = set([])
         for fw in self.frameworks:
+            self.out.write("Subgraph cluster_" + fw.tier + " {\n")
+            self.out.write("label = \"{}\";\n".format(fw.tier))
+            self.out.write("color = lightgrey;\n")
+            self.out.write("style = filled;\n")
             self.write_subgraph(fw.name, fw.targets)
             for edge in fw.edges:
                 head = edge[1]
                 if head.startswith("Qt"):
                     qt_nodes.add(head)
+            self.out.write("}\n")
 
         self.write_subgraph("Qt", qt_nodes)
 
