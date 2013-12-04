@@ -201,6 +201,40 @@ class DotWriter(Block):
                 fw_block.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
 
 
+def find_framework_by_name(frameworks, name):
+    for fw in frameworks:
+        if fw.name == name:
+            return fw
+    return None
+
+
+def remove_unused_frameworks(frameworks, wanted_fw):
+    def has_dependees(lst, target_fw):
+        for fw in lst:
+            if fw == target_fw:
+                continue
+            for edge in fw.edges:
+                if edge[1] in target_fw.targets:
+                    return True
+        return False
+
+    done = False
+    old_lst = frameworks
+    while not done:
+        lst = []
+        done = True
+        for fw in old_lst:
+            if fw == wanted_fw:
+                lst.append(fw)
+                continue
+            if has_dependees(old_lst, fw):
+                lst.append(fw)
+            else:
+                done = False
+        old_lst = lst
+    return lst
+
+
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
@@ -209,6 +243,9 @@ def main():
 
     parser.add_argument("--qt", dest="qt", action="store_true",
         help="Show Qt libraries")
+
+    parser.add_argument("--framework", dest="framework",
+        help="Only show dependencies of framework FRAMEWORK", metavar="FRAMEWORK")
 
     parser.add_argument("dot_files", nargs="+")
 
@@ -225,6 +262,14 @@ def main():
         out = sys.stdout
     else:
         out = open(args.output, "w")
+
+    if args.framework:
+        wanted_fw = find_framework_by_name(frameworks, args.framework)
+        if wanted_fw is None:
+            sys.stderr.write("No framework named {}.\n".format(args.framework))
+            return 1
+        frameworks = remove_unused_frameworks(frameworks, wanted_fw)
+
     writer = DotWriter(frameworks, out)
     writer.write()
 
