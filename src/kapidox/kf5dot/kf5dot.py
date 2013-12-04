@@ -14,10 +14,15 @@ import yapgvb
 DESCRIPTION = """\
 """
 
+ROOT_NODE_ATTRS = dict(fontsize=12, shape="box")
 
-TIER_ATTRS = dict(style="dashed")
-OTHER_ATTRS = TIER_ATTRS
-FW_ATTRS = dict(style="filled", color="lightgrey")
+TIER_ATTRS = dict(style="filled", color="azure")
+
+OTHER_ATTRS = dict(style="filled", color="cornsilk")
+
+QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1")
+
+FW_ATTRS = dict(style="filled", color="paleturquoise")
 
 
 def preprocess(fname):
@@ -123,6 +128,11 @@ class Block(object):
         for key, value in attrs.items():
             self.writeln("{} = {};".format(key, value))
 
+    def write_list_attrs(self, name, **attrs):
+        with self.square_block(name) as b:
+            for key, value in attrs.items():
+                self.writeln("{} = {}".format(key, value))
+
     def write_nodes(self, nodes):
         for node in sorted(nodes):
             self.writeln('"{}" [ label="{}" ];'.format(node, node))
@@ -166,16 +176,14 @@ class DotWriter(Block):
             return cmp(fw1.name, fw2.name)
 
         with self.curly_block("digraph Root") as root:
-            with root.square_block("node") as b:
-                b.writeln("fontsize = 12")
-                b.writeln("shape = box")
+            self.write_list_attrs("node", ROOT_NODE_ATTRS)
 
             other_nodes = find_not_target_nodes(self.frameworks)
             qt_nodes = set([x for x in other_nodes if x.startswith("Qt")])
             other_nodes.difference_update(qt_nodes)
 
             if qt_nodes:
-                with root.cluster_block("Qt", **OTHER_ATTRS) as b:
+                with root.cluster_block("Qt", **QT_ATTRS) as b:
                     b.write_nodes(qt_nodes)
 
             if other_nodes:
