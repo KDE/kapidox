@@ -87,12 +87,13 @@ class Framework(object):
             return False
         name = node.name
         if not name[0].isupper():
+            # Catch nodes like /usr/lib/libX11.so
             return False
         if "test" in name:
             return False
-        if not self.options.qt and name.startswith("Qt"):
-            return False
         if name.endswith("Test") or name.endswith("Tests"):
+            return False
+        if not self.options.qt and name.startswith("Qt"):
             return False
         if name.startswith("Phonon"):
             return False
