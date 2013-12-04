@@ -9,9 +9,9 @@ import shutil
 import sys
 import tempfile
 
-from contextlib import contextmanager
-
 import yapgvb
+
+from block import Block
 
 DESCRIPTION = """\
 """
@@ -114,46 +114,6 @@ def find_not_target_nodes(frameworks):
         targets.update(fw.targets)
         nodes.update([x[1] for x in fw.edges])
     return nodes.difference(targets)
-
-
-class Block(object):
-    INDENT_SIZE = 4
-    def __init__(self, out, depth = 0):
-        self.out = out
-        self.depth = depth
-
-    def writeln(self, text):
-        self.out.write(self.depth * DotWriter.INDENT_SIZE * " " + text + "\n")
-
-    def write_attrs(self, **attrs):
-        for key, value in attrs.items():
-            self.writeln("{} = {};".format(key, value))
-
-    def write_list_attrs(self, name, **attrs):
-        with self.square_block(name) as b:
-            for key, value in attrs.items():
-                self.writeln("{} = {}".format(key, value))
-
-    def write_nodes(self, nodes):
-        for node in sorted(nodes):
-            self.writeln('"{}" [ label="{}" ];'.format(node, node))
-
-    @contextmanager
-    def block(self, opener, closer, **attrs):
-        self.writeln(opener)
-        block = Block(self.out, depth=self.depth + 1)
-        block.write_attrs(**attrs)
-        yield block
-        self.writeln(closer)
-
-    def square_block(self, prefix, **attrs):
-        return self.block(prefix + " [", "]", **attrs)
-
-    def curly_block(self, prefix, **attrs):
-        return self.block(prefix + " {", "}", **attrs)
-
-    def cluster_block(self, title, **attrs):
-        return self.curly_block("subgraph cluster_" + title, label=title, **attrs)
 
 
 class FrameworkCmp(object):
