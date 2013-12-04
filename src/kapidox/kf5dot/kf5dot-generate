@@ -26,7 +26,11 @@ QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1")
 
 FW_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
-TARGET_SHAPES = ["polygon", "house"]
+TARGET_SHAPES = [
+    "polygon", # lib
+    "house",   # executable
+    "octagon"  # module (aka plugin)
+    ]
 
 DEPS_SHAPE = "ellipse"
 
