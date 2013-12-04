@@ -151,7 +151,7 @@ digraph Root {
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
-    parser.add_argument("-o", "--output", dest="output",
+    parser.add_argument("-o", "--output", dest="output", default="-",
         help="Output to FILE", metavar="FILE")
 
     parser.add_argument("--qt", dest="qt", action="store_true",
