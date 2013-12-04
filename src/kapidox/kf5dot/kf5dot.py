@@ -155,6 +155,20 @@ class DotWriter(Block):
         self.frameworks = frameworks
 
     def write(self):
+        def fw_cmp(fw1, fw2):
+            # Compare frameworks *within a tier*
+            # fw1 is considered superior to fw2 if one of fw1 targets depends on
+            # one of fw2 targets
+            if fw1 == fw2:
+                return 0
+            for edge in fw1.edges:
+                if edge[1] in fw2.targets:
+                    return 1
+            for edge in fw2.edges:
+                if edge[1] in fw1.targets:
+                    return -1
+            return cmp(fw1.name, fw2.name)
+
         with self.curly_block("digraph Root") as root:
             with root.square_block("node") as b:
                 b.writeln("fontsize = 12")
@@ -174,7 +188,10 @@ class DotWriter(Block):
 
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
                 with root.cluster_block(tier, **TIER_ATTRS) as tier_block:
-                    for fw in frameworks:
+                    # Sort frameworks within the tier to ensure frameworks which
+                    # depends on other frameworks from that tier are output
+                    # after their dependees
+                    for fw in sorted(frameworks, cmp=fw_cmp):
                         self.write_framework(tier_block, fw)
 
     def write_framework(self, tier_block, fw):
