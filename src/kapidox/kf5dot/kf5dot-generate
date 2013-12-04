@@ -147,9 +147,15 @@ class FrameworkCmp(object):
 
 
 class DotWriter(Block):
-    def __init__(self, frameworks, out):
+    def __init__(self, frameworks, out, detailed=False):
         Block.__init__(self, out)
         self.frameworks = frameworks
+        self.detailed = detailed
+
+        self.fw_for_target = {}
+        for fw in self.frameworks:
+            for target in fw.target_dict.keys():
+                self.fw_for_target[target] = fw
 
     def write(self):
         with self.curly_block("digraph Root") as root:
@@ -174,9 +180,27 @@ class DotWriter(Block):
                     # their dependees.
                     frameworks = list(frameworks)
                     for fw in sorted(frameworks, cmp=FrameworkCmp(frameworks)):
-                        self.write_framework(tier_block, fw)
+                        if self.detailed:
+                            self.write_detailed_framework(tier_block, fw)
+                        else:
+                            self.write_framework(tier_block, fw)
 
     def write_framework(self, tier_block, fw):
+        tier_block.write_nodes([fw.name])
+        edges = set([])
+        for target in fw.get_all_dependencies():
+            try:
+                target_fw = self.fw_for_target[target]
+                if fw == target_fw:
+                    continue
+                dep = target_fw.name
+            except KeyError:
+                dep = target
+            edges.add((fw.name, dep))
+        for edge in edges:
+            tier_block.writeln('"{}" -> "{}";'.format(*edge))
+
+    def write_detailed_framework(self, tier_block, fw):
         with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
             targets = sorted(fw.target_dict.keys())
             fw_block.write_nodes(targets)
@@ -238,6 +262,9 @@ def main():
     parser.add_argument("--qt", dest="qt", action="store_true",
         help="Show Qt libraries")
 
+    parser.add_argument("--detailed", dest="detailed", action="store_true",
+        help="Show targets within frameworks")
+
     parser.add_argument("--framework", dest="framework",
         help="Only show dependencies of framework FRAMEWORK", metavar="FRAMEWORK")
 
@@ -264,7 +291,7 @@ def main():
             return 1
         frameworks = remove_unused_frameworks(frameworks, wanted_fw)
 
-    writer = DotWriter(frameworks, out)
+    writer = DotWriter(frameworks, out, detailed=args.detailed)
     writer.write()
 
     return 0
