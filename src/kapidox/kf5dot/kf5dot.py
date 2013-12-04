@@ -189,8 +189,8 @@ class DotWriter(Block):
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
                 with root.cluster_block(tier, **TIER_ATTRS) as tier_block:
                     # Sort frameworks within the tier to ensure frameworks which
-                    # depends on other frameworks from that tier are output
-                    # after their dependees
+                    # depend on other frameworks from that tier are listed after
+                    # their dependees
                     for fw in sorted(frameworks, cmp=fw_cmp):
                         self.write_framework(tier_block, fw)
 
