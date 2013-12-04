@@ -76,20 +76,26 @@ class Framework(object):
         self.tier = lst[0]
         self.name = lst[1].replace(".dot", "")
 
-        # Target names
-        self.targets = set([])
-
-        # lists of (tail, head) tuples
-        self.edges = []
+        # A dict of target => set([targets])
+        self.target_dict = {}
 
         src = yapgvb.Graph().read(fname)
 
         for node in src.nodes:
             if node.shape in TARGET_SHAPES and self.want(node):
-                self.targets.add(node.name)
+                self.target_dict[node.name] = set()
+
         for edge in src.edges:
-            if self.want(edge.head) and self.want(edge.tail):
-                self.edges.append((edge.tail.name, edge.head.name))
+            target = edge.tail.name
+            if target in self.target_dict and self.want(edge.head):
+                dep_target = edge.head.name
+                self.target_dict[target].add(dep_target)
+
+    def get_all_dependencies(self):
+        deps = self.target_dict.values()
+        if not deps:
+            return set()
+        return reduce(lambda x,y: x.union(y), deps)
 
     def want(self, node):
         if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
@@ -111,8 +117,9 @@ def find_not_target_nodes(frameworks):
     nodes = set([])
     targets = set([])
     for fw in frameworks:
-        targets.update(fw.targets)
-        nodes.update([x[1] for x in fw.edges])
+        for target, deps in fw.target_dict.items():
+            targets.add(target)
+            nodes.update(deps)
     return nodes.difference(targets)
 
 
@@ -120,7 +127,7 @@ class FrameworkCmp(object):
     def __init__(self, frameworks):
         self.fw_for_target = {}
         for fw in frameworks:
-            for target in fw.targets:
+            for target in fw.target_dict.keys():
                 self.fw_for_target[target] = fw
         self.src = set(frameworks)
         self.dst = []
@@ -133,9 +140,8 @@ class FrameworkCmp(object):
         return 0
 
     def depends_on(self, depender_fw, provider_fw):
-        for edge in depender_fw.edges:
-            dep_target = edge[1]
-            if dep_target in provider_fw.targets:
+        for dep_target in depender_fw.get_all_dependencies():
+            if dep_target in provider_fw.target_dict:
                 return True
 
             try:
@@ -182,9 +188,12 @@ class DotWriter(Block):
 
     def write_framework(self, tier_block, fw):
         with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
-            fw_block.write_nodes(fw.targets)
-            for edge in sorted(fw.edges, key=lambda x:x[1]):
-                fw_block.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
+            targets = sorted(fw.target_dict.keys())
+            fw_block.write_nodes(targets)
+            for target in targets:
+                deps = fw.target_dict[target]
+                for dep in sorted(deps):
+                    fw_block.writeln('"{}" -> "{}";'.format(target, dep))
 
 
 def find_framework_by_name(frameworks, name):
@@ -199,8 +208,8 @@ def remove_unused_frameworks(frameworks, wanted_fw):
         for fw in lst:
             if fw == target_fw:
                 continue
-            for edge in fw.edges:
-                if edge[1] in target_fw.targets:
+            for target in fw.get_all_dependencies():
+                if target in target_fw.target_dict:
                     return True
         return False
 
