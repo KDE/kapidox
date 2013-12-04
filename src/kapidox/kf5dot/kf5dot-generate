@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import argparse
-from contextlib import contextmanager
 import itertools
+import fnmatch
 import os
 import re
 import shutil
 import sys
 import tempfile
+
+from contextlib import contextmanager
 
 import yapgvb
 
@@ -24,6 +26,11 @@ QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1")
 
 FW_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
+TARGET_SHAPES = ["polygon", "house"]
+
+DEPS_SHAPE = "ellipse"
+
+DEPS_BLACKLIST = ["-l*", "/*", "m", "pthread", "util", "nsl", "*example*", "*demo*", "*test*", "*Test*"]
 
 def preprocess(fname):
     lst = []
@@ -32,7 +39,7 @@ def preprocess(fname):
     targets = []
     for node in gfx.nodes:
         label = node.label.replace("KF5::", "")
-        if node.shape == Framework.TARGET_SHAPE:
+        if node.shape in TARGET_SHAPES:
             targets.append(label)
         txt = txt.replace('"' + node.name + '"', '"' + label + '"')
 
@@ -62,9 +69,6 @@ def to_temp_file(dirname, fname, content):
 
 
 class Framework(object):
-    TARGET_SHAPE = "polygon"
-    DEPS_SHAPE = "ellipse"
-
     def __init__(self, fname, options):
         self.options = options
 
@@ -81,23 +85,20 @@ class Framework(object):
         src = yapgvb.Graph().read(fname)
 
         for node in src.nodes:
-            if node.shape == self.TARGET_SHAPE:
+            if node.shape in TARGET_SHAPES and self.want(node):
                 self.targets.add(node.name)
         for edge in src.edges:
             if self.want(edge.head) and self.want(edge.tail):
                 self.edges.append((edge.tail.name, edge.head.name))
 
     def want(self, node):
-        if node.shape not in (Framework.TARGET_SHAPE, Framework.DEPS_SHAPE):
+        if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
             return False
         name = node.name
-        if not name[0].isupper():
-            # Catch nodes like /usr/lib/libX11.so
-            return False
-        if "test" in name:
-            return False
-        if name.endswith("Test") or name.endswith("Tests"):
-            return False
+
+        for pattern in DEPS_BLACKLIST:
+            if fnmatch.fnmatchcase(node.name, pattern):
+                return False
         if not self.options.qt and name.startswith("Qt"):
             return False
         return True
