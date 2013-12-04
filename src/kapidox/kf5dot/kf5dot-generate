@@ -114,11 +114,8 @@ class Framework(object):
 
 
 class FrameworkCmp(object):
-    def __init__(self, frameworks):
-        self.fw_for_target = {}
-        for fw in frameworks:
-            for target in fw.target_dict.keys():
-                self.fw_for_target[target] = fw
+    def __init__(self, frameworks, fw_for_target):
+        self.fw_for_target = fw_for_target
         self.src = set(frameworks)
         self.dst = []
 
@@ -179,7 +176,7 @@ class DotWriter(Block):
                     # depend on other frameworks from that tier are listed after
                     # their dependees.
                     frameworks = list(frameworks)
-                    for fw in sorted(frameworks, cmp=FrameworkCmp(frameworks)):
+                    for fw in sorted(frameworks, cmp=FrameworkCmp(frameworks, self.fw_for_target)):
                         if self.detailed:
                             self.write_detailed_framework(tier_block, fw)
                         else:
