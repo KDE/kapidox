@@ -101,25 +101,6 @@ class Framework(object):
         return True
 
 
-@contextmanager
-def block(opener, closer, writer, **attrs):
-    writer.writeln(opener)
-    writer.indent()
-    writer.write_attrs(**attrs)
-    yield
-    writer.unindent()
-    writer.writeln(closer)
-
-def square_block(prefix, writer, **attrs):
-    return block(prefix + " [", "]", writer, **attrs)
-
-def curly_block(prefix, writer, **attrs):
-    return block(prefix + " {", "}", writer, **attrs)
-
-def cluster_block(title, writer, **attrs):
-    return curly_block("subgraph cluster_" + title, writer, label=title, **attrs)
-
-
 def find_not_target_nodes(frameworks):
     nodes = set([])
     targets = set([])
@@ -129,59 +110,74 @@ def find_not_target_nodes(frameworks):
     return nodes.difference(targets)
 
 
-class DotWriter(object):
+class Block(object):
     INDENT_SIZE = 4
-    def __init__(self, frameworks, out):
-        self.frameworks = frameworks
+    def __init__(self, out, depth = 0):
         self.out = out
-        self.depth = 0
+        self.depth = depth
 
     def writeln(self, text):
         self.out.write(self.depth * DotWriter.INDENT_SIZE * " " + text + "\n")
 
-    def indent(self):
-        self.depth += 1
+    def write_attrs(self, **attrs):
+        for key, value in attrs.items():
+            self.writeln("{} = {};".format(key, value))
 
-    def unindent(self):
-        self.depth -= 1
+    def write_nodes(self, nodes):
+        for node in sorted(nodes):
+            self.writeln('"{}" [ label="{}" ];'.format(node, node))
+
+    @contextmanager
+    def block(self, opener, closer, **attrs):
+        self.writeln(opener)
+        block = Block(self.out, depth=self.depth + 1)
+        block.write_attrs(**attrs)
+        yield block
+        self.writeln(closer)
+
+    def square_block(self, prefix, **attrs):
+        return self.block(prefix + " [", "]", **attrs)
+
+    def curly_block(self, prefix, **attrs):
+        return self.block(prefix + " {", "}", **attrs)
+
+    def cluster_block(self, title, **attrs):
+        return self.curly_block("subgraph cluster_" + title, label=title, **attrs)
+
+
+class DotWriter(Block):
+    def __init__(self, frameworks, out):
+        Block.__init__(self, out)
+        self.frameworks = frameworks
 
     def write(self):
-        with curly_block("digraph Root", self):
-            with square_block("node", self):
-                self.writeln("fontsize = 12")
-                self.writeln("shape = box")
+        with self.curly_block("digraph Root") as root:
+            with root.square_block("node") as b:
+                b.writeln("fontsize = 12")
+                b.writeln("shape = box")
 
             other_nodes = find_not_target_nodes(self.frameworks)
             qt_nodes = set([x for x in other_nodes if x.startswith("Qt")])
             other_nodes.difference_update(qt_nodes)
 
             if qt_nodes:
-                with cluster_block("Qt", self, **OTHER_ATTRS):
-                    self.write_nodes(qt_nodes)
+                with root.cluster_block("Qt", **OTHER_ATTRS) as b:
+                    b.write_nodes(qt_nodes)
 
             if other_nodes:
-                with cluster_block("Others", self, **OTHER_ATTRS):
-                    self.write_nodes(other_nodes)
+                with root.cluster_block("Others", **OTHER_ATTRS) as b:
+                    b.write_nodes(other_nodes)
 
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
-                with cluster_block(tier, self, **TIER_ATTRS):
+                with root.cluster_block(tier, **TIER_ATTRS) as tier_block:
                     for fw in frameworks:
-                        with cluster_block(fw.name, self, **FW_ATTRS):
-                            self.write_nodes(fw.targets)
-                            for edge in sorted(fw.edges, key=lambda x:x[1]):
-                                self.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
+                        self.write_framework(tier_block, fw)
 
-
-    def write_attrs(self, **attrs):
-        for key, value in attrs.items():
-            self.writeln("{} = {};".format(key, value))
-
-    def close_block(self):
-        self.out.write("}\n")
-
-    def write_nodes(self, nodes):
-        for node in sorted(nodes):
-            self.writeln('"{}" [ label="{}" ];'.format(node, node))
+    def write_framework(self, tier_block, fw):
+        with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
+            fw_block.write_nodes(fw.targets)
+            for edge in sorted(fw.edges, key=lambda x:x[1]):
+                fw_block.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
 
 
 def main():
