@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+dot_dir=$1
+png_dir=$2
+
+genpng() {
+    tier=$1
+    qt=$2
+    if [ -n "$qt" ] ; then
+        opts=--qt
+    else
+        opts=""
+    fi
+
+    for fw_dir in $dot_dir/$tier/*/ ; do
+        fw=$(basename $fw_dir)
+        png=$png_dir/$tier-$fw.png
+        echo $png
+        ./kf5dot-generate $dot_dir/tier*/*/*.dot --framework $fw $opts | dot -Tpng > $png
+    done
+}
+
+mkdir -p $png_dir
+genpng tier1 1
+genpng tier2 1
+genpng tier3
+genpng tier4
+echo "kf5.png"
+./kf5dot-generate $dot_dir/tier*/*/*.dot | dot -Tpng > $png_dir/kf5.png
