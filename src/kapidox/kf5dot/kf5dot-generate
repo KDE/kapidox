@@ -30,7 +30,7 @@ TARGET_SHAPES = ["polygon", "house"]
 
 DEPS_SHAPE = "ellipse"
 
-DEPS_BLACKLIST = ["-l*", "/*", "m", "pthread", "util", "nsl", "*example*", "*demo*", "*test*", "*Test*"]
+DEPS_BLACKLIST = ["-l*", "/*", "m", "pthread", "util", "nsl", "*example*", "*demo*", "*test*", "*Test*", "*debug*"]
 
 def preprocess(fname):
     lst = []
