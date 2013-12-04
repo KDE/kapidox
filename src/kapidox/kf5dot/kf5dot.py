@@ -101,6 +101,9 @@ class Framework(object):
             return False
         return True
 
+    def __repr__(self):
+        return self.name
+
 
 def find_not_target_nodes(frameworks):
     nodes = set([])
