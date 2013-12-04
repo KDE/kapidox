@@ -45,3 +45,7 @@ There are many ways to generate graphs:
 `xdot`, can be used instead of `dot` to display the graph:
 
     kf5dot-generate dst/path/to/dot-files/tier*/*/*.dot --framework kcrash --qt | tred | xdot
+
+# Author
+
+Aurélien Gâteau <agateau@kde.org>
