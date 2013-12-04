@@ -176,7 +176,7 @@ class DotWriter(Block):
             return cmp(fw1.name, fw2.name)
 
         with self.curly_block("digraph Root") as root:
-            self.write_list_attrs("node", ROOT_NODE_ATTRS)
+            root.write_list_attrs("node", **ROOT_NODE_ATTRS)
 
             other_nodes = find_not_target_nodes(self.frameworks)
             qt_nodes = set([x for x in other_nodes if x.startswith("Qt")])
