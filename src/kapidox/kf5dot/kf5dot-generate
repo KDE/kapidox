@@ -16,13 +16,13 @@ DESCRIPTION = """\
 
 ROOT_NODE_ATTRS = dict(fontsize=12, shape="box")
 
-TIER_ATTRS = dict(style="filled", color="azure")
+TIER_ATTRS = dict(style="filled", fillcolor="azure")
 
-OTHER_ATTRS = dict(style="filled", color="cornsilk")
+OTHER_ATTRS = dict(style="filled", fillcolor="cornsilk")
 
 QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1")
 
-FW_ATTRS = dict(style="filled", color="paleturquoise")
+FW_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
 
 def preprocess(fname):
