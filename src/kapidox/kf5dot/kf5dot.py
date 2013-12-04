@@ -95,10 +95,6 @@ class Framework(object):
             return False
         if not self.options.qt and name.startswith("Qt"):
             return False
-        if name.startswith("Phonon"):
-            return False
-        if name.startswith("LibAttica"):
-            return False
         return True
 
     def __repr__(self):
