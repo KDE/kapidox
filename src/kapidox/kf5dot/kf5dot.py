@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import argparse
+from contextlib import contextmanager
 import itertools
 import os
 import re
@@ -12,6 +13,12 @@ import yapgvb
 
 DESCRIPTION = """\
 """
+
+
+TIER_ATTRS = dict(style="dashed")
+QT_ATTRS = TIER_ATTRS
+FW_ATTRS = dict(style="filled", color="lightgrey")
+
 
 def preprocess(fname):
     lst = []
@@ -94,58 +101,75 @@ class Framework(object):
         return True
 
 
+@contextmanager
+def block(opener, closer, writer, **attrs):
+    writer.writeln(opener)
+    writer.indent()
+    writer.write_attrs(**attrs)
+    yield
+    writer.unindent()
+    writer.writeln(closer)
+
+def square_block(prefix, writer, **attrs):
+    return block(prefix + " [", "]", writer, **attrs)
+
+def curly_block(prefix, writer, **attrs):
+    return block(prefix + " {", "}", writer, **attrs)
+
+def cluster_block(title, writer, **attrs):
+    return curly_block("subgraph cluster_" + title, writer, label=title, **attrs)
+
 class DotWriter(object):
+    INDENT_SIZE = 4
     def __init__(self, frameworks, out):
         self.frameworks = frameworks
         self.out = out
+        self.depth = 0
+
+    def writeln(self, text):
+        self.out.write(self.depth * DotWriter.INDENT_SIZE * " " + text + "\n")
+
+    def indent(self):
+        self.depth += 1
+
+    def unindent(self):
+        self.depth -= 1
 
     def write(self):
-        PROLOG = \
-"""
-digraph Root {
-    node [
-        fontsize = "12"
-        shape = "box"
-    ];
+        with curly_block("digraph Root", self):
+            with square_block("node", self):
+                self.writeln("fontsize = 12")
+                self.writeln("shape = box")
 
-"""
-        self.out.write(PROLOG)
-        qt_nodes = set([])
+            qt_nodes = set([])
+            for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
+                with cluster_block(tier, self, **TIER_ATTRS):
+                    for fw in frameworks:
+                        with cluster_block(fw.name, self, **FW_ATTRS):
+                            self.write_nodes(fw.targets)
+                        for edge in fw.edges:
+                            head = edge[1]
+                            if head.startswith("Qt"):
+                                qt_nodes.add(head)
 
-        for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
-            self.start_subgraph(tier, style="dashed")
-            for fw in frameworks:
-                self.start_subgraph(fw.name, style="filled", color="lightgrey")
-                self.write_nodes(fw.targets)
-                self.close_block()
+            with cluster_block("Qt", self, **QT_ATTRS):
+                self.write_nodes(qt_nodes)
+
+            self.writeln("// Relations");
+            for fw in self.frameworks:
                 for edge in fw.edges:
-                    head = edge[1]
-                    if head.startswith("Qt"):
-                        qt_nodes.add(head)
-            self.close_block()
+                    self.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
 
-        self.start_subgraph("Qt", style="dashed")
-        self.write_nodes(qt_nodes)
-        self.close_block()
-
-        self.out.write("    // Relations\n");
-        for fw in self.frameworks:
-            for edge in fw.edges:
-                self.out.write('    "{}" -> "{}";\n'.format(edge[0], edge[1]))
-        self.out.write("}\n")
-
-    def start_subgraph(self, title, **attrs):
-        self.out.write("Subgraph cluster_{} {{\n".format(title))
-        self.out.write("label = \"{}\";\n".format(title))
+    def write_attrs(self, **attrs):
         for key, value in attrs.items():
-            self.out.write("{} = {};\n".format(key, value))
+            self.writeln("{} = {};".format(key, value))
 
     def close_block(self):
         self.out.write("}\n")
 
     def write_nodes(self, nodes):
         for node in nodes:
-            self.out.write('    "{}" [ label="{}" ];\n'.format(node, node))
+            self.writeln('"{}" [ label="{}" ];'.format(node, node))
 
 
 def main():
