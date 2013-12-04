@@ -155,26 +155,46 @@ class Block(object):
         return self.curly_block("subgraph cluster_" + title, label=title, **attrs)
 
 
+class FrameworkCmp(object):
+    def __init__(self, frameworks):
+        self.fw_for_target = {}
+        for fw in frameworks:
+            for target in fw.targets:
+                self.fw_for_target[target] = fw
+        self.src = set(frameworks)
+        self.dst = []
+
+    def __call__(self, fw1, fw2):
+        if self.depends_on(fw1, fw2):
+            return 1
+        if self.depends_on(fw2, fw1):
+            return -1
+        return 0
+
+    def depends_on(self, depender_fw, provider_fw):
+        for edge in depender_fw.edges:
+            dep_target = edge[1]
+            if dep_target in provider_fw.targets:
+                return True
+
+            try:
+                dep_fw = self.fw_for_target[dep_target]
+            except KeyError:
+                # No framework for this target, must be an external dependency,
+                # carry on
+                continue
+            if dep_fw != depender_fw and self.depends_on(dep_fw, provider_fw):
+                return True
+
+        return False
+
+
 class DotWriter(Block):
     def __init__(self, frameworks, out):
         Block.__init__(self, out)
         self.frameworks = frameworks
 
     def write(self):
-        def fw_cmp(fw1, fw2):
-            # Compare frameworks *within a tier*
-            # fw1 is considered superior to fw2 if one of fw1 targets depends on
-            # one of fw2 targets
-            if fw1 == fw2:
-                return 0
-            for edge in fw1.edges:
-                if edge[1] in fw2.targets:
-                    return 1
-            for edge in fw2.edges:
-                if edge[1] in fw1.targets:
-                    return -1
-            return cmp(fw1.name, fw2.name)
-
         with self.curly_block("digraph Root") as root:
             root.write_list_attrs("node", **ROOT_NODE_ATTRS)
 
@@ -194,8 +214,9 @@ class DotWriter(Block):
                 with root.cluster_block(tier, **TIER_ATTRS) as tier_block:
                     # Sort frameworks within the tier to ensure frameworks which
                     # depend on other frameworks from that tier are listed after
-                    # their dependees
-                    for fw in sorted(frameworks, cmp=fw_cmp):
+                    # their dependees.
+                    frameworks = list(frameworks)
+                    for fw in sorted(frameworks, cmp=FrameworkCmp(frameworks)):
                         self.write_framework(tier_block, fw)
 
     def write_framework(self, tier_block, fw):
