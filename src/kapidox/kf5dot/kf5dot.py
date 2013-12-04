@@ -16,7 +16,7 @@ DESCRIPTION = """\
 
 
 TIER_ATTRS = dict(style="dashed")
-QT_ATTRS = TIER_ATTRS
+OTHER_ATTRS = TIER_ATTRS
 FW_ATTRS = dict(style="filled", color="lightgrey")
 
 
@@ -119,6 +119,16 @@ def curly_block(prefix, writer, **attrs):
 def cluster_block(title, writer, **attrs):
     return curly_block("subgraph cluster_" + title, writer, label=title, **attrs)
 
+
+def find_not_target_nodes(frameworks):
+    nodes = set([])
+    targets = set([])
+    for fw in frameworks:
+        targets.update(fw.targets)
+        nodes.update([x[1] for x in fw.edges])
+    return nodes.difference(targets)
+
+
 class DotWriter(object):
     INDENT_SIZE = 4
     def __init__(self, frameworks, out):
@@ -141,24 +151,26 @@ class DotWriter(object):
                 self.writeln("fontsize = 12")
                 self.writeln("shape = box")
 
-            qt_nodes = set([])
+            other_nodes = find_not_target_nodes(self.frameworks)
+            qt_nodes = set([x for x in other_nodes if x.startswith("Qt")])
+            other_nodes.difference_update(qt_nodes)
+
+            if qt_nodes:
+                with cluster_block("Qt", self, **OTHER_ATTRS):
+                    self.write_nodes(qt_nodes)
+
+            if other_nodes:
+                with cluster_block("Others", self, **OTHER_ATTRS):
+                    self.write_nodes(other_nodes)
+
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
                 with cluster_block(tier, self, **TIER_ATTRS):
                     for fw in frameworks:
                         with cluster_block(fw.name, self, **FW_ATTRS):
                             self.write_nodes(fw.targets)
-                        for edge in fw.edges:
-                            head = edge[1]
-                            if head.startswith("Qt"):
-                                qt_nodes.add(head)
+                            for edge in sorted(fw.edges, key=lambda x:x[1]):
+                                self.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
 
-            with cluster_block("Qt", self, **QT_ATTRS):
-                self.write_nodes(qt_nodes)
-
-            self.writeln("// Relations");
-            for fw in self.frameworks:
-                for edge in fw.edges:
-                    self.writeln('"{}" -> "{}";'.format(edge[0], edge[1]))
 
     def write_attrs(self, **attrs):
         for key, value in attrs.items():
@@ -168,7 +180,7 @@ class DotWriter(object):
         self.out.write("}\n")
 
     def write_nodes(self, nodes):
-        for node in nodes:
+        for node in sorted(nodes):
             self.writeln('"{}" [ label="{}" ];'.format(node, node))
 
 
