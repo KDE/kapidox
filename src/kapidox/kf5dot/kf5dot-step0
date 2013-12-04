@@ -1,11 +1,34 @@
 #!/bin/sh
 set -e
 
-for tier in ~/src/kf5/kdelibs/tier? ; do
-    for fw in $tier/*/ ; do
-        echo $fw
-        bfw=$PWD/$(basename $tier)/$(basename $fw)
-        mkdir -p $bfw
-        ( cd $bfw ; cmake $fw --graphviz=$(basename $fw).dot > /dev/null )
+usage() {
+    cat <<EOF
+Usage: $(basename $0) <kdelibs-dir> <dot-dest-dir>
+
+Generate Graphviz dot files for all frameworks within kdelibs-dir.
+
+Dot files are generated in dot-dest-dir, which will be created if it does not
+exist.
+
+EOF
+exit 1
+}
+
+if [ $# -ne 2 ] ; then
+    usage
+fi
+
+kdelibs_dir=$1
+dst_dir=$2
+
+for tier_dir in $kdelibs_dir/tier? ; do
+    for fw_dir in $tier_dir/*/ ; do
+        tier=$(basename $tier_dir)
+        fw=$(basename $fw_dir)
+
+        echo $fw_dir
+        build_dir=$dst_dir/$tier/$fw
+        mkdir -p $build_dir
+        ( cd $build_dir ; cmake $fw_dir --graphviz=$fw.dot > /dev/null )
     done
 done
