@@ -113,16 +113,6 @@ class Framework(object):
         return self.name
 
 
-def find_not_target_nodes(frameworks):
-    nodes = set([])
-    targets = set([])
-    for fw in frameworks:
-        for target, deps in fw.target_dict.items():
-            targets.add(target)
-            nodes.update(deps)
-    return nodes.difference(targets)
-
-
 class FrameworkCmp(object):
     def __init__(self, frameworks):
         self.fw_for_target = {}
@@ -165,17 +155,17 @@ class DotWriter(Block):
         with self.curly_block("digraph Root") as root:
             root.write_list_attrs("node", **ROOT_NODE_ATTRS)
 
-            other_nodes = find_not_target_nodes(self.frameworks)
-            qt_nodes = set([x for x in other_nodes if x.startswith("Qt")])
-            other_nodes.difference_update(qt_nodes)
+            other_targets = find_external_targets(self.frameworks)
+            qt_targets = set([x for x in other_targets if x.startswith("Qt")])
+            other_targets.difference_update(qt_targets)
 
-            if qt_nodes:
+            if qt_targets:
                 with root.cluster_block("Qt", **QT_ATTRS) as b:
-                    b.write_nodes(qt_nodes)
+                    b.write_nodes(qt_targets)
 
-            if other_nodes:
+            if other_targets:
                 with root.cluster_block("Others", **OTHER_ATTRS) as b:
-                    b.write_nodes(other_nodes)
+                    b.write_nodes(other_targets)
 
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
                 with root.cluster_block(tier, **TIER_ATTRS) as tier_block:
@@ -196,6 +186,15 @@ class DotWriter(Block):
                     fw_block.writeln('"{}" -> "{}";'.format(target, dep))
 
 
+def find_external_targets(frameworks):
+    all_targets = set([])
+    fw_targets = set([])
+    for fw in frameworks:
+        fw_targets.update(fw.target_dict)
+        all_targets.update(fw.get_all_dependencies())
+    return all_targets.difference(fw_targets)
+
+
 def find_framework_by_name(frameworks, name):
     for fw in frameworks:
         if fw.name == name:
@@ -204,12 +203,12 @@ def find_framework_by_name(frameworks, name):
 
 
 def remove_unused_frameworks(frameworks, wanted_fw):
-    def has_dependees(lst, target_fw):
+    def is_used_in_list(the_fw, lst):
         for fw in lst:
-            if fw == target_fw:
+            if fw == the_fw:
                 continue
             for target in fw.get_all_dependencies():
-                if target in target_fw.target_dict:
+                if target in the_fw.target_dict:
                     return True
         return False
 
@@ -222,7 +221,7 @@ def remove_unused_frameworks(frameworks, wanted_fw):
             if fw == wanted_fw:
                 lst.append(fw)
                 continue
-            if has_dependees(old_lst, fw):
+            if is_used_in_list(fw, old_lst):
                 lst.append(fw)
             else:
                 done = False
