@@ -26,6 +26,8 @@ QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1")
 
 FW_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
+WANTED_FW_ATTRS = dict(style="filled", fillcolor="turquoise")
+
 TARGET_SHAPES = [
     "polygon", # lib
     "house",   # executable
@@ -153,10 +155,11 @@ class FrameworkCmp(object):
 
 
 class DotWriter(Block):
-    def __init__(self, frameworks, out, detailed=False):
+    def __init__(self, frameworks, out, wanted_fw=None, detailed=False):
         Block.__init__(self, out)
         self.frameworks = frameworks
         self.detailed = detailed
+        self.wanted_fw = wanted_fw
 
         self.fw_for_target = {}
         for fw in self.frameworks:
@@ -192,7 +195,10 @@ class DotWriter(Block):
                             self.write_framework(tier_block, fw)
 
     def write_framework(self, tier_block, fw):
-        tier_block.write_nodes([fw.name])
+        if fw == self.wanted_fw:
+            tier_block.write_list_attrs(fw.name, **WANTED_FW_ATTRS)
+        else:
+            tier_block.write_nodes([fw.name])
         edges = set([])
         for target in fw.get_all_dependencies():
             try:
@@ -208,6 +214,8 @@ class DotWriter(Block):
 
     def write_detailed_framework(self, tier_block, fw):
         with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
+            if fw == self.wanted_fw:
+                fw_block.write_attrs(**WANTED_FW_ATTRS)
             targets = sorted(fw.target_dict.keys())
             fw_block.write_nodes(targets)
             for target in targets:
@@ -296,8 +304,10 @@ def main():
             sys.stderr.write("No framework named {}.\n".format(args.framework))
             return 1
         frameworks = remove_unused_frameworks(frameworks, wanted_fw)
+    else:
+        wanted_fw = None
 
-    writer = DotWriter(frameworks, out, detailed=args.detailed)
+    writer = DotWriter(frameworks, out, wanted_fw=wanted_fw, detailed=args.detailed)
     writer.write()
 
     return 0
