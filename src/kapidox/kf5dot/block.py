@@ -17,7 +17,7 @@ class Block(object):
     def write_list_attrs(self, name, **attrs):
         with self.square_block(name) as b:
             for key, value in attrs.items():
-                self.writeln("{} = {}".format(key, value))
+                b.writeln("{} = {}".format(key, value))
 
     def write_nodes(self, nodes):
         for node in sorted(nodes):
