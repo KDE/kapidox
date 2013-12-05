@@ -31,7 +31,7 @@ FW_ATTRS = dict(style="filled", fillcolor="azure", color="black")
 FW_TARGET_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
 # Highlight the wanted framework, used with --framework
-WANTED_FW_ATTRS = dict(penwidth=3)
+WANTED_FW_ATTRS = dict(penwidth=2)
 
 TARGET_SHAPES = [
     "polygon", # lib
