@@ -34,7 +34,12 @@ TARGET_SHAPES = [
 
 DEPS_SHAPE = "ellipse"
 
-DEPS_BLACKLIST = ["-l*", "/*", "m", "pthread", "util", "nsl", "*example*", "*demo*", "*test*", "*Test*", "*debug*"]
+DEPS_BLACKLIST = [
+    "-l*", "-W*", # link flags
+    "/*", # absolute dirs
+    "m", "pthread", "util", "nsl", "resolv", # generic libs
+    "*example*", "*demo*", "*test*", "*Test*", "*debug*" # helper targets
+    ]
 
 def preprocess(fname):
     lst = []
