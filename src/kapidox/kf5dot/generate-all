@@ -18,6 +18,9 @@ gen_fws() {
         png=$png_dir/$tier-$fw.png
         echo $png
         ./kf5dot-generate $dot_dir/tier*/*/*.dot --framework $fw $opts | dot -Tpng > $png
+        png=$png_dir/$tier-$fw-simplified.png
+        echo $png
+        ./kf5dot-generate $dot_dir/tier*/*/*.dot --framework $fw $opts | tred | dot -Tpng > $png
     done
 }
 
