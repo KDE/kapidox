@@ -36,8 +36,10 @@ WANTED_FW_ATTRS = dict(penwidth=3)
 TARGET_SHAPES = [
     "polygon", # lib
     "house",   # executable
-    "octagon"  # module (aka plugin)
+    "octagon", # module (aka plugin)
+    "diamond", # static lib
     ]
+
 
 DEPS_SHAPE = "ellipse"
 
