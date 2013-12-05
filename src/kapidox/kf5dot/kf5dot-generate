@@ -193,6 +193,7 @@ class DotWriter(Block):
 
             for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
                 with root.cluster_block(tier, **GROUP_ATTRS) as tier_block:
+                    tier_block.write_list_attrs("node", **FW_ATTRS)
                     # Sort frameworks within the tier to ensure frameworks which
                     # depend on other frameworks from that tier are listed after
                     # their dependees.
@@ -204,10 +205,10 @@ class DotWriter(Block):
                             self.write_framework(tier_block, fw)
 
     def write_framework(self, tier_block, fw):
-        attrs = FW_ATTRS.copy()
         if fw == self.wanted_fw:
-            attrs.update(WANTED_FW_ATTRS)
-        tier_block.write_list_attrs(fw.name, **attrs)
+            tier_block.write_list_attrs(fw.name, **WANTED_FW_ATTRS)
+        else:
+            tier_block.write_nodes([fw.name])
         edges = set([])
         for target in fw.get_all_dependencies():
             try:
@@ -223,9 +224,9 @@ class DotWriter(Block):
 
     def write_detailed_framework(self, tier_block, fw):
         with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
-            fw_block.write_list_attrs("node", **FW_TARGET_ATTRS)
             if fw == self.wanted_fw:
                 fw_block.write_attrs(**WANTED_FW_ATTRS)
+            fw_block.write_list_attrs("node", **FW_TARGET_ATTRS)
             targets = sorted(fw.target_dict.keys())
             fw_block.write_nodes(targets)
             for target in targets:

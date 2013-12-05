@@ -21,7 +21,7 @@ class Block(object):
 
     def write_nodes(self, nodes):
         for node in sorted(nodes):
-            self.writeln('"{}" [ label="{}" ];'.format(node, node))
+            self.writeln('"{}";'.format(node))
 
     @contextmanager
     def block(self, opener, closer, **attrs):
