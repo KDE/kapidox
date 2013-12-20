@@ -88,6 +88,9 @@ def to_temp_file(dirname, fname, content):
 
 class Framework(object):
     def __init__(self, fname, options):
+        def target_from_node(node):
+            return node.name.replace("KF5", "")
+
         self.options = options
 
         lst = os.path.basename(fname).split("-", 1)
@@ -101,12 +104,12 @@ class Framework(object):
 
         for node in src.nodes:
             if node.shape in TARGET_SHAPES and self.want(node):
-                self.target_dict[node.name] = set()
+                self.target_dict[target_from_node(node)] = set()
 
         for edge in src.edges:
-            target = edge.tail.name
+            target = target_from_node(edge.tail)
             if target in self.target_dict and self.want(edge.head):
-                dep_target = edge.head.name
+                dep_target = target_from_node(edge.head)
                 self.target_dict[target].add(dep_target)
 
     def get_all_dependencies(self):
