@@ -90,7 +90,7 @@ class Framework(object):
     def __init__(self, fname, options):
         self.options = options
 
-        lst = os.path.basename(fname).split("-")
+        lst = os.path.basename(fname).split("-", 1)
         self.tier = lst[0]
         self.name = lst[1].replace(".dot", "")
 
