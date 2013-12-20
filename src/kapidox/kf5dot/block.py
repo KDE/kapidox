@@ -12,12 +12,12 @@ class Block(object):
 
     def write_attrs(self, **attrs):
         for key, value in attrs.items():
-            self.writeln("{} = {};".format(key, value))
+            self.writeln('"{}" = "{}";'.format(key, value))
 
     def write_list_attrs(self, name, **attrs):
         with self.square_block(name) as b:
             for key, value in attrs.items():
-                b.writeln("{} = {}".format(key, value))
+                b.writeln('"{}" = "{}"'.format(key, value))
 
     def write_nodes(self, nodes):
         for node in sorted(nodes):
@@ -39,3 +39,7 @@ class Block(object):
 
     def cluster_block(self, title, **attrs):
         return self.curly_block("subgraph cluster_" + title, label=title, **attrs)
+
+
+def quote(txt):
+    return '"{}"'.format(txt)

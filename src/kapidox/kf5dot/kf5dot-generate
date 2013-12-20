@@ -11,7 +11,7 @@ import tempfile
 
 import yapgvb
 
-from block import Block
+from block import Block, quote
 
 DESCRIPTION = """\
 """
@@ -209,7 +209,7 @@ class DotWriter(Block):
 
     def write_framework(self, tier_block, fw):
         if fw == self.wanted_fw:
-            tier_block.write_list_attrs(fw.name, **WANTED_FW_ATTRS)
+            tier_block.write_list_attrs(quote(fw.name), **WANTED_FW_ATTRS)
         else:
             tier_block.write_nodes([fw.name])
         edges = set([])
