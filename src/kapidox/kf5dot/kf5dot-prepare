@@ -3,7 +3,7 @@ set -e
 
 usage() {
     cat <<EOF
-Usage: $(basename $0) <kdelibs-dir> <dot-dest-dir>
+Usage: $(basename $0) <frameworks-dir> <dot-dest-dir>
 
 Generate Graphviz dot files for all frameworks within kdelibs-dir.
 
@@ -18,17 +18,22 @@ if [ $# -ne 2 ] ; then
     usage
 fi
 
-kdelibs_dir=$1
+old_pwd=$PWD
+cd $1
+fw_base_dir=$PWD
+cd $old_pwd
+
 dst_dir=$2
 
-for tier_dir in $kdelibs_dir/tier? ; do
-    for fw_dir in $tier_dir/*/ ; do
-        tier=$(basename $tier_dir)
-        fw=$(basename $fw_dir)
+for fw_dir in $fw_base_dir/*/ ; do
+    if [ ! -e $fw_dir/CMakeLists.txt ] ; then
+        continue
+    fi
+    fw=$(basename $fw_dir)
+    tier=$(awk -F: '$1 == "tier" { print $2}' $fw_dir/$fw.yaml | sed 's/ //')
 
-        echo $fw_dir
-        build_dir=$dst_dir/$tier/$fw
-        mkdir -p $build_dir
-        ( cd $build_dir ; cmake $fw_dir --graphviz=$fw.dot > /dev/null )
-    done
+    echo "$tier $fw_dir"
+    build_dir=$dst_dir/tier$tier/$fw
+    mkdir -p $build_dir
+    ( cd $build_dir ; cmake $fw_dir --graphviz=$fw.dot > /dev/null )
 done
