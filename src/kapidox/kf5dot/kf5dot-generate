@@ -55,6 +55,22 @@ def preprocess(fname):
     gfx = yapgvb.Graph().read(fname)
     txt = open(fname).read()
     targets = []
+
+    # Replace the generated node names with their label. CMake generates a graph
+    # like this:
+    #
+    # "node0" [ label="KF5DNSSD" shape="polygon"];
+    # "node1" [ label="Qt5::Network" shape="ellipse"];
+    # "node0" -> "node1"
+    #
+    # And we turn it into this:
+    #
+    # "KF5DNSSD" [ label="KF5DNSSD" shape="polygon"];
+    # "Qt5::Network" [ label="Qt5::Network" shape="ellipse"];
+    # "KF5DNSSD" -> "Qt5::Network"
+    #
+    # Using real framework names as labels makes it possible to merge multiple
+    # .dot files.
     for node in gfx.nodes:
         label = node.label.replace("KF5::", "")
         if node.shape in TARGET_SHAPES:
@@ -300,6 +316,9 @@ def main():
 
     args = parser.parse_args()
 
+    # Preprocess dot files so that they can be merged together
+    # The output needs to be stored in a temp file because yapgvb crashes when
+    # trying to make it read from a StringIO
     tmpdir = tempfile.mkdtemp(prefix="kf5dot")
     try:
         input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in args.dot_files]
