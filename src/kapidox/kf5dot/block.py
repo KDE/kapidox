@@ -38,7 +38,7 @@ class Block(object):
         return self.block(prefix + " {", "}", **attrs)
 
     def cluster_block(self, title, **attrs):
-        return self.curly_block("subgraph cluster_" + title, label=title, **attrs)
+        return self.curly_block("subgraph " + quote("cluster_" + title), label=title, **attrs)
 
 
 def quote(txt):
