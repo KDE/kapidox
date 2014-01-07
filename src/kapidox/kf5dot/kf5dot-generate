@@ -102,12 +102,24 @@ def to_temp_file(dirname, fname, content):
     return path
 
 
+def read_dot_files(dot_files, with_qt=False):
+    # Preprocess dot files so that they can be merged together
+    # The output needs to be stored in a temp file because yapgvb crashes when
+    # trying to make it read from a StringIO
+    tmpdir = tempfile.mkdtemp(prefix="kf5dot")
+    try:
+        input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in dot_files]
+        return [Framework(x, with_qt=with_qt) for x in input_files]
+    finally:
+        shutil.rmtree(tmpdir)
+
+
 class Framework(object):
-    def __init__(self, fname, options):
+    def __init__(self, fname, with_qt=False):
         def target_from_node(node):
             return node.name.replace("KF5", "")
 
-        self.options = options
+        self.with_qt = with_qt
 
         lst = os.path.basename(fname).split("-", 1)
         self.tier = lst[0]
@@ -142,7 +154,7 @@ class Framework(object):
         for pattern in DEPS_BLACKLIST:
             if fnmatch.fnmatchcase(node.name, pattern):
                 return False
-        if not self.options.qt and name.startswith("Qt"):
+        if not self.with_qt and name.startswith("Qt"):
             return False
         return True
 
@@ -316,15 +328,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Preprocess dot files so that they can be merged together
-    # The output needs to be stored in a temp file because yapgvb crashes when
-    # trying to make it read from a StringIO
-    tmpdir = tempfile.mkdtemp(prefix="kf5dot")
-    try:
-        input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in args.dot_files]
-        frameworks = [Framework(x, args) for x in input_files]
-    finally:
-        shutil.rmtree(tmpdir)
+    frameworks = read_dot_files(args.dot_files, with_qt=args.qt)
 
     if args.output == "-":
         out = sys.stdout
