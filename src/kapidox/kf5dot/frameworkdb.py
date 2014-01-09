@@ -84,7 +84,7 @@ class FrameworkDb(object):
     def _update_fw_for_target(self):
         self._fw_for_target = {}
         for fw in self._fw_list:
-            for target in fw.target_dict.keys():
+            for target in fw.get_targets():
                 self._fw_for_target[target] = fw
 
     def find_by_name(self, name):
@@ -98,8 +98,8 @@ class FrameworkDb(object):
             for fw in lst:
                 if fw == the_fw:
                     continue
-                for target in fw.get_all_dependencies():
-                    if target in the_fw.target_dict:
+                for target in fw.get_all_target_dependencies():
+                    if the_fw.has_target(target):
                         return True
             return False
 
@@ -123,8 +123,8 @@ class FrameworkDb(object):
         all_targets = set([])
         fw_targets = set([])
         for fw in self._fw_list:
-            fw_targets.update(fw.target_dict)
-            all_targets.update(fw.get_all_dependencies())
+            fw_targets.update(fw.get_targets())
+            all_targets.update(fw.get_all_target_dependencies())
         return all_targets.difference(fw_targets)
 
     def get_fw_for_target(self, target):

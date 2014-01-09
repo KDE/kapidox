@@ -44,8 +44,8 @@ class FrameworkCmp(object):
         return 0
 
     def depends_on(self, depender_fw, provider_fw):
-        for dep_target in depender_fw.get_all_dependencies():
-            if dep_target in provider_fw.target_dict:
+        for dep_target in depender_fw.get_all_target_dependencies():
+            if provider_fw.has_target(dep_target):
                 return True
 
             try:
@@ -104,7 +104,7 @@ class DotWriter(Block):
         else:
             tier_block.write_nodes([fw.name])
         edges = set([])
-        for target in fw.get_all_dependencies():
+        for target in fw.get_all_target_dependencies():
             try:
                 target_fw = self.db.get_fw_for_target(target)
                 if fw == target_fw:
@@ -121,10 +121,10 @@ class DotWriter(Block):
             if fw == self.wanted_fw:
                 fw_block.write_attrs(**WANTED_FW_ATTRS)
             fw_block.write_list_attrs("node", **FW_TARGET_ATTRS)
-            targets = sorted(fw.target_dict.keys())
+            targets = sorted(fw.get_targets())
             fw_block.write_nodes(targets)
             for target in targets:
-                deps = fw.target_dict[target]
+                deps = fw.get_dependencies_for_target(target)
                 for dep in sorted(deps):
                     fw_block.writeln('"{}" -> "{}";'.format(target, dep))
 
