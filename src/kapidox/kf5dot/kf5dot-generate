@@ -2,17 +2,13 @@
 # encoding: utf-8
 import argparse
 import itertools
-import os
-import re
-import shutil
 import sys
-import tempfile
 
-import yapgvb
 
 from block import Block, quote
 
-from framework import Framework, TARGET_SHAPES
+from framework import Framework
+from frameworkdb import FrameworkDb
 
 DESCRIPTION = """\
 """
@@ -33,70 +29,6 @@ FW_TARGET_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 
 # Highlight the wanted framework, used with --framework
 WANTED_FW_ATTRS = dict(penwidth=2)
-
-def preprocess(fname):
-    lst = []
-    gfx = yapgvb.Graph().read(fname)
-    txt = open(fname).read()
-    targets = []
-
-    # Replace the generated node names with their label. CMake generates a graph
-    # like this:
-    #
-    # "node0" [ label="KF5DNSSD" shape="polygon"];
-    # "node1" [ label="Qt5::Network" shape="ellipse"];
-    # "node0" -> "node1"
-    #
-    # And we turn it into this:
-    #
-    # "KF5DNSSD" [ label="KF5DNSSD" shape="polygon"];
-    # "Qt5::Network" [ label="Qt5::Network" shape="ellipse"];
-    # "KF5DNSSD" -> "Qt5::Network"
-    #
-    # Using real framework names as labels makes it possible to merge multiple
-    # .dot files.
-    for node in gfx.nodes:
-        label = node.label.replace("KF5::", "")
-        if node.shape in TARGET_SHAPES:
-            targets.append(label)
-        txt = txt.replace('"' + node.name + '"', '"' + label + '"')
-
-    # Sometimes cmake will generate an entry for the target alias, something
-    # like this:
-    #
-    # "node9" [ label="KParts" shape="polygon"];
-    # ...
-    # "node15" [ label="KF5::KParts" shape="ellipse"];
-    # ...
-    #
-    # After our node renaming, this ends up with a second "KParts" node
-    # definition, which we need to get rid of.
-    for target in targets:
-        rx = r' *"' + target + '".*label="KF5::' + target + '".*shape="ellipse".*;'
-        txt = re.sub(rx, '', txt)
-    return txt
-
-
-def to_temp_file(dirname, fname, content):
-    tier = fname.split("/")[-3]
-    path = os.path.join(dirname, tier + "-" + os.path.basename(fname))
-    if os.path.exists(path):
-        raise Exception("{} already exists".format(path))
-    open(path, "w").write(content)
-    return path
-
-
-def read_dot_files(dot_files, with_qt=False):
-    # Preprocess dot files so that they can be merged together
-    # The output needs to be stored in a temp file because yapgvb crashes when
-    # trying to make it read from a StringIO
-    tmpdir = tempfile.mkdtemp(prefix="kf5dot")
-    try:
-        input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in dot_files]
-        return [Framework(x, with_qt=with_qt) for x in input_files]
-    finally:
-        shutil.rmtree(tmpdir)
-
 
 class FrameworkCmp(object):
     def __init__(self, frameworks, fw_for_target):
@@ -129,14 +61,14 @@ class FrameworkCmp(object):
 
 
 class DotWriter(Block):
-    def __init__(self, frameworks, out, wanted_fw=None, detailed=False):
+    def __init__(self, db, out, wanted_fw=None, detailed=False):
         Block.__init__(self, out)
-        self.frameworks = frameworks
+        self.db = db
         self.detailed = detailed
         self.wanted_fw = wanted_fw
 
         self.fw_for_target = {}
-        for fw in self.frameworks:
+        for fw in self.db:
             for target in fw.target_dict.keys():
                 self.fw_for_target[target] = fw
 
@@ -144,7 +76,7 @@ class DotWriter(Block):
         with self.curly_block("digraph Root") as root:
             root.write_list_attrs("node", **ROOT_NODE_ATTRS)
 
-            other_targets = find_external_targets(self.frameworks)
+            other_targets = find_external_targets(self.db)
             qt_targets = set([x for x in other_targets if x.startswith("Qt")])
             other_targets.difference_update(qt_targets)
 
@@ -158,7 +90,7 @@ class DotWriter(Block):
                     b.write_list_attrs("node", **OTHER_ATTRS)
                     b.write_nodes(other_targets)
 
-            for tier, frameworks in itertools.groupby(self.frameworks, lambda x: x.tier):
+            for tier, frameworks in itertools.groupby(self.db, lambda x: x.tier):
                 with root.cluster_block(tier, **GROUP_ATTRS) as tier_block:
                     tier_block.write_list_attrs("node", **FW_ATTRS)
                     # Sort frameworks within the tier to ensure frameworks which
@@ -211,40 +143,6 @@ def find_external_targets(frameworks):
     return all_targets.difference(fw_targets)
 
 
-def find_framework_by_name(frameworks, name):
-    for fw in frameworks:
-        if fw.name == name:
-            return fw
-    return None
-
-
-def remove_unused_frameworks(frameworks, wanted_fw):
-    def is_used_in_list(the_fw, lst):
-        for fw in lst:
-            if fw == the_fw:
-                continue
-            for target in fw.get_all_dependencies():
-                if target in the_fw.target_dict:
-                    return True
-        return False
-
-    done = False
-    old_lst = frameworks
-    while not done:
-        lst = []
-        done = True
-        for fw in old_lst:
-            if fw == wanted_fw:
-                lst.append(fw)
-                continue
-            if is_used_in_list(fw, old_lst):
-                lst.append(fw)
-            else:
-                done = False
-        old_lst = lst
-    return lst
-
-
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
@@ -264,7 +162,8 @@ def main():
 
     args = parser.parse_args()
 
-    frameworks = read_dot_files(args.dot_files, with_qt=args.qt)
+    db = FrameworkDb()
+    db.read_dot_files(args.dot_files, with_qt=args.qt)
 
     if args.output == "-":
         out = sys.stdout
@@ -272,15 +171,15 @@ def main():
         out = open(args.output, "w")
 
     if args.framework:
-        wanted_fw = find_framework_by_name(frameworks, args.framework)
+        wanted_fw = db.find_by_name(args.framework)
         if wanted_fw is None:
             sys.stderr.write("No framework named {}.\n".format(args.framework))
             return 1
-        frameworks = remove_unused_frameworks(frameworks, wanted_fw)
+        db.remove_unused_frameworks(wanted_fw)
     else:
         wanted_fw = None
 
-    writer = DotWriter(frameworks, out, wanted_fw=wanted_fw, detailed=args.detailed)
+    writer = DotWriter(db, out, wanted_fw=wanted_fw, detailed=args.detailed)
     writer.write()
 
     return 0
