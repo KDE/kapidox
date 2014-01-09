@@ -31,9 +31,9 @@ FW_TARGET_ATTRS = dict(style="filled", fillcolor="paleturquoise")
 WANTED_FW_ATTRS = dict(penwidth=2)
 
 class FrameworkCmp(object):
-    def __init__(self, frameworks, fw_for_target):
-        self.fw_for_target = fw_for_target
-        self.src = set(frameworks)
+    def __init__(self, db):
+        self.db = db
+        self.src = set(db)
         self.dst = []
 
     def __call__(self, fw1, fw2):
@@ -49,7 +49,7 @@ class FrameworkCmp(object):
                 return True
 
             try:
-                dep_fw = self.fw_for_target[dep_target]
+                dep_fw = self.db.get_fw_for_target(dep_target)
             except KeyError:
                 # No framework for this target, must be an external dependency,
                 # carry on
@@ -67,16 +67,11 @@ class DotWriter(Block):
         self.detailed = detailed
         self.wanted_fw = wanted_fw
 
-        self.fw_for_target = {}
-        for fw in self.db:
-            for target in fw.target_dict.keys():
-                self.fw_for_target[target] = fw
-
     def write(self):
         with self.curly_block("digraph Root") as root:
             root.write_list_attrs("node", **ROOT_NODE_ATTRS)
 
-            other_targets = find_external_targets(self.db)
+            other_targets = self.db.find_external_targets()
             qt_targets = set([x for x in other_targets if x.startswith("Qt")])
             other_targets.difference_update(qt_targets)
 
@@ -97,7 +92,7 @@ class DotWriter(Block):
                     # depend on other frameworks from that tier are listed after
                     # their dependees.
                     frameworks = list(frameworks)
-                    for fw in sorted(frameworks, cmp=FrameworkCmp(frameworks, self.fw_for_target)):
+                    for fw in sorted(frameworks, cmp=FrameworkCmp(self.db)):
                         if self.detailed:
                             self.write_detailed_framework(tier_block, fw)
                         else:
@@ -111,7 +106,7 @@ class DotWriter(Block):
         edges = set([])
         for target in fw.get_all_dependencies():
             try:
-                target_fw = self.fw_for_target[target]
+                target_fw = self.db.get_fw_for_target(target)
                 if fw == target_fw:
                     continue
                 dep = target_fw.name
@@ -132,15 +127,6 @@ class DotWriter(Block):
                 deps = fw.target_dict[target]
                 for dep in sorted(deps):
                     fw_block.writeln('"{}" -> "{}";'.format(target, dep))
-
-
-def find_external_targets(frameworks):
-    all_targets = set([])
-    fw_targets = set([])
-    for fw in frameworks:
-        fw_targets.update(fw.target_dict)
-        all_targets.update(fw.get_all_dependencies())
-    return all_targets.difference(fw_targets)
 
 
 def main():

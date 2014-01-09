@@ -63,6 +63,7 @@ def preprocess(fname):
 class FrameworkDb(object):
     def __init__(self):
         self._fw_list = []
+        self._fw_for_target = {}
 
     def read_dot_files(self, dot_files, with_qt=False):
         """
@@ -78,6 +79,13 @@ class FrameworkDb(object):
             self._fw_list = [Framework(x, with_qt=with_qt) for x in input_files]
         finally:
             shutil.rmtree(tmpdir)
+        self._update_fw_for_target()
+
+    def _update_fw_for_target(self):
+        self._fw_for_target = {}
+        for fw in self._fw_list:
+            for target in fw.target_dict.keys():
+                self._fw_for_target[target] = fw
 
     def find_by_name(self, name):
         for fw in self._fw_list:
@@ -110,6 +118,17 @@ class FrameworkDb(object):
                     done = False
             old_lst = lst
         self._fw_list = lst
+
+    def find_external_targets(self):
+        all_targets = set([])
+        fw_targets = set([])
+        for fw in self._fw_list:
+            fw_targets.update(fw.target_dict)
+            all_targets.update(fw.get_all_dependencies())
+        return all_targets.difference(fw_targets)
+
+    def get_fw_for_target(self, target):
+        return self._fw_for_target[target]
 
     def __iter__(self):
         return iter(self._fw_list)
