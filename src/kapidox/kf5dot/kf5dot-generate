@@ -49,7 +49,7 @@ class FrameworkCmp(object):
                 return True
 
             try:
-                dep_fw = self.db.get_fw_for_target(dep_target)
+                dep_fw = self.db.get_framework_for_target(dep_target)
             except KeyError:
                 # No framework for this target, must be an external dependency,
                 # carry on
@@ -106,7 +106,7 @@ class DotWriter(Block):
         edges = set([])
         for target in fw.get_all_target_dependencies():
             try:
-                target_fw = self.db.get_fw_for_target(target)
+                target_fw = self.db.get_framework_for_target(target)
                 if fw == target_fw:
                     continue
                 dep = target_fw.name

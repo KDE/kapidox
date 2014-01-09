@@ -127,7 +127,7 @@ class FrameworkDb(object):
             all_targets.update(fw.get_all_target_dependencies())
         return all_targets.difference(fw_targets)
 
-    def get_fw_for_target(self, target):
+    def get_framework_for_target(self, target):
         return self._fw_for_target[target]
 
     def __iter__(self):
