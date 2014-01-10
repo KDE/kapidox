@@ -1,8 +1,8 @@
 <div class="copyrights">
 This file is part of the KDE documentation.<br/>
-Documentation copyright &copy; @copyright@.<br/>
+Documentation copyright &copy; {{copyright}}.<br/>
 Generated on $datetime by
-<a href="http://www.doxygen.org/index.html">doxygen</a> $doxygenversion written
+<a href="http://www.doxygen.org/">doxygen</a> $doxygenversion written
 by <a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>, &copy;&nbsp;1997-2006
 <p>
 KDE's <a href="http://techbase.kde.org/Policies/Library_Documentation_Policy">Doxygen guidelines</a> are available online.
@@ -17,31 +17,96 @@ KDE's <a href="http://techbase.kde.org/Policies/Library_Documentation_Policy">Do
 <h2 id="cp-menu-project">$projectname</h2>
 <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "$projectname"</a>
 </div></div>
-<!-- menu -->
-<!-- cmenu.begin -->
+{{#doxygen_menu}}
+<ul>
+  {{#entries}}
+    <li><a href="{{href}}">{{text}}</a></li>
+  {{/entries}}
+</ul>
+{{/doxygen_menu}}
+{{#class_map}}
 <h2>Class Picker</h2>
 <div style="text-align: center;">
 <form name="guideform">
 <select name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
 <option value="annotated.html">-- Choose --</option>
-<!-- cmenu -->
+{{#classes}}
+<option value="{{filename}}">{{classname}}</option>
+{{/classes}}
 </select>
 </form>
 </div>
-<!-- cmenu.end -->
+{{/class_map}}
 
-<!-- gmenu.begin -->
+{{#group_menu}}
 <div class="menu_box">
-<a name="cp-menu" /><div class="menutitle"><div>
-<h2 id="cp-menu-project">@topname@</h2>
-<a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "@topname@"</a>
-</div></div>
-<div class="nav_list">
-<!-- gmenu -->
-</div></div>
-<!-- gmenu.end -->
+  <a name="cp-menu" />
+  <div class="menutitle">
+    <div>
+      <h2 id="cp-menu-project">{{group_title}}</h2>
+      <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_title}}"</a>
+    </div>
+  </div>
+  <div class="nav_list">
+    <ul>
+      {{#members}}
+        <li><a href="{{href}}">{{name}}</a></li>
+      {{/members}}
+      {{#sections}}
+        <li>{{title}}
+          <ul>
+            {{#members}}
+              <li><a href="{{href}}">{{name}}</a></li>
+            {{/members}}
+          </ul>
+        </li>
+      {{/sections}}
+    </ul>
+  </div>
+</div>
+{{/group_menu}}
 
-<!-- api_searchbox -->
+{{#api_searchbox}}
+<div class="menu_box">
+  <div class="menutitle"><div><h2>Search</h2></div></div>
+  <div style="text-align: left;">
+    <form action="/mapsearcher.php" method="get">
+      <input type="text" name="class" value="search term" style="width:100%;" onclick="this.value='';"/>
+      <br />
+      <select name="module">
+        <option>ALL</option>
+        <option>kdelibs</option>
+        <option>kdepimlibs</option>
+        <option>kdebase-apps</option>
+        <option>kdebase-runtime</option>
+        <option>kdebase-workspace</option>
+        <option>kdeedu</option>
+        <option>kdegames</option>
+        <option>kdegraphics</option>
+        <option>kdemultimedia</option>
+        <option>kdenetwork</option>
+        <option>kdepim</option>
+        <option>kdepim-runtime</option>
+        <option>kdeplasma-addons</option>
+        <option>kdesdk</option>
+        <option>kdevelop</option>
+        <option>kdeutils</option>
+        <option>kdewebdev</option>
+        <option>kdesupport</option>
+      </select>
+      <select name="version">
+        <option>ALL</option>
+        <option>4.x</option>
+        <option>4.8</option>
+        <option>3.5</option>
+        <option>extragear</option>
+        <option>kdesupport</option>
+      </select><br/>
+      <input type="submit" name="go" value="Go" />
+    </form>
+  </div>
+</div>
+{{/api_searchbox}}
 
           </div>
         </div>

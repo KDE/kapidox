@@ -8,6 +8,7 @@ import codecs
 import datetime
 from fnmatch import fnmatch
 import os
+import pystache
 import re
 import shutil
 import subprocess
@@ -169,71 +170,61 @@ def copy_dir_contents(directory, dest):
         elif os.path.isdir(f):
             shutil.copytree(f,os.path.join(dest,fn),ignore=ignore)
 
-def generate_menu(htmldir):
-    """Generate a HTML menu (an ul element) for standard Doxygen files
+def menu_items(htmldir):
+    """Menu items for standard Doxygen files
 
-    Looks for a set of standard Doxygen files (like namespaces.html) and puts
-    links for those it finds in htmldir in a ul element.
+    Looks for a set of standard Doxygen files (like namespaces.html) and
+    provides menu text for those it finds in htmldir.
 
     htmldir -- the directory the HTML files are contained in
 
-    Returns a HTML string
+    Returns a list of maps with 'text' and 'href' keys
     """
     entries = [
-            ('Main Page','index.html'),
-            ('Namespace List','namespaces.html'),
-            ('Namespace Members','namespacemembers.html'),
-            ('Alphabetical List','classes.html'),
-            ('Class List','annotated.html'),
-            ('Class Hierarchy','hierarchy.html'),
-            ('Class Members','functions.html'),
-            ('File List','files.html'),
-            ('File Members','globals.html'),
-            ('Modules','modules.html'),
-            ('Directories','dirs.html'),
-            ('Related Pages','pages.html')
+            {'text': 'Main Page', 'href': 'index.html'},
+            {'text': 'Namespace List', 'href': 'namespaces.html'},
+            {'text': 'Namespace Members', 'href': 'namespacemembers.html'},
+            {'text': 'Alphabetical List', 'href': 'classes.html'},
+            {'text': 'Class List', 'href': 'annotated.html'},
+            {'text': 'Class Hierarchy', 'href': 'hierarchy.html'},
+            {'text': 'Class Members', 'href': 'functions.html'},
+            {'text': 'File List', 'href': 'files.html'},
+            {'text': 'File Members', 'href': 'globals.html'},
+            {'text': 'Modules', 'href': 'modules.html'},
+            {'text': 'Directories', 'href': 'dirs.html'},
+            {'text': 'Related Pages', 'href': 'pages.html'}
             ]
-    menu = '<ul>'
-    for (name,f) in entries:
-        if os.path.isfile(os.path.join(htmldir,f)):
-            menu += '<li><a href="' + f + '">' + name + '</a></li>'
-    menu += '</ul>'
-    return menu
+    return filter(
+            lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
+            entries)
 
-def postprocess(htmldir, substitutions):
+def postprocess(htmldir, mapping):
     """Substitute text in HTML files
 
     Performs text substitutions on each line in each .html file in a directory.
 
-    htmldir       -- the directory containing the .html files
-    substitutions -- a list of pairs (of strings or bytearrays); the first
-                     element in each entry will be replaced by the second
+    htmldir -- the directory containing the .html files
+    mapping -- a dict of mappings
     """
-    # avoid dealing with encodings (in case source files have weird
-    # characters in) -- this should also be faster
-    for idx,(a,b) in enumerate(substitutions):
-        substitutions[idx] = (a.encode('utf-8'),b.encode('utf-8'))
+    renderer = pystache.Renderer(decode_errors='ignore',
+                                 search_dirs=htmldir)
 
     for f in os.listdir(htmldir):
         if f.endswith('.html'):
             print("Postprocessing " + f)
-            f = os.path.join(htmldir,f)
-            newf = f + '.new'
-            with open(f, 'r') as inf:
-                with open(newf, 'w') as outf:
-                    for line in inf:
-                        for (a,b) in substitutions:
-                            line = line.replace(a,b)
-                        outf.write(line)
-            os.remove(f)
-            os.rename(newf,f)
+            path = os.path.join(htmldir,f)
+            newpath = path + '.new'
+            with open(newpath, 'w') as outf:
+                outf.write(renderer.render_path(path, mapping))
+            os.remove(path)
+            os.rename(newpath,path)
 
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
 
     tagfile -- the Doxygen-generated tagfile to parse
 
-    Returns a list of pairs of strings: (classname,filename)
+    Returns a list of maps (keys: classname and filename)
     """
     import xml.etree.ElementTree as ET
     tree = ET.parse(tagfile)
@@ -244,7 +235,8 @@ def build_classmap(tagfile):
         if kind == 'class' or kind == 'namespace':
             name_el = compound.find('name')
             filename_el = compound.find('filename')
-            mapping.append((name_el.text,filename_el.text))
+            mapping.append({'classname': name_el.text,
+                            'filename': filename_el.text})
     return mapping
 
 def make_dir_list(topdir, paths):
@@ -282,12 +274,12 @@ def write_mapping_to_php(mapping, outputfile, varname='map'):
     with codecs.open(outputfile,'w','utf-8') as f:
         f.write('<?php $' + varname + ' = array(')
         first = True
-        for (name,filename) in mapping:
+        for entry in mapping:
             if first:
                 first = False
             else:
                 f.write(',')
-            f.write("'" + name + "' => '" + filename + "'")
+            f.write("'" + entry['classname'] + "' => '" + entry['filename'] + "'")
         f.write(') ?>')
 
 def generate_cmenu(mapping):
@@ -358,7 +350,7 @@ def find_all_tagfiles(args):
 def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
-        title='KDE API Documentation', substitutions=[],
+        title='KDE API Documentation', template_mapping=[],
         doxyfile_entries=[],resourcedir=None):
     """Generate the API documentation for a single directory"""
 
@@ -441,21 +433,16 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
 
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
-    # FIXME: use proper templating stuff?
-    ppmap = substitutions + [
-            ('<!-- menu -->',generate_menu(htmldir)),
-            ('<!-- cmenu -->',generate_cmenu(classmap)),
-            ('<!-- gmenu -->',''),
-            ('<!-- gmenu.begin -->','<!--'),
-            ('<!-- gmenu.end -->','-->'),
-            ('@resourcedir@',resourcedir),
-            ('@copyright@',copyright),
-            ('@TITLE@',title)
-            ]
-    if api_searchbox:
-        with open(os.path.join(doxdatadir,'api_searchbox.html')) as f:
-            ppmap.append(('<!-- api_searchbox -->',f.read()))
-    postprocess(htmldir, ppmap)
+    mapping = {
+            'resources': resourcedir,
+            'title': title,
+            'copyright': copyright,
+            'api_searchbox': api_searchbox,
+            'doxygen_menu': {'entries': menu_items(htmldir)},
+            'class_map': {'classes': classmap}
+        }
+    mapping.update(template_mapping)
+    postprocess(htmldir, mapping)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')

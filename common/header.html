@@ -3,7 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-  <title>$title</title>
+  <title>$projectname - $title</title>
 
 <style type="text/css">
   .cp-doNotDisplay { display: none; }
@@ -22,12 +22,12 @@
   <meta name="no-email-collection" content="http://www.unspam.com/noemailcollection" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
-  <link rel="shortcut icon" href="@resourcedir@/favicon.ico" /><link rel="icon" href="@resourcedir@/favicon.ico" />
-  <link rel="stylesheet" media="screen" type="text/css" title="KDE Colors" href="@resourcedir@/kde.css" />
-  <link rel="stylesheet" media="print, embossed" type="text/css" href="@resourcedir@/print.css" />
-  <link rel="stylesheet" media="screen, aural, handheld, tty, braille" type="text/css" title="Flat" href="@resourcedir@/flat.css" />
+  <link rel="shortcut icon" href="{{resources}}/favicon.ico" /><link rel="icon" href="{{resources}}/favicon.ico" />
+  <link rel="stylesheet" media="screen" type="text/css" title="KDE Colors" href="{{resources}}/kde.css" />
+  <link rel="stylesheet" media="print, embossed" type="text/css" href="{{resources}}/print.css" />
+  <link rel="stylesheet" media="screen, aural, handheld, tty, braille" type="text/css" title="Flat" href="{{resources}}/flat.css" />
   <link rel="stylesheet" type="text/css" href="doxygen.css" />
-  <link rel="stylesheet" type="text/css" href="@resourcedir@/tabs.css" />
+  <link rel="stylesheet" type="text/css" href="{{resources}}/tabs.css" />
 </head>
 
 <body>
@@ -40,12 +40,18 @@
 <div id="container">
 <div id="header">
   <div id="header_top"><div><div>
-    <img alt ="" src="@resourcedir@/top-kde.jpg"/>
-    @TITLE@</div></div></div>
+    <img alt ="" src="{{resources}}/top-kde.jpg"/>
+    {{title}}</div></div></div>
   <div id="header_bottom">
+    {{#breadcrumbs}}
     <div id="location">
-      <!-- breadcrumbs -->
+      <ul>
+        {{#entries}}
+        <li><a href="{{href}}">{{text}}</a></li>
+        {{/entries}}
+      </ul>
     </div>
+    {{/breadcrumbs}}
 
     <div id="menu">
 <ul>
@@ -65,5 +71,4 @@
             <div class="clearer">&nbsp;</div>
 <h2><a name="content"></a>$projectname</h2>
 
-<!-- BC -->
 <div id="top">
