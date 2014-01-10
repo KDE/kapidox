@@ -117,6 +117,8 @@ EXCLUDE_SYMBOLS        = iterator const_iterator
 # Use doxyqml filter for qml files
 FILTER_PATTERNS        = *.qml=doxyqml
 
+USE_MDFILE_AS_MAINPAGE = README.md
+
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
@@ -167,6 +169,14 @@ SEARCHENGINE           = NO
 # PREDEFINED and EXPAND_AS_DEFINED tags.
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
+
+PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
+                         Q_SLOTS="slots" \
+                         Q_SIGNALS="signals" \
+                         Q_DECL_CONSTEXPR="constexpr" \
+                         Q_DECL_FINAL="final" \
+                         Q_DECL_NULLPTR="0" \
+                         Q_DECL_OVERRIDE="override" \
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references
