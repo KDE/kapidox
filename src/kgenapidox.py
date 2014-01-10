@@ -181,11 +181,45 @@ def postprocess(substitutions):
             os.rename(newf,f)
 
 
+def build_classmap(tagfile):
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(tagfile)
+    tagfile_root = tree.getroot()
+    mapping = []
+    for compound in tagfile_root:
+        kind = compound.get('kind')
+        if kind == 'class' or kind == 'namespace':
+            name_el = compound.find('name')
+            filename_el = compound.find('filename')
+            mapping.append((name_el.text,filename_el.text))
+    return mapping
+
+
+def create_php_classmap(mapping, outputfile):
+    print("Generating " + outputfile)
+    with codecs.open(outputfile,'w','utf-8') as f:
+        f.write('<?php $map = array(')
+        first = True
+        for (name,filename) in mapping:
+            if first:
+                first = False
+            else:
+                f.write(',')
+            f.write("'" + name + "' => '" + filename + "'")
+        f.write(') ?>')
+
+
+def generate_cmenu(mapping):
+    menu = ''
+    for (name,filename) in mapping:
+        menu += '<option value="' + filename + '">' + name + '</option>'
+    return menu
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
     parser.add_argument('moduledir', help='Location of the module to build API documentation for; it should contain a README.md file and a src/ subdirectory')
     parser.add_argument('--doxdatadir', help='Location of the HTML header files and support graphics.')
-    parser.add_argument('--installdir', help='Location of other apidox modules (should contain subdirectories called *-apidocs/, which area searched for tag files)')
     parser.add_argument('--qtdoc-dir', help='Location of (local) Qt documentation')
     parser.add_argument('--qtdoc-link',
             help='Override Qt documentation location for the links in the html files')
@@ -245,6 +279,8 @@ def main():
 
     shutil.copy(os.path.join(doxdatadir,'Doxyfile.global'), 'Doxyfile')
 
+    moduletagfile = modulename + '.tags'
+
     with codecs.open('Doxyfile','a','utf-8') as doxyfile:
         doxyfile.write('PROJECT_NAME = "' + fancyname + '"\n')
         # FIXME: can we get the project version from CMake?
@@ -254,7 +290,7 @@ def main():
         if os.path.isfile(readme_file):
             doxyfile.write('USE_MDFILE_AS_MAINPAGE = README.md\n')
 
-        doxyfile.write('GENERATE_TAGFILE = ' + modulename + '.tags\n')
+        doxyfile.write('GENERATE_TAGFILE = "' + moduletagfile + '"\n')
 
         doxyfile.write('IMAGE_PATH =')
         if os.path.isdir(module_api_dir):
@@ -298,17 +334,18 @@ def main():
 
     subprocess.call([args.doxygen,'Doxyfile'])
 
-    print(repr(datetime.date))
+    classmap = build_classmap(moduletagfile)
+    create_php_classmap(classmap, 'classmap.inc')
+
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
-    # FIXME: generate classmap.inc (do this from the tags file?)
     postprocess([
             ('<!-- menu -->',generate_menu()),
+            ('<!-- cmenu -->',generate_cmenu(classmap)),
             ('@topdir@','.'),
             ('@topname@',fancyname + ' API Reference'),
             ('@copyright@',copyright),
             ('@TITLE@','KDE API Reference')
             # FIXME: API searchbox
-            # FIXME: cmenu
             ])
 
 if __name__ == "__main__":
