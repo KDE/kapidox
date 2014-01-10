@@ -6,7 +6,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import argparse, os, shutil, sys
 
 scriptdir = os.path.dirname(os.path.realpath(__file__))
-from kgenapidox import generate_apidocs, find_doxdatadir_or_exit, search_for_tagfiles, parse_fancyname
+import kgenapidox
 
 def get_tier(yaml_file):
     """Parse the tier out of a yaml file"""
@@ -78,8 +78,8 @@ def main():
             help='(Path to) the qhelpgenerator executable.')
     args = parser.parse_args()
 
-    doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
-    tagfiles = search_for_tagfiles(
+    doxdatadir = kgenapidox.find_doxdatadir_or_exit(args.doxdatadir)
+    tagfiles = kgenapidox.search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
@@ -103,7 +103,7 @@ def main():
                  framework + ".yaml missing)")
         else:
             # FIXME: option in yaml file to disable docs
-            fancyname = parse_fancyname(readme_file, default=framework)
+            fancyname = kgenapidox.parse_fancyname(readme_file, default=framework)
             tier = get_tier(yaml_file)
             if tier is None:
                 print("Could not find tier for " + framework + "!")
@@ -120,12 +120,16 @@ def main():
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
 
+    kgenapidox.copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),'.')
+
     global_menu = generate_global_menu(tiers)
+    breadcrumbs = ('<ul>' +
+            '<li><a href="http://api.kde.org/">KDE API Reference</a></li>' +
+            '<li><a href="../../index.html">KDE Frameworks API Reference</a></li>' +
+            '</ul>')
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
-        # FIXME: share resources, like the old script did?
-        #        need to set @topdir@
-        generate_apidocs(
+        kgenapidox.generate_apidocs(
                 modulename = fwinfo['framework'],
                 fancyname = fwinfo['fancyname'],
                 srcdir = fwinfo['srcdir'],
@@ -139,7 +143,14 @@ def main():
                 doxygen = args.doxygen,
                 qhelpgenerator = args.qhelpgenerator,
                 title = args.title,
-                substitutions=[('<!-- gmenu -->',global_menu)],
+                resourcedir = '../..',
+                substitutions=[
+                    ('<!-- gmenu -->',global_menu),
+                    ('<!-- gmenu.begin -->',''),
+                    ('<!-- gmenu.end -->',''),
+                    ('@topname@','KDE Frameworks'),
+                    ('<!-- breadcrumbs -->',breadcrumbs)
+                    ],
                 doxyfile_entries=['WARN_IF_UNDOCUMENTED = YES'])
         if not rebuild:
             tagfile = os.path.abspath(

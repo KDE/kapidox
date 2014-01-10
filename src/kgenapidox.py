@@ -359,7 +359,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
         title='KDE API Documentation', substitutions=[],
-        doxyfile_entries=[]):
+        doxyfile_entries=[],resourcedir=None):
     """Generate the API documentation for a single directory"""
 
     # Paths and basic project info
@@ -375,7 +375,9 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     os.makedirs(outputdir)
     os.makedirs(htmldir)
 
-    copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
+    if resourcedir is None:
+        copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
+        resourcedir = '.'
     if os.path.isdir(os.path.join(srcdir,'docs/api/htmlresource')):
         copy_dir_contents(os.path.join(srcdir,'docs/api/htmlresource'),htmldir)
 
@@ -443,8 +445,10 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     ppmap = substitutions + [
             ('<!-- menu -->',generate_menu(htmldir)),
             ('<!-- cmenu -->',generate_cmenu(classmap)),
-            ('@topdir@','.'),
-            ('@topname@',fancyname + ' API Reference'),
+            ('<!-- gmenu -->',''),
+            ('<!-- gmenu.begin -->','<!--'),
+            ('<!-- gmenu.end -->','-->'),
+            ('@resourcedir@',resourcedir),
             ('@copyright@',copyright),
             ('@TITLE@',title)
             ]
