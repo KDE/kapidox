@@ -14,88 +14,53 @@ documentation.
 ## Writing documentation
 
 Writing dox is beyond the scope of this documentation -- see the notes at
-<http://techbase.kde.org/Policies/Library_Documentation_Policy>.
-You can generate dox by hand -- without even having a configured
-build directory -- as explained below. There is also documentation
-for the special tags you can enter in Mainpage.dox anywhere
-in a module to modify dox generation.
+<http://techbase.kde.org/Policies/Library_Documentation_Policy> and the [doxygen
+manual](http://www.stack.nl/~dimitri/doxygen/manual/).
+However, the script expects certain things to be present in the directory it is
+run on.
+
+Most importantly, there should be a README.md file (much like this file).  The
+first line of this file is particularly important, as it will be used as the
+title of the documentation.
+
+If the documentation refers to any dot files, these should be in docs/api/dot.
+Images should be in docs/api/pics (or docs/pics), and snippets of example code
+should be in docs/api/examples or docs/examples.  See the doxygen documentation
+for help on how to refer to these files from the dox comments in the source
+files.
+
+If you need to override any doxygen settings, put them in
+docs/api/Doxyfile.local.
+
 
 ## Generating the documentation
 
-The tool for generating dox is `src/doxygen.sh`.
+The tool for generating dox is `src/kgenapidox.py`.  Simply point it at the
+folder you want to generate dox for (such as a framework checkout).
 
-Run it in the "top builddir" with one argument, the "top srcdir". Something
-like this:
+For example, if you have a checkout of KCoreAddons at
+~/src/frameworks/kcoreaddons, you could run
 
-    cd /mnt/build/kdepim
-    /path/to/apidox/src/doxygen.sh /mnt/src/kdepim
+    ~/src/frameworks/kapidox/src/kgenapidox.py ~/src/frameworks/kcoreaddons
 
-You can also build single subdirs (for instance, after updating some
-dox and you don't want to rebuild for the entire module) by giving the
-subdirectory _relative to the top srcdir_ as a second argument:
+and it would create a directory kcoreaddons-apidocs in the current directory.
+Pass the --help argument to see options that control the behaviour of the
+script.
 
-    /path/to/apidox/src/doxygen.sh /mnt/src/kdepim kpilot/lib
 
-When generating dox for kdelibs, a tag file for Qt is also created.
-The location of Qt is specified indirectly through $QTDOCDIR or,
-if that is not set, $QTDIR, or otherwise guessed. You may explicitly
-set the location of a pre-generated tag file with $QTDOCTAG. One
-typical approach might be:
+### Frameworks documentation
 
-    QTDOCTAG=$QTDIR/doc/qt.tag QTDOCDIR=http://doc.trolltech.com/3.3/
+`src/kgenframeworksapidocs.py` can be used to generate a combined set of
+documentation for all the frameworks.  You want to do something like
 
-Finally, there is a --no-recurse option for top-level generation
-that avoids generating all the subdirectories as well. It also
-suppresses cleaning up (rm -rf) of the dox direction beforehand.
+    mkdir frameworks-apidocs
+    cd frameworks-apidocs
+    ~/src/frameworks/kapidox/src/kgenframeworksapidox.py ~/src/frameworks
 
-Post-finally, there is a --no-modulename option that builds the
-dox in "apidocs/" instead of "$(modulename)-apidocs". The former is
-compatible with the KDE 3.4 build system, the latter is more convenient
-for the installed dox.
+And (after maybe 15-30 minutes) you will get a complete set of documentation in
+the frameworks-apidocs directory.  This will be about 500Mb in size, so make
+sure you have enough space!
 
-Typically, this means $(top_builddir)/apidocs and something like
-libfoo/html for the output. For the top-level dir, set relative-html
-to "." .
-
-### Placeholders
-
-In non-top directories, both `<!-- menu -->` and `<!-- gmenu -->` are
-calculated and replaced. Top directories get an empty `<!-- menu -->` if any.
-
-`<!-- api_searchbox -->` gets replaced by api.kde.org's search box (actually,
-by the contents of `api_searchbox.html`).
-
-## "common" directory
-
-The common directory contains data files for Doxygen generation. These are the
-GENERIC files; any module may override them by putting specific replacements in
-doc/api/ .  This allows modules to customize their appearance as desired.  The
-files that may be overridden are:
-
-- `api_searchbox.html`:
-    Optional search box displayed after the rest of the footer menu. Turned on
-    by --api-searchbox.
-
-- `doxygen.css`:
-    Stylesheet.
-
-- `mainheader.html`:
-    Header for front page of dox. This should not be terribly different from
-    header.html.  It might contain special CSS for the footer.
-
-- `mainfooter.html`:
-    Footer for front page of dox. This should at least credit Doxygen [1] and
-    point to the dox guidelines [2].
-
-- `header.html`:
-    Header file for regular pages.
-
-- `footer.html`:
-    Footer file for regular pages.
-
-- `Doxyfile.global`:
-    The global (brief) Doxyfile. For a long-style Doxyfile, see KDE PIM's
-    doc/api/Doxyfile.pim.
 
 ## Links
 
