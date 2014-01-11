@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>{{title}} - Frameworks</title>
+
+<style type="text/css">
+  .cp-doNotDisplay { display: none; }
+  @media aural, braille, handheld, tty { .cp-doNotDisplay { display: inline; speak: normal; }}
+  .cp-edit { text-align: right; }
+  @media print, embossed { .cp-edit { display: none; }}
+</style>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="meta" href="http://www.kde.org/labels.rdf" type="application/rdf+xml" title="ICRA labels" />
+  <meta name="trademark" content="KDE e.V." />
+  <meta name="description" content="K Desktop Environment Homepage, KDE.org" />
+  <meta name="MSSmartTagsPreventParsing" content="true" />
+  <meta name="robots" content="all" />
+  <meta name="no-email-collection" content="http://www.unspam.com/noemailcollection" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link rel="shortcut icon" href="{{resources}}/favicon.ico" /><link rel="icon" href="{{resources}}/favicon.ico" />
+  <link rel="stylesheet" media="screen" type="text/css" title="KDE Colors" href="{{resources}}/kde.css" />
+  <link rel="stylesheet" media="print, embossed" type="text/css" href="{{resources}}/print.css" />
+  <link rel="stylesheet" media="screen, aural, handheld, tty, braille" type="text/css" title="Flat" href="{{resources}}/flat.css" />
+  <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
+  <link rel="stylesheet" type="text/css" href="{{resources}}/tabs.css" />
+</head>
+
+<body>
+
+<ul class="cp-doNotDisplay">
+  <li><a href="#cp-content" accesskey="2">Skip to content</a></li>
+  <li><a href="#cp-menu" accesskey="5">Skip to link menu</a></li>
+</ul>
+
+<div id="container">
+  <div id="header">
+    <div id="header_top">
+      <div>
+        <div>
+          <img alt ="" src="{{resources}}/top-kde.jpg"/>
+          {{title}}
+        </div>
+      </div>
+    </div>
+    <div id="header_bottom">
+      {{#breadcrumbs}}
+      <div id="location">
+        <ul>
+          {{#entries}}
+          <li><a href="{{href}}">{{text}}</a></li>
+          {{/entries}}
+        </ul>
+      </div>
+      {{/breadcrumbs}}
+      <div id="menu">
+        <ul>
+          <li><a href="http://www.kde.org/">KDE Home</a></li>
+          <li><a href="http://kde.org/contact/">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+<!-- End page header -->
+  <div id="body_wrapper">
+    <div id="body">
+      <!-- begin main content -->
+      <div id="right">
+        <div class="content">
+          <div id="main">
+            <div class="clearer">&nbsp;</div>
+            <h2><a name="content"></a>{{title}}</h2>
+
+            <div class="header">
+              <div class="headertitle">
+                <div class="title">
+                  KDE Frameworks API Reference
+                </div>
+              </div>
+            </div>
+            <div class="contents">
+              <div class="textblock">
+                <p>This is the online reference for developing with the KDE frameworks.</p>
+                <p>The KDE Frameworks build on the <a href="http://qt-project.org/">Qt</a> framework, providing everything from simple utility classes (such as those in <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>) to integrated solutions for common requirements of desktop applications (such as <a href="{{frameworks.knewstuff.link}}">KNewStuff</a>, for fetching downloadable add-on content in an application, or the powerful <a href="{{frameworks.kio.link}}">KIO</a> multi-protocol file access framework).</p>
+                <p>The frameworks are divided into four tiers.  Tier 1 frameworks depend only on Qt (and possibly a small number of other third-party libraries), so can easily be used by an Qt-based project.  Several are collections of classes to extend the functionality of existing Qt frameworks (like <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>, <a href="{{frameworks.kguiaddons.link}}">KGuiAddons</a> and <a href="{{frameworks.kdbusaddons.link}}">KDBusAddons</a>), while others, like <a href="{{frameworks.threadweaver.link}}">ThreadWeaver</a> and <a href="{{frameworks.karchive.link}}">KArchive</a>, provide a complete package to solve a common problem.</p>
+                <p>Tier 2 frameworks additionally depend on tier 1 frameworks, but still have easily manageable dependencies.</p>
+                <p>Tier 3 frameworks are generally more powerful, comprehensive packages, and consequently have more complex dependencies.</p>
+                <p>Tier 4 frameworks can be mostly ignored by application programmers; apart from the transitional <a href="{{frameworks.kde4support.link}}">KDE4 support framework</a>, this tier consists of plugins acting behind the scenes to provide additional functionality or platform integration to existing frameworks (including Qt).</p>
+                <p>For a complete list of frameworks for which API documentation is available, see the list of the left of the page.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="left">
+        <div class="menu_box">
+          {{#group_menu}}
+          <div class="menu_box">
+            <a name="cp-menu" />
+            <div class="menutitle">
+              <div>
+                <h2 id="cp-menu-project">{{group_title}}</h2>
+                <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_title}}"</a>
+              </div>
+            </div>
+            <div class="nav_list">
+              <ul>
+                {{#members}}
+                  <li><a href="{{href}}">{{name}}</a></li>
+                {{/members}}
+                {{#sections}}
+                  <li>{{title}}
+                    <ul>
+                      {{#members}}
+                        <li><a href="{{href}}">{{name}}</a></li>
+                      {{/members}}
+                    </ul>
+                  </li>
+                {{/sections}}
+              </ul>
+            </div>
+          </div>
+          {{/group_menu}}
+
+          {{#api_searchbox}}
+          <div class="menu_box">
+            <div class="menutitle"><div><h2>Search</h2></div></div>
+            <div style="text-align: left;">
+              <form action="/mapsearcher.php" method="get">
+                <input type="text" name="class" value="search term" style="width:100%;" onclick="this.value='';"/>
+                <br />
+                <select name="module">
+                  <option>ALL</option>
+                  <option>kdelibs</option>
+                  <option>kdepimlibs</option>
+                  <option>kdebase-apps</option>
+                  <option>kdebase-runtime</option>
+                  <option>kdebase-workspace</option>
+                  <option>kdeedu</option>
+                  <option>kdegames</option>
+                  <option>kdegraphics</option>
+                  <option>kdemultimedia</option>
+                  <option>kdenetwork</option>
+                  <option>kdepim</option>
+                  <option>kdepim-runtime</option>
+                  <option>kdeplasma-addons</option>
+                  <option>kdesdk</option>
+                  <option>kdevelop</option>
+                  <option>kdeutils</option>
+                  <option>kdewebdev</option>
+                  <option>kdesupport</option>
+                </select>
+                <select name="version">
+                  <option>ALL</option>
+                  <option>4.x</option>
+                  <option>4.8</option>
+                  <option>3.5</option>
+                  <option>extragear</option>
+                  <option>kdesupport</option>
+                </select><br/>
+                <input type="submit" name="go" value="Go" />
+              </form>
+            </div>
+          </div>
+          {{/api_searchbox}}
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="clearer"></div>
+  </div>
+
+  <div id="end_body"></div>
+
+  <div id="footer">
+    <div id="footer_text">
+      Report problems with this website to <a href="http://sysadmin.kde.org/tickets/">our bug tracking system</a>.<br>
+      Contact the specific authors with questions and comments about the page contents.<p>
+      KDE<sup>&#174;</sup> and <a href="/media/images/kde_gear_black.png">the K Desktop Environment<sup>&#174;</sup> logo</a> are registered trademarks of <a href="http://ev.kde.org/" title="Homepage of the KDE non-profit Organization">KDE e.V.</a> |
+          <a href="http://www.kde.org/contact/impressum.php">Legal</a></p>
+  </div>
+</div>
+
+<!--
+WARNING: DO NOT SEND MAIL TO THE FOLLOWING EMAIL ADDRESS! YOU WILL
+BE BLOCKED INSTANTLY AND PERMANENTLY!
+<a href="mailto:aaaatrap-45abe0e0c3bebc77@kde.org">Block me</a>
+WARNING END
+-->
+
+</body>
+</html>

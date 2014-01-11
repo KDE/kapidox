@@ -8,7 +8,6 @@ import codecs
 import datetime
 from fnmatch import fnmatch
 import os
-import pystache
 import re
 import shutil
 import subprocess
@@ -206,6 +205,7 @@ def postprocess(htmldir, mapping):
     htmldir -- the directory containing the .html files
     mapping -- a dict of mappings
     """
+    import pystache
     renderer = pystache.Renderer(decode_errors='ignore',
                                  search_dirs=htmldir)
 

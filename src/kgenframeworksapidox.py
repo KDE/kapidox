@@ -40,6 +40,50 @@ def generate_group_menu(tiers):
             })
     return {'group_title': 'Frameworks', 'sections': sections}
 
+def process_toplevel_html_file(inputfile, outputfile, tiers, title,
+        api_searchbox=False):
+    """Pass a HTML file through the templating filters"""
+
+    frameworks = {}
+    gm_sections = []
+    for t in range(1,5):
+        gm_frameworks = []
+        for fw in tiers[t]:
+            rellink = fw['outputdir'] + '/html/index.html'
+            gm_frameworks.append({
+                'href': rellink,
+                'name': fw['fancyname']
+                })
+            frameworks[fw['framework']] = {'link': rellink, 'name': fw['fancyname']}
+        gm_sections.append({
+            'title': 'Tier ' + str(t),
+            'members': gm_frameworks
+            })
+    group_menu = {'group_title': 'Frameworks', 'sections': gm_sections}
+
+    mapping = {
+            'resources': '.',
+            'api_searchbox': api_searchbox,
+            # steal the doxygen css from one of the frameworks
+            # this means that all the doxygen-provided images etc. will be found
+            'doxygencss': tiers[1][0]['outputdir'] + '/html/doxygen.css',
+            'title': title,
+            'breadcrumbs': {
+                'entries': [
+                    {
+                        'href': 'http://api.kde.org/',
+                        'text': 'KDE API Reference'
+                    }
+                    ]
+                },
+            'group_menu': group_menu,
+            'frameworks': frameworks
+        }
+    import pystache
+    renderer = pystache.Renderer(decode_errors='ignore')
+    with open(outputfile, 'w') as outf:
+        outf.write(renderer.render_path(inputfile, mapping))
+
 def main():
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
             'for the KDE Frameworks')
@@ -164,6 +208,8 @@ def main():
                             fwinfo['framework']+'.tags'))
             tagfiles.append((tagfile,'../../' + fwinfo['outputdir'] + '/html/'))
 
+    process_toplevel_html_file(os.path.join(doxdatadir, 'frameworks.html'), 'index.html',
+            title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
     for t in range(1,5):
         for fwinfo in tiers[t]:
@@ -174,11 +220,6 @@ def main():
             for fwinfo in tiers[t]:
                 shutil.rmtree(fwinfo['outputdir'])
                 gen_fw_apidocs(fwinfo, rebuild=True)
-
-    # FIXME: generate top-level HTML files
-    #        I think this should just be a standard template file
-    #        that we deposit some information into (instead of the
-    #        old method of doing a non-recursive doxgen run)
 
 
 if __name__ == "__main__":
