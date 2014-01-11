@@ -23,22 +23,22 @@ def get_tier(yaml_file):
                     return int(re.sub(r'tier:\s*', '', line).rstrip())
             return None
 
-def generate_global_menu(tiers):
-    """Generate a HTML menu for the frameworks"""
-    html = '<ul>'
+def generate_group_menu(tiers):
+    """Generate a menu for the frameworks"""
+    sections = []
     for t in range(1,5):
-        html += '<li class="tier">Tier ' + str(t) + '<ul>'
+        frameworks = []
         for fw in tiers[t]:
             rellink = '../../' + fw['outputdir'] + '/html/index.html'
-            # FIXME: escaping!
-            html += '<li class="module"><a href="'
-            html += rellink
-            html += '">'
-            html += fw['fancyname']
-            html += '</a></li>'
-        html += '</ul></li>'
-    html += '</ul>'
-    return html
+            frameworks.append({
+                'href': rellink,
+                'name': fw['fancyname']
+                })
+        sections.append({
+            'title': 'Tier ' + str(t),
+            'members': frameworks
+            })
+    return {'group_title': 'Frameworks', 'sections': sections}
 
 def main():
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
@@ -122,11 +122,7 @@ def main():
 
     kgenapidox.copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),'.')
 
-    global_menu = generate_global_menu(tiers)
-    breadcrumbs = ('<ul>' +
-            '<li><a href="http://api.kde.org/">KDE API Reference</a></li>' +
-            '<li><a href="../../index.html">KDE Frameworks API Reference</a></li>' +
-            '</ul>')
+    group_menu = generate_group_menu(tiers)
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
         kgenapidox.generate_apidocs(
@@ -144,13 +140,21 @@ def main():
                 qhelpgenerator = args.qhelpgenerator,
                 title = args.title,
                 resourcedir = '../..',
-                substitutions=[
-                    ('<!-- gmenu -->',global_menu),
-                    ('<!-- gmenu.begin -->',''),
-                    ('<!-- gmenu.end -->',''),
-                    ('@topname@','KDE Frameworks'),
-                    ('<!-- breadcrumbs -->',breadcrumbs)
-                    ],
+                template_mapping = {
+                    'breadcrumbs': {
+                        'entries': [
+                            {
+                                'href': 'http://api.kde.org/',
+                                'text': 'KDE API Reference'
+                            },
+                            {
+                                'href': '../../index.html',
+                                'text': 'Frameworks'
+                            }
+                            ]
+                        },
+                    'group_menu': group_menu
+                    },
                 doxyfile_entries=['WARN_IF_UNDOCUMENTED = YES'])
         if not rebuild:
             tagfile = os.path.abspath(
