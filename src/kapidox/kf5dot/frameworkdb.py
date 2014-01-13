@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import re
 import shutil
@@ -5,7 +6,24 @@ import tempfile
 
 import yapgvb
 
-from framework import Framework, TARGET_SHAPES
+from framework import Framework
+
+
+TARGET_SHAPES = [
+    "polygon", # lib
+    "house",   # executable
+    "octagon", # module (aka plugin)
+    "diamond", # static lib
+    ]
+
+DEPS_SHAPE = "ellipse"
+
+DEPS_BLACKLIST = [
+    "-l*", "-W*", # link flags
+    "/*", # absolute dirs
+    "m", "pthread", "util", "nsl", "resolv", # generic libs
+    "*example*", "*demo*", "*test*", "*Test*", "*debug*" # helper targets
+    ]
 
 
 def to_temp_file(dirname, fname, content):
@@ -68,7 +86,6 @@ class FrameworkDb(object):
         """
         Init db from dot files
         """
-
         tmpdir = tempfile.mkdtemp(prefix="kf5dot")
         try:
             for dot_file in dot_files:
@@ -77,17 +94,36 @@ class FrameworkDb(object):
                 lst = dot_file.split("/")
                 tier = lst[-3]
                 name = lst[-2]
-                fw = Framework(tier, name, with_qt=with_qt)
+                fw = Framework(tier, name)
 
                 # Preprocess dot files so that they can be merged together. The
                 # output needs to be stored in a temp file because yapgvb
                 # crashes when reading from a StringIO
                 tmp_file = to_temp_file(tmpdir, dot_file, preprocess(dot_file))
-                fw.read_dot_file(tmp_file)
+                self._init_fw_from_dot_file(fw, tmp_file, with_qt)
                 self._fw_list.append(fw)
         finally:
             shutil.rmtree(tmpdir)
         self._update_fw_for_target()
+
+    def _init_fw_from_dot_file(self, fw, dot_file, with_qt):
+        def target_from_node(node):
+            return node.name.replace("KF5", "")
+
+        src = yapgvb.Graph().read(dot_file)
+
+        targets = set()
+        for node in src.nodes:
+            if node.shape in TARGET_SHAPES and self._want(node, with_qt):
+                target = target_from_node(node)
+                targets.add(target)
+                fw.add_target(target)
+
+        for edge in src.edges:
+            target = target_from_node(edge.tail)
+            if target in targets and self._want(edge.head, with_qt):
+                dep_target = target_from_node(edge.head)
+                fw.add_target_dependency(target, dep_target)
 
     def _update_fw_for_target(self):
         self._fw_for_target = {}
@@ -140,3 +176,16 @@ class FrameworkDb(object):
 
     def __iter__(self):
         return iter(self._fw_list)
+
+    def _want(self, node, with_qt=False):
+        if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
+            return False
+        name = node.name
+
+        for pattern in DEPS_BLACKLIST:
+            if fnmatch.fnmatchcase(node.name, pattern):
+                return False
+        if not with_qt and name.startswith("Qt"):
+            return False
+        return True
+

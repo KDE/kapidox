@@ -1,31 +1,13 @@
-import fnmatch
-import os
-
-import yapgvb
-
-
-TARGET_SHAPES = [
-    "polygon", # lib
-    "house",   # executable
-    "octagon", # module (aka plugin)
-    "diamond", # static lib
-    ]
-
-
-DEPS_SHAPE = "ellipse"
-
-
-DEPS_BLACKLIST = [
-    "-l*", "-W*", # link flags
-    "/*", # absolute dirs
-    "m", "pthread", "util", "nsl", "resolv", # generic libs
-    "*example*", "*demo*", "*test*", "*Test*", "*debug*" # helper targets
-    ]
-
-
 class Framework(object):
-    def __init__(self, tier, name, with_qt=False):
-        self._with_qt = with_qt
+    """
+    A framework has a tier, a name, a collection of targets it provides.
+    For each target it provides, it knows which targets they depend on.
+
+    It also has a list of frameworks it depends on, for framework-to-framework
+    dependencies. This is useful for cases when a framework depends on macros
+    provided by another framework.
+    """
+    def __init__(self, tier, name):
         self.tier = tier
         self.name = name
 
@@ -33,25 +15,17 @@ class Framework(object):
         self._target_dict = {}
 
         # A list of other frameworks (not targets!) this framework depends on.
-        # Useful for example when a framework depend on macros provided by
-        # another framework.
         self._fw_list = []
 
-    def read_dot_file(self, fname):
-        def target_from_node(node):
-            return node.name.replace("KF5", "")
+    def add_target(self, target):
+        # Add a new target provided by this framework
+        assert target not in self._target_dict
+        self._target_dict[target] = set()
 
-        src = yapgvb.Graph().read(fname)
-
-        for node in src.nodes:
-            if node.shape in TARGET_SHAPES and self._want(node):
-                self._target_dict[target_from_node(node)] = set()
-
-        for edge in src.edges:
-            target = target_from_node(edge.tail)
-            if target in self._target_dict and self._want(edge.head):
-                dep_target = target_from_node(edge.head)
-                self._target_dict[target].add(dep_target)
+    def add_target_dependency(self, target, dep):
+        # Add a new dependency target to a target provided by this framework
+        assert target in self._target_dict
+        self._target_dict[target].add(dep)
 
     def get_targets(self):
         return self._target_dict.keys()
@@ -67,18 +41,6 @@ class Framework(object):
 
     def get_dependencies_for_target(self, target):
         return self._target_dict[target]
-
-    def _want(self, node):
-        if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
-            return False
-        name = node.name
-
-        for pattern in DEPS_BLACKLIST:
-            if fnmatch.fnmatchcase(node.name, pattern):
-                return False
-        if not self._with_qt and name.startswith("Qt"):
-            return False
-        return True
 
     def __repr__(self):
         return self.name
