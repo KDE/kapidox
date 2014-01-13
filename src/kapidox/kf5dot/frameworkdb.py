@@ -77,34 +77,26 @@ def preprocess(fname):
     return txt
 
 
-class FrameworkDb(object):
-    def __init__(self):
-        self._fw_list = []
-        self._fw_for_target = {}
+class DotFileParser(object):
+    def __init__(self, tmp_dir, with_qt):
+        self._tmp_dir = tmp_dir
+        self._with_qt = with_qt
 
-    def read_dot_files(self, dot_files, with_qt=False):
-        """
-        Init db from dot files
-        """
-        tmpdir = tempfile.mkdtemp(prefix="kf5dot")
-        try:
-            for dot_file in dot_files:
-                # dot_file is of the form:
-                # <dot-dir>/<tier>/<framework>/<framework>.dot
-                lst = dot_file.split("/")
-                tier = lst[-3]
-                name = lst[-2]
-                fw = Framework(tier, name)
+    def parse(self, dot_file):
+        # dot_file is of the form:
+        # <dot-dir>/<tier>/<framework>/<framework>.dot
+        lst = dot_file.split("/")
+        tier = lst[-3]
+        name = lst[-2]
+        fw = Framework(tier, name)
 
-                # Preprocess dot files so that they can be merged together. The
-                # output needs to be stored in a temp file because yapgvb
-                # crashes when reading from a StringIO
-                tmp_file = to_temp_file(tmpdir, dot_file, preprocess(dot_file))
-                self._init_fw_from_dot_file(fw, tmp_file, with_qt)
-                self._fw_list.append(fw)
-        finally:
-            shutil.rmtree(tmpdir)
-        self._update_fw_for_target()
+        # Preprocess dot files so that they can be merged together. The
+        # output needs to be stored in a temp file because yapgvb
+        # crashes when reading from a StringIO
+        tmp_file = to_temp_file(self._tmp_dir, dot_file, preprocess(dot_file))
+        self._init_fw_from_dot_file(fw, tmp_file, self._with_qt)
+
+        return fw
 
     def _init_fw_from_dot_file(self, fw, dot_file, with_qt):
         def target_from_node(node):
@@ -114,16 +106,48 @@ class FrameworkDb(object):
 
         targets = set()
         for node in src.nodes:
-            if node.shape in TARGET_SHAPES and self._want(node, with_qt):
+            if node.shape in TARGET_SHAPES and self._want(node):
                 target = target_from_node(node)
                 targets.add(target)
                 fw.add_target(target)
 
         for edge in src.edges:
             target = target_from_node(edge.tail)
-            if target in targets and self._want(edge.head, with_qt):
+            if target in targets and self._want(edge.head):
                 dep_target = target_from_node(edge.head)
                 fw.add_target_dependency(target, dep_target)
+
+    def _want(self, node):
+        if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
+            return False
+        name = node.name
+
+        for pattern in DEPS_BLACKLIST:
+            if fnmatch.fnmatchcase(node.name, pattern):
+                return False
+        if not self._with_qt and name.startswith("Qt"):
+            return False
+        return True
+
+
+class FrameworkDb(object):
+    def __init__(self):
+        self._fw_list = []
+        self._fw_for_target = {}
+
+    def read_dot_files(self, dot_files, with_qt=False):
+        """
+        Init db from dot files
+        """
+        tmp_dir = tempfile.mkdtemp(prefix="kf5dot")
+        parser = DotFileParser(tmp_dir, with_qt)
+        try:
+            for dot_file in dot_files:
+                fw = parser.parse(dot_file)
+                self._fw_list.append(fw)
+        finally:
+            shutil.rmtree(tmp_dir)
+        self._update_fw_for_target()
 
     def _update_fw_for_target(self):
         self._fw_for_target = {}
@@ -176,16 +200,3 @@ class FrameworkDb(object):
 
     def __iter__(self):
         return iter(self._fw_list)
-
-    def _want(self, node, with_qt=False):
-        if node.shape not in TARGET_SHAPES and node.shape != DEPS_SHAPE:
-            return False
-        name = node.name
-
-        for pattern in DEPS_BLACKLIST:
-            if fnmatch.fnmatchcase(node.name, pattern):
-                return False
-        if not with_qt and name.startswith("Qt"):
-            return False
-        return True
-
