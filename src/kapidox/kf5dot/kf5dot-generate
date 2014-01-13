@@ -114,6 +114,8 @@ class DotWriter(Block):
             except KeyError:
                 dep = target
             edges.add((fw.name, dep))
+        for dep_fw in fw.get_extra_frameworks():
+            edges.add((fw.name, dep_fw))
         for edge in edges:
             tier_block.writeln('"{}" -> "{}";'.format(*edge))
 
@@ -150,7 +152,7 @@ def main():
     args = parser.parse_args()
 
     db = FrameworkDb()
-    db.read_dot_files(args.dot_files, with_qt=args.qt)
+    db.populate(args.dot_files, with_qt=args.qt)
 
     if args.output == "-":
         out = sys.stdout

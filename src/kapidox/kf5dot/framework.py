@@ -42,5 +42,15 @@ class Framework(object):
     def get_dependencies_for_target(self, target):
         return self._target_dict[target]
 
+    def add_extra_framework(self, name):
+        # Add a framework this framework depends on because of a
+        # framework-to-framework dependency
+        self._fw_list.append(name)
+
+    def get_extra_frameworks(self):
+        # Returns frameworks this framework depends on because of a
+        # framework-to-framework dependency
+        return self._fw_list
+
     def __repr__(self):
         return self.name

@@ -4,6 +4,7 @@ import re
 import shutil
 import tempfile
 
+import yaml
 import yapgvb
 
 from framework import Framework
@@ -77,6 +78,15 @@ def preprocess(fname):
     return txt
 
 
+def _add_extra_dependencies(fw, yaml_file):
+    dct = yaml.load(open(yaml_file))
+    lst = dct.get("framework-dependencies")
+    if lst is None:
+        return
+    for dep in lst:
+        fw.add_extra_framework(dep)
+
+
 class DotFileParser(object):
     def __init__(self, tmp_dir, with_qt):
         self._tmp_dir = tmp_dir
@@ -135,7 +145,7 @@ class FrameworkDb(object):
         self._fw_list = []
         self._fw_for_target = {}
 
-    def read_dot_files(self, dot_files, with_qt=False):
+    def populate(self, dot_files, with_qt=False):
         """
         Init db from dot files
         """
@@ -144,6 +154,9 @@ class FrameworkDb(object):
         try:
             for dot_file in dot_files:
                 fw = parser.parse(dot_file)
+                yaml_file = dot_file.replace(".dot", ".yaml")
+                if os.path.exists(yaml_file):
+                    _add_extra_dependencies(fw, yaml_file)
                 self._fw_list.append(fw)
         finally:
             shutil.rmtree(tmp_dir)
@@ -169,6 +182,8 @@ class FrameworkDb(object):
                 for target in fw.get_all_target_dependencies():
                     if the_fw.has_target(target):
                         return True
+                if the_fw.name in fw.get_extra_frameworks():
+                    return True
             return False
 
         done = False
