@@ -2,8 +2,10 @@
 # encoding: utf-8
 import argparse
 import os
+import shutil
 import subprocess
 import sys
+
 import yaml
 
 DESCRIPTION = """
@@ -14,9 +16,12 @@ fnull = open("/dev/null", "w")
 
 def generate_dot(fw_dir, build_dir):
     fw_name = os.path.basename(fw_dir)
-    subprocess.call(["cmake", fw_dir, "--graphviz={}.dot".format(fw_name)],
+    ret = subprocess.call(["cmake", fw_dir, "--graphviz={}.dot".format(fw_name)],
         stdout=fnull,
         cwd=build_dir)
+    if ret != 0:
+        sys.stdout.write("Generating the dot file for {} failed.\n".format(fw_name))
+        sys.exit(ret)
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -33,9 +38,13 @@ def main():
     lst = os.listdir(fw_base_dir)
     for idx, fw_name in enumerate(lst):
         fw_dir = os.path.join(fw_base_dir, fw_name)
-        if not os.path.exists(os.path.join(fw_dir, "CMakeLists.txt")):
-            continue
         yaml_path = os.path.join(fw_dir, fw_name + ".yaml")
+        if not os.path.exists(yaml_path):
+            continue
+
+        progress = 100 * (idx + 1) / len(lst)
+        print("{}% {}".format(progress, fw_name))
+
         with open(yaml_path) as f:
             fw_info = yaml.load(f)
             tier = fw_info["tier"]
@@ -43,8 +52,8 @@ def main():
         build_dir = os.path.join(dot_base_dir, "tier" + str(tier), fw_name)
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
-        print("{} ({}%)".format(fw_name, 100 * (idx + 1) / len(lst)))
         generate_dot(fw_dir, build_dir)
+        shutil.copy(yaml_path, build_dir)
 
 if __name__ == "__main__":
     sys.exit(main())
