@@ -24,18 +24,22 @@ DEPS_BLACKLIST = [
 
 
 class Framework(object):
-    def __init__(self, fname, with_qt=False):
-        def target_from_node(node):
-            return node.name.replace("KF5", "")
-
+    def __init__(self, tier, name, with_qt=False):
         self._with_qt = with_qt
-
-        lst = os.path.basename(fname).split("-", 1)
-        self.tier = lst[0]
-        self.name = lst[1].replace(".dot", "")
+        self.tier = tier
+        self.name = name
 
         # A dict of target => set([targets])
         self._target_dict = {}
+
+        # A list of other frameworks (not targets!) this framework depends on.
+        # Useful for example when a framework depend on macros provided by
+        # another framework.
+        self._fw_list = []
+
+    def read_dot_file(self, fname):
+        def target_from_node(node):
+            return node.name.replace("KF5", "")
 
         src = yapgvb.Graph().read(fname)
 

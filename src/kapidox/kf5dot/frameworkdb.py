@@ -9,8 +9,7 @@ from framework import Framework, TARGET_SHAPES
 
 
 def to_temp_file(dirname, fname, content):
-    tier = fname.split("/")[-3]
-    path = os.path.join(dirname, tier + "-" + os.path.basename(fname))
+    path = os.path.join(dirname, os.path.basename(fname))
     if os.path.exists(path):
         raise Exception("{} already exists".format(path))
     open(path, "w").write(content)
@@ -70,13 +69,22 @@ class FrameworkDb(object):
         Init db from dot files
         """
 
-        # Preprocess dot files so that they can be merged together
-        # The output needs to be stored in a temp file because yapgvb crashes when
-        # trying to make it read from a StringIO
         tmpdir = tempfile.mkdtemp(prefix="kf5dot")
         try:
-            input_files = [to_temp_file(tmpdir, x, preprocess(x)) for x in dot_files]
-            self._fw_list = [Framework(x, with_qt=with_qt) for x in input_files]
+            for dot_file in dot_files:
+                # dot_file is of the form:
+                # <dot-dir>/<tier>/<framework>/<framework>.dot
+                lst = dot_file.split("/")
+                tier = lst[-3]
+                name = lst[-2]
+                fw = Framework(tier, name, with_qt=with_qt)
+
+                # Preprocess dot files so that they can be merged together. The
+                # output needs to be stored in a temp file because yapgvb
+                # crashes when reading from a StringIO
+                tmp_file = to_temp_file(tmpdir, dot_file, preprocess(dot_file))
+                fw.read_dot_file(tmp_file)
+                self._fw_list.append(fw)
         finally:
             shutil.rmtree(tmpdir)
         self._update_fw_for_target()
