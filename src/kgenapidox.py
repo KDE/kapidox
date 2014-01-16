@@ -14,6 +14,8 @@ import subprocess
 import sys
 from urlparse import urljoin
 
+DEPENDENCY_DIAGRAM_PAGE = 'dependencies'
+
 def smartjoin(pathorurl1,*args):
     """Join paths or URLS
 
@@ -191,7 +193,8 @@ def menu_items(htmldir):
             {'text': 'File Members', 'href': 'globals.html'},
             {'text': 'Modules', 'href': 'modules.html'},
             {'text': 'Directories', 'href': 'dirs.html'},
-            {'text': 'Related Pages', 'href': 'pages.html'}
+            {'text': 'Dependencies', 'href': DEPENDENCY_DIAGRAM_PAGE + '.html'},
+            {'text': 'Related Pages', 'href': 'pages.html'},
             ]
     return filter(
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
@@ -249,13 +252,20 @@ def make_dir_list(topdir, paths):
     topdir -- the directory to search for paths relative to
     paths  -- a list of paths to check for (these can be relative or absolute)
 
-    Returns a string suitable for use as a configuration value in a Doxyfile
+    Returns a list which can be passed to format_list
     """
-    out = ''
+    lst = []
     for p in paths:
         if os.path.isdir(os.path.join(topdir,p)):
-            out += ' "' + os.path.join(topdir,p) + '"'
-    return out
+            lst.append(os.path.join(topdir,p))
+    return lst
+
+def format_list(lst):
+    """Format a list for use as a configuration value in a Doxyfile
+
+    Returns a string which can be used in a Doxyfile
+    """
+    return ' '.join('"{}"'.format(x) for x in lst)
 
 def write_mapping_to_php(mapping, outputfile, varname='map'):
     """Write a mapping out as PHP code
@@ -351,7 +361,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
         title='KDE API Documentation', template_mapping=[],
-        doxyfile_entries=[],resourcedir=None):
+        doxyfile_entries=[],resourcedir=None, dependency_diagram=None):
     """Generate the API documentation for a single directory"""
 
     # Paths and basic project info
@@ -375,18 +385,31 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
 
     shutil.copy(os.path.join(doxdatadir,'Doxyfile.global'), 'Doxyfile')
 
+    input_list = [srcdir]
+    image_path_list = []
+    if dependency_diagram:
+        name = os.path.join(doxdatadir, DEPENDENCY_DIAGRAM_PAGE + '.md')
+        input_list.append(name)
+
+        # We must copy the diagram because dependencies.md refers to it as
+        # dependencies.png
+        tmp_dependency_diagram = os.path.join(os.getcwd(), 'dependencies.png')
+        shutil.copy(dependency_diagram, tmp_dependency_diagram)
+        image_path_list.append(tmp_dependency_diagram)
+
     with codecs.open('Doxyfile','a','utf-8') as doxyfile:
         doxyfile.write('PROJECT_NAME = "' + fancyname + '"\n')
         # FIXME: can we get the project version from CMake?
 
         # Input locations
-        doxyfile.write('INPUT = "' + srcdir + '"\n')
-        doxyfile.write('DOTFILE_DIRS =' +
-                make_dir_list(srcdir, ['docs/api','docs/api/dot']) + '\n')
-        doxyfile.write('IMAGE_PATH =' +
-                make_dir_list(srcdir, ['docs/api','docs/api/pics','docs/pics']) + '\n')
+        doxyfile.write('INPUT = ' + format_list(input_list) + '\n')
+        doxyfile.write('DOTFILE_DIRS = ' +
+                format_list(make_dir_list(srcdir, ['docs/api','docs/api/dot'])) + '\n')
         doxyfile.write('EXAMPLE_PATH =' +
-                make_dir_list(srcdir, ['docs/api/examples','docs/examples']) + '\n')
+                format_list(make_dir_list(srcdir, ['docs/api/examples','docs/examples'])) + '\n')
+        image_path_list.extend(
+                make_dir_list(srcdir, ['docs/api','docs/api/pics','docs/pics']))
+        doxyfile.write('IMAGE_PATH = ' + format_list(image_path_list) + '\n')
 
         # Other input settings
         doxyfile.write('TAGFILES =')
@@ -428,6 +451,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
 
     subprocess.call([doxygen,'Doxyfile'])
     os.remove('Doxyfile')
+    if dependency_diagram:
+        os.remove(tmp_dependency_diagram)
 
     classmap = build_classmap(moduletagfile)
     write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
@@ -474,6 +499,9 @@ def main():
     parser.add_argument('--qtdoc-dir',
             help='Location of (local) Qt documentation; this is searched ' +
                  'for tag files to create links to Qt classes.')
+    parser.add_argument('--dependency-diagram-dir',
+            help='Location of framework diagram dirs; they will be included ' +
+                 'the framework landing page if provided.')
     parser.add_argument('--qtdoc-link',
             help='Override Qt documentation location for the links in the ' +
                  'html files.  May be a path or URL.')
@@ -500,6 +528,19 @@ def main():
         outputdir = modulename + '-apidocs'
     else:
         outputdir = 'apidocs'
+
+    if args.dependency_diagram_dir:
+        if not os.path.isdir(args.dependency_diagram_dir):
+            print(args.dependency_diagram_dir + " is not a directory")
+            exit(2)
+
+        dependency_diagram = os.path.join(args.dependency_diagram_dir, modulename + '.png')
+        if not os.path.isfile(dependency_diagram):
+            print('No file named {}.png in {}'.format(modulename, args.dependency_diagram_dir))
+            exit(2)
+    else:
+        dependency_diagram = None
+
     readme_file = os.path.join(args.moduledir, 'README.md')
 
     generate_apidocs(
@@ -507,6 +548,7 @@ def main():
             srcdir = args.moduledir,
             outputdir = outputdir,
             doxdatadir = doxdatadir,
+            dependency_diagram = dependency_diagram,
             tagfiles = tagfiles,
             man_pages = args.man_pages,
             qhp = args.qhp,
