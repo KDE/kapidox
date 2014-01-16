@@ -254,7 +254,7 @@ def make_dir_list(topdir, paths):
     out = ''
     for p in paths:
         if os.path.isdir(os.path.join(topdir,p)):
-            out += ' "' + os.path.join(topdir,p) + "'"
+            out += ' "' + os.path.join(topdir,p) + '"'
     return out
 
 def write_mapping_to_php(mapping, outputfile, varname='map'):
