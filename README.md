@@ -11,6 +11,16 @@ documentation more convenient (including reading settings from the target
 framework or other module) and a standard template for the generated
 documentation.
 
+
+## Dependencies
+
+Python 2 or 3 is required to run the scripts.  Whichever version of python you
+use needs to have the pystache and yaml (or pyyaml) modules.  The following
+command should install them for the current user:
+
+    pip install --user PyYAML pystache
+
+
 ## Writing documentation
 
 Writing dox is beyond the scope of this documentation -- see the notes at
