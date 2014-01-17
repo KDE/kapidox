@@ -1,4 +1,3 @@
-import types
 
 def _quote(txt):
     return '"' + txt + '"'
@@ -14,7 +13,7 @@ class DoxyfileWriter(object):
 
         key -- the key part of the entry
         value -- the value part of the entry. Can be a string, a list, a tuple or a boolean"""
-        if isinstance(value, (types.ListType, types.TupleType)):
+        if isinstance(value, (list, tuple)):
             txt = ' '.join([_quote(x) for x in value])
         elif isinstance(value, bool):
             txt = ['NO', 'YES'][value]

@@ -12,7 +12,12 @@ import re
 import shutil
 import subprocess
 import sys
-from urlparse import urljoin
+
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
+
 
 from doxyfilewriter import DoxyfileWriter
 
@@ -369,8 +374,10 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     htmldir = os.path.join(outputdir,html_subdir)
     moduletagfile = os.path.join(htmldir, modulename + '.tags')
 
-    os.makedirs(outputdir)
-    os.makedirs(htmldir)
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+    if not os.path.exists(htmldir):
+        os.makedirs(htmldir)
 
     if resourcedir is None:
         copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
