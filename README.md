@@ -21,6 +21,15 @@ command should install them for the current user:
     pip install --user PyYAML pystache
 
 
+## Installation
+
+Unlike almost every other KDE module, kapidox does not use CMake.  This is
+because it is purely written in Python, and so uses distutils.  While it does
+not need to be installed to be used (see below), you can install kapidox with
+
+    python setup.py install
+
+
 ## Writing documentation
 
 Writing dox is beyond the scope of this documentation -- see the notes at
