@@ -47,6 +47,10 @@ and it would create a directory kcoreaddons-apidocs in the current directory.
 Pass the --help argument to see options that control the behaviour of the
 script.
 
+Note that on Windows, you will need to run something like
+
+    c:\python\python.exe c:\frameworks\kapidox\src\kgenapidox.py c:\frameworks\kcoreaddons
+
 
 ### Frameworks documentation
 
@@ -64,6 +68,8 @@ sure you have enough space!
 
 ## Links
 
+- Home page: <https://projects.kde.org/projects/frameworks/kapidox>
 - Mailing list: <https://mail.kde.org/mailman/listinfo/kde-frameworks-devel>
 - IRC channel: #kde-devel on Freenode
 - Git repository: <https://projects.kde.org/projects/frameworks/kapidox/repository>
+- KDE API documentation: <http://api.kde.org/>
