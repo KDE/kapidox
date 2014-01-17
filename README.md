@@ -45,13 +45,13 @@ docs/api/Doxyfile.local.
 
 ## Generating the documentation
 
-The tool for generating dox is `src/kgenapidox.py`.  Simply point it at the
+The tool for generating dox is `src/kgenapidox`.  Simply point it at the
 folder you want to generate dox for (such as a framework checkout).
 
 For example, if you have a checkout of KCoreAddons at
 ~/src/frameworks/kcoreaddons, you could run
 
-    ~/src/frameworks/kapidox/src/kgenapidox.py ~/src/frameworks/kcoreaddons
+    ~/src/frameworks/kapidox/src/kgenapidox ~/src/frameworks/kcoreaddons
 
 and it would create a directory kcoreaddons-apidocs in the current directory.
 Pass the --help argument to see options that control the behaviour of the
@@ -59,17 +59,17 @@ script.
 
 Note that on Windows, you will need to run something like
 
-    c:\python\python.exe c:\frameworks\kapidox\src\kgenapidox.py c:\frameworks\kcoreaddons
+    c:\python\python.exe c:\frameworks\kapidox\src\kgenapidox c:\frameworks\kcoreaddons
 
 
 ### Frameworks documentation
 
-`src/kgenframeworksapidocs.py` can be used to generate a combined set of
+`src/kgenframeworksapidocs` can be used to generate a combined set of
 documentation for all the frameworks.  You want to do something like
 
     mkdir frameworks-apidocs
     cd frameworks-apidocs
-    ~/src/frameworks/kapidox/src/kgenframeworksapidox.py ~/src/frameworks
+    ~/src/frameworks/kapidox/src/kgenframeworksapidox ~/src/frameworks
 
 And (after maybe 15-30 minutes) you will get a complete set of documentation in
 the frameworks-apidocs directory.  This will be about 500Mb in size, so make
