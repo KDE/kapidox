@@ -11,17 +11,9 @@ import kgenapidox
 def get_tier(yaml_file):
     """Parse the tier out of a yaml file"""
     with open(yaml_file) as f:
-        try:
-            import yaml
-            data = yaml.load(f)
-            return data['tier']
-        except ImportError:
-            # No yaml?  This will probably work:
-            import re
-            for line in f:
-                if line.startsWith('tier:'):
-                    return int(re.sub(r'tier:\s*', '', line).rstrip())
-            return None
+        import yaml
+        data = yaml.load(f)
+        return data['tier']
 
 def generate_group_menu(tiers):
     """Generate a menu for the frameworks"""
