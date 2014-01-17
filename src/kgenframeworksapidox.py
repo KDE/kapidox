@@ -191,7 +191,8 @@ def main():
                         },
                     'group_menu': group_menu
                     },
-                doxyfile_entries=['WARN_IF_UNDOCUMENTED = YES'])
+                doxyfile_entries = { 'WARN_IF_UNDOCUMENTED': True }
+                )
         if not rebuild:
             tagfile = os.path.abspath(
                         os.path.join(

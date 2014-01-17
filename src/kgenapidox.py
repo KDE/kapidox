@@ -14,6 +14,8 @@ import subprocess
 import sys
 from urlparse import urljoin
 
+from doxyfilewriter import DoxyfileWriter
+
 DEPENDENCY_DIAGRAM_PAGE = 'dependencies'
 
 def smartjoin(pathorurl1,*args):
@@ -252,20 +254,13 @@ def make_dir_list(topdir, paths):
     topdir -- the directory to search for paths relative to
     paths  -- a list of paths to check for (these can be relative or absolute)
 
-    Returns a list which can be passed to format_list
+    Returns a list
     """
     lst = []
     for p in paths:
         if os.path.isdir(os.path.join(topdir,p)):
             lst.append(os.path.join(topdir,p))
     return lst
-
-def format_list(lst):
-    """Format a list for use as a configuration value in a Doxyfile
-
-    Returns a string which can be used in a Doxyfile
-    """
-    return ' '.join('"{}"'.format(x) for x in lst)
 
 def write_mapping_to_php(mapping, outputfile, varname='map'):
     """Write a mapping out as PHP code
@@ -361,7 +356,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
         title='KDE API Documentation', template_mapping=[],
-        doxyfile_entries=[],resourcedir=None, dependency_diagram=None):
+        doxyfile_entries={},resourcedir=None, dependency_diagram=None):
     """Generate the API documentation for a single directory"""
 
     # Paths and basic project info
@@ -398,49 +393,46 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         image_path_list.append(tmp_dependency_diagram)
 
     with codecs.open('Doxyfile','a','utf-8') as doxyfile:
-        doxyfile.write('PROJECT_NAME = "' + fancyname + '"\n')
+        writer = DoxyfileWriter(doxyfile)
+        writer.write_entry('PROJECT_NAME', fancyname)
         # FIXME: can we get the project version from CMake?
 
         # Input locations
-        doxyfile.write('INPUT = ' + format_list(input_list) + '\n')
-        doxyfile.write('DOTFILE_DIRS = ' +
-                format_list(make_dir_list(srcdir, ['docs/api','docs/api/dot'])) + '\n')
-        doxyfile.write('EXAMPLE_PATH =' +
-                format_list(make_dir_list(srcdir, ['docs/api/examples','docs/examples'])) + '\n')
         image_path_list.extend(
                 make_dir_list(srcdir, ['docs/api','docs/api/pics','docs/pics']))
-        doxyfile.write('IMAGE_PATH = ' + format_list(image_path_list) + '\n')
+        writer.write_entries(
+                INPUT=input_list,
+                DOTFILE_DIRS=make_dir_list(srcdir, ['docs/api','docs/api/dot']),
+                EXAMPLE_PATH=make_dir_list(srcdir, ['docs/api/examples','docs/examples']),
+                IMAGE_PATH=image_path_list)
 
         # Other input settings
-        doxyfile.write('TAGFILES =')
-        for (f,loc) in tagfiles:
-            doxyfile.write(' "' + f + '=' + loc + '"')
-        doxyfile.write('\n')
+        writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in tagfiles])
 
         # Output locations
-        doxyfile.write('OUTPUT_DIRECTORY = ' + outputdir + '\n')
-        doxyfile.write('GENERATE_TAGFILE = "' + moduletagfile + '"\n')
-        doxyfile.write('HTML_OUTPUT = ' + html_subdir + '\n')
+        writer.write_entries(
+                OUTPUT_DIRECTORY=outputdir,
+                GENERATE_TAGFILE=moduletagfile,
+                HTML_OUTPUT=html_subdir)
 
         # Other output settings
-        doxyfile.write('HTML_HEADER = "' + doxdatadir + '/header.html"\n')
-        doxyfile.write('HTML_FOOTER = "' + doxdatadir + '/footer.html"\n')
-        doxyfile.write('HTML_STYLESHEET = "' + doxdatadir + '/doxygen.css"\n')
+        writer.write_entries(
+                HTML_HEADER=doxdatadir + '/header.html',
+                HTML_FOOTER=doxdatadir + '/footer.html',
+                HTML_STYLESHEET=doxdatadir + '/doxygen.css')
 
         # Always write these, even if QHP is disabled, in case Doxygen.local
         # overrides it
-        doxyfile.write('QHP_VIRTUAL_FOLDER = ' + modulename + '\n')
-        doxyfile.write('QHG_LOCATION = "' + qhelpgenerator + '"\n')
+        writer.write_entries(
+                QHP_VIRTUAL_FOLDER=modulename,
+                QHG_LOCATION=qhelpgenerator)
 
-        if man_pages:
-            doxyfile.write('GENERATE_MAN = YES\n')
-        if qhp:
-            doxyfile.write('GENERATE_QHP = YES\n')
-        if searchengine:
-            doxyfile.write('SEARCHENGINE = YES\n')
+        writer.write_entries(
+                GENERATE_MAN=man_pages,
+                GENERATE_QHP=qhp,
+                SEARCHENGINE=searchengine)
 
-        for entry in doxyfile_entries:
-            doxyfile.write(entry + '\n')
+        writer.write_entries(**doxyfile_entries)
 
         # Module-specific overrides
         localdoxyfile = os.path.join(srcdir, 'docs/api/Doxyfile.local')
