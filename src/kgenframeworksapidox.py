@@ -6,8 +6,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import argparse, os, shutil, sys
 
-scriptdir = os.path.dirname(os.path.realpath(__file__))
-import kgenapidox
+from kapidox import *
 
 def get_tier(yaml_file):
     """Parse the tier out of a yaml file"""
@@ -115,8 +114,8 @@ def main():
             help='(Path to) the qhelpgenerator executable.')
     args = parser.parse_args()
 
-    doxdatadir = kgenapidox.find_doxdatadir_or_exit(args.doxdatadir)
-    tagfiles = kgenapidox.search_for_tagfiles(
+    doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
+    tagfiles = search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
@@ -140,7 +139,7 @@ def main():
                  framework + ".yaml missing)")
         else:
             # FIXME: option in yaml file to disable docs
-            fancyname = kgenapidox.parse_fancyname(readme_file, default=framework)
+            fancyname = parse_fancyname(readme_file, default=framework)
             tier = get_tier(yaml_file)
             if tier is None:
                 print("Could not find tier for " + framework + "!")
@@ -157,12 +156,12 @@ def main():
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
 
-    kgenapidox.copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),'.')
+    copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),'.')
 
     group_menu = generate_group_menu(tiers)
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
-        kgenapidox.generate_apidocs(
+        generate_apidocs(
                 modulename = fwinfo['framework'],
                 fancyname = fwinfo['fancyname'],
                 srcdir = fwinfo['srcdir'],
