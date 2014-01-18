@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
