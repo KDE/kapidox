@@ -204,9 +204,11 @@ def menu_items(htmldir):
             {'text': 'Dependencies', 'href': DEPENDENCY_DIAGRAM_PAGE + '.html'},
             {'text': 'Related Pages', 'href': 'pages.html'},
             ]
-    return filter(
+    # NOTE In Python 3 filter() builtin returns an iterable, but not a list
+    #      type, so explicit conversion is here!
+    return list(filter(
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
-            entries)
+            entries))
 
 def postprocess(htmldir, mapping):
     """Substitute text in HTML files
