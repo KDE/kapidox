@@ -227,7 +227,7 @@ def postprocess(htmldir, mapping):
             print("Postprocessing " + f)
             path = os.path.join(htmldir,f)
             newpath = path + '.new'
-            with open(newpath, 'w') as outf:
+            with codecs.open(newpath, 'w', 'utf-8') as outf:
                 outf.write(renderer.render_path(path, mapping))
             os.remove(path)
             os.rename(newpath,path)
