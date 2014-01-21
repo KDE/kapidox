@@ -35,6 +35,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 from fnmatch import fnmatch
 try:
@@ -410,8 +411,6 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     if os.path.isdir(os.path.join(srcdir,'docs/api/htmlresource')):
         copy_dir_contents(os.path.join(srcdir,'docs/api/htmlresource'),htmldir)
 
-    shutil.copy(os.path.join(doxdatadir,'Doxyfile.global'), 'Doxyfile')
-
     input_list = [srcdir]
     image_path_list = []
     if dependency_diagram:
@@ -424,7 +423,15 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         shutil.copy(dependency_diagram, tmp_dependency_diagram)
         image_path_list.append(tmp_dependency_diagram)
 
-    with codecs.open('Doxyfile','a','utf-8') as doxyfile:
+    with tempfile.NamedTemporaryFile(delete=False) as raw_doxyfile:
+        doxyfile_path = os.path.abspath(raw_doxyfile.name)
+        doxyfile = codecs.getwriter('utf-8')(raw_doxyfile)
+
+        # Global defaults
+        with codecs.open(os.path.join(doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+            for line in f:
+                doxyfile.write(line)
+
         writer = DoxyfileWriter(doxyfile)
         writer.write_entry('PROJECT_NAME', fancyname)
         # FIXME: can we get the project version from CMake?
@@ -469,12 +476,12 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         # Module-specific overrides
         localdoxyfile = os.path.join(srcdir, 'docs/api/Doxyfile.local')
         if os.path.isfile(localdoxyfile):
-            with open(localdoxyfile) as f:
+            with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                 for line in f:
                     doxyfile.write(line)
 
-    subprocess.call([doxygen,'Doxyfile'])
-    os.remove('Doxyfile')
+    subprocess.call([doxygen, doxyfile_path])
+    os.remove(doxyfile_path)
     if dependency_diagram:
         os.remove(tmp_dependency_diagram)
 
