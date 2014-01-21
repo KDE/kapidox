@@ -31,6 +31,9 @@ not need to be installed to be used (see below), you can install kapidox with
 
     python setup.py install
 
+Note: For consistency, kapidox provides a CMakeLists.txt file, but this is just
+a wrapper around the setup.py script.
+
 
 ## Writing documentation
 
