@@ -3,13 +3,26 @@
 
 from distutils.core import setup
 
-setup(name='kapidox',
-      version='5.0.0',
-      description='KDE API documentation generation tools',
-      maintainer = 'Aurélien Gâteau',
-      maintainer_email = 'agateau@kde.org',
-      url='https://projects.kde.org/projects/frameworks/kapidox',
-      packages = ['kapidox'],
-      package_dir = {'kapidox': 'src/kapidox'},
-      package_data = {'kapidox': ['data/*.*', 'data/htmlresource/*']},
-      scripts = ['src/kgenapidox', 'src/kgenframeworksapidox'])
+setup(
+        name='kapidox',
+        version='5.0.0',
+        description='KDE API documentation generation tools',
+        maintainer = 'Aurélien Gâteau',
+        maintainer_email = 'agateau@kde.org',
+        url='https://projects.kde.org/projects/frameworks/kapidox',
+        packages = [
+            'kapidox',
+            'kapidox.kf5dot'
+        ],
+        package_dir = {
+            'kapidox': 'src/kapidox',
+            'kapidox.kf5dot': 'src/kapidox/kf5dot',
+        },
+        package_data = {'kapidox': ['data/*.*', 'data/htmlresource/*']},
+        scripts = [
+            'src/kgenapidox',
+            'src/kgenframeworksapidox',
+            'src/kf5dot-prepare',
+            'src/kf5dot-generate',
+        ],
+    )

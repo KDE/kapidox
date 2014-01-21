@@ -5,10 +5,9 @@ import itertools
 import sys
 
 
-from block import Block, quote
-
-from framework import Framework
-from frameworkdb import FrameworkDb
+from kapidox.kf5dot.block import Block, quote
+from kapidox.kf5dot.framework import Framework
+from kapidox.kf5dot.frameworkdb import FrameworkDb
 
 DESCRIPTION = """\
 """
