@@ -15,10 +15,10 @@ gen_fws() {
 
     for fw_dir in $dot_dir/$tier/*/ ; do
         fw=$(basename $fw_dir)
-        png=$png_dir/$tier-$fw.png
+        png=$png_dir/$fw.png
         echo $png
         ./kf5dot-generate $dot_dir/tier*/*/*.dot --framework $fw $opts | dot -Tpng > $png
-        png=$png_dir/$tier-$fw-simplified.png
+        png=$png_dir/$fw-simplified.png
         echo $png
         ./kf5dot-generate $dot_dir/tier*/*/*.dot --framework $fw $opts | tred | dot -Tpng > $png
     done
