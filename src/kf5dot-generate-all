@@ -1,0 +1,58 @@
+#!/bin/sh
+set -e
+
+oldpwd=$PWD
+cd $(dirname $0)
+bindir=$PWD
+cd $oldpwd
+generate=$bindir/kf5dot-generate
+
+die() {
+    echo "$*" 1>&2
+    exit 1
+}
+
+if [ ! -x "$generate" ] ; then
+    die "Can not find the kf5dot-generate script"
+fi
+
+if [ "$#" -ne 2 ] ; then
+    die "Usage: $(basename $0) <dot_dir> <png_dir>"
+fi
+
+dot_dir=$1
+png_dir=$2
+
+if [ ! -d "$dot_dir" ] ; then
+    die "'$dot_dir' is not a directory"
+fi
+
+gen_fws() {
+    tier=$1
+    qt=$2
+    if [ -n "$qt" ] ; then
+        opts=--qt
+    else
+        opts=""
+    fi
+
+    for fw_dir in $dot_dir/$tier/*/ ; do
+        fw=$(basename $fw_dir)
+        png=$png_dir/$fw.png
+        echo $png
+        $generate $dot_dir/tier*/*/*.dot --framework $fw $opts | dot -Tpng > $png
+        png=$png_dir/$fw-simplified.png
+        echo $png
+        $generate $dot_dir/tier*/*/*.dot --framework $fw $opts | tred | dot -Tpng > $png
+    done
+}
+
+mkdir -p $png_dir
+
+gen_fws tier1 1
+gen_fws tier2 1
+gen_fws tier3
+gen_fws tier4
+
+echo "kf5.png"
+$generate $dot_dir/tier*/*/*.dot | tred | dot -Tpng > $png_dir/kf5.png

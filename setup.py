@@ -24,5 +24,6 @@ setup(
             'src/kgenframeworksapidox',
             'src/kf5dot-prepare',
             'src/kf5dot-generate',
+            'src/kf5dot-generate-all',
         ],
     )
