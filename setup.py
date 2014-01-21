@@ -12,4 +12,11 @@ setup(name='kapidox',
       packages = ['kapidox'],
       package_dir = {'kapidox': 'src/kapidox'},
       package_data = {'kapidox': ['data/*.*', 'data/htmlresource/*']},
-      scripts = ['src/kgenapidox', 'src/kgenframeworksapidox'])
+      scripts = ['src/kgenapidox', 'src/kgenframeworksapidox'],
+      classifiers = [
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: BSD License',
+          'Programming Language :: Python',
+          'Topic :: Software Development'
+          ])
