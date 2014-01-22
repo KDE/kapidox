@@ -1,0 +1,201 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2014  Aurélien Gâteau <agateau@kde.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import argparse
+import itertools
+import sys
+
+
+from kapidox.kf5dot.block import Block, quote
+from kapidox.kf5dot.framework import Framework
+from kapidox.kf5dot.frameworkdb import FrameworkDb
+
+DESCRIPTION = """\
+"""
+
+ROOT_NODE_ATTRS = dict(fontsize=12, shape="box")
+
+GROUP_ATTRS = dict(style="filled", fillcolor="grey95", color="grey85")
+
+# Blocks within groups
+OTHER_ATTRS = dict(style="filled", fillcolor="cornsilk", color="black")
+
+QT_ATTRS = dict(style="filled", fillcolor="darkseagreen1", color="black")
+
+FW_ATTRS = dict(style="filled", fillcolor="azure", color="black")
+
+# Target blocks, used with --detailed
+FW_TARGET_ATTRS = dict(style="filled", fillcolor="paleturquoise")
+
+# Highlight the wanted framework, used with --framework
+WANTED_FW_ATTRS = dict(penwidth=2)
+
+class FrameworkCmp(object):
+    def __init__(self, db):
+        self.db = db
+        self.src = set(db)
+        self.dst = []
+
+    def __call__(self, fw1, fw2):
+        if self.depends_on(fw1, fw2):
+            return 1
+        if self.depends_on(fw2, fw1):
+            return -1
+        return 0
+
+    def depends_on(self, depender_fw, provider_fw):
+        for dep_target in depender_fw.get_all_target_dependencies():
+            if provider_fw.has_target(dep_target):
+                return True
+
+            try:
+                dep_fw = self.db.get_framework_for_target(dep_target)
+            except KeyError:
+                # No framework for this target, must be an external dependency,
+                # carry on
+                continue
+            if dep_fw != depender_fw and self.depends_on(dep_fw, provider_fw):
+                return True
+
+        return False
+
+
+class DotWriter(Block):
+    def __init__(self, db, out, wanted_fw=None, detailed=False):
+        Block.__init__(self, out)
+        self.db = db
+        self.detailed = detailed
+        self.wanted_fw = wanted_fw
+
+    def write(self):
+        with self.curly_block("digraph Root") as root:
+            root.write_list_attrs("node", **ROOT_NODE_ATTRS)
+
+            other_targets = self.db.find_external_targets()
+            qt_targets = set([x for x in other_targets if x.startswith("Qt")])
+            other_targets.difference_update(qt_targets)
+
+            if qt_targets:
+                with root.cluster_block("Qt", **GROUP_ATTRS) as b:
+                    b.write_list_attrs("node", **QT_ATTRS)
+                    b.write_nodes(qt_targets)
+
+            if other_targets:
+                with root.cluster_block("Others", **GROUP_ATTRS) as b:
+                    b.write_list_attrs("node", **OTHER_ATTRS)
+                    b.write_nodes(other_targets)
+
+            lst = sorted([x for x in self.db], key=lambda x: x.tier)
+            for tier, frameworks in itertools.groupby(lst, lambda x: x.tier):
+                with root.cluster_block(tier, **GROUP_ATTRS) as tier_block:
+                    tier_block.write_list_attrs("node", **FW_ATTRS)
+                    # Sort frameworks within the tier to ensure frameworks which
+                    # depend on other frameworks from that tier are listed after
+                    # their dependees.
+                    frameworks = list(frameworks)
+                    for fw in sorted(frameworks, cmp=FrameworkCmp(self.db)):
+                        if self.detailed:
+                            self.write_detailed_framework(tier_block, fw)
+                        else:
+                            self.write_framework(tier_block, fw)
+
+    def write_framework(self, tier_block, fw):
+        if fw == self.wanted_fw:
+            tier_block.write_list_attrs(quote(fw.name), **WANTED_FW_ATTRS)
+        else:
+            tier_block.write_nodes([fw.name])
+        edges = set([])
+        for target in fw.get_all_target_dependencies():
+            try:
+                target_fw = self.db.get_framework_for_target(target)
+                if fw == target_fw:
+                    continue
+                dep = target_fw.name
+            except KeyError:
+                dep = target
+            edges.add((fw.name, dep))
+        for dep_fw in fw.get_extra_frameworks():
+            edges.add((fw.name, dep_fw))
+        for edge in edges:
+            tier_block.writeln('"{}" -> "{}";'.format(*edge))
+
+    def write_detailed_framework(self, tier_block, fw):
+        with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
+            if fw == self.wanted_fw:
+                fw_block.write_attrs(**WANTED_FW_ATTRS)
+            fw_block.write_list_attrs("node", **FW_TARGET_ATTRS)
+            targets = sorted(fw.get_targets())
+            fw_block.write_nodes(targets)
+            for target in targets:
+                deps = fw.get_dependencies_for_target(target)
+                for dep in sorted(deps):
+                    fw_block.writeln('"{}" -> "{}";'.format(target, dep))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+
+    parser.add_argument("-o", "--output", dest="output", default="-",
+        help="Output to FILE", metavar="FILE")
+
+    parser.add_argument("--qt", dest="qt", action="store_true",
+        help="Show Qt libraries")
+
+    parser.add_argument("--detailed", dest="detailed", action="store_true",
+        help="Show targets within frameworks")
+
+    parser.add_argument("--framework", dest="framework",
+        help="Only show dependencies of framework FRAMEWORK", metavar="FRAMEWORK")
+
+    parser.add_argument("dot_files", nargs="+")
+
+    args = parser.parse_args()
+
+    db = FrameworkDb()
+    db.populate(args.dot_files, with_qt=args.qt)
+
+    if args.output == "-":
+        out = sys.stdout
+    else:
+        out = open(args.output, "w")
+
+    if args.framework:
+        wanted_fw = db.find_by_name(args.framework)
+        if wanted_fw is None:
+            sys.stderr.write("No framework named {}.\n".format(args.framework))
+            return 1
+        db.remove_unused_frameworks(wanted_fw)
+    else:
+        wanted_fw = None
+
+    writer = DotWriter(db, out, wanted_fw=wanted_fw, detailed=args.detailed)
+    writer.write()
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+# vi: ts=4 sw=4 et
