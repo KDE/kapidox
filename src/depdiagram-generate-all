@@ -26,7 +26,7 @@ oldpwd=$PWD
 cd $(dirname $0)
 bindir=$PWD
 cd $oldpwd
-generate=$bindir/kf5dot-generate
+generate=$bindir/depdiagram-generate
 
 die() {
     echo "$*" 1>&2
@@ -34,7 +34,7 @@ die() {
 }
 
 if [ ! -x "$generate" ] ; then
-    die "Can not find the kf5dot-generate script"
+    die "Can not find the depdiagram-generate script"
 fi
 
 if [ "$#" -ne 2 ] ; then

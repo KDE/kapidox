@@ -91,40 +91,40 @@ sure you have enough space!
 ### Dependency diagrams
 
 Kapidox can also generate dependency diagrams for the frameworks.  This is done
-using two tools: `src/kf5dot-prepare` and `src/kf5dot-generate`.  The way you
-use it is as follow.
+using two tools: `src/depdiagram-prepare` and `src/depdiagram-generate`.  The
+way you use it is as follow.
 
 First you need to prepare Graphviz dot files for all frameworks with
-`src/kf5dot-prepare`:
+`src/depdiagram-prepare`:
 
-    kf5dot-prepare ~/src/frameworks ~/dots
+    depdiagram-prepare ~/src/frameworks ~/dots
 
 This will generate many .dot files in ~/dots.
 
-Then you can generate the dependency diagrams with `src/kf5dot-generate`.  This
-tool accepts a list of dot files and output a combined dot file to stdout.
+Then you can generate the dependency diagrams with `src/depdiagram-generate`.
+This tool accepts a list of dot files and output a combined dot file to stdout.
 
 Here is how to generate a dependency diagram for all the frameworks:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot | dot -Tpng > kf5.png
+    depdiagram-generate ~/dots/tier*/*/*.dot | dot -Tpng > kf5.png
 
 The diagram might be very hard to read though, so for complex diagrams, you may
 want to pipe the output through the `tred` tool:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot | tred | dot -Tpng > kf5.png
+    depdiagram-generate ~/dots/tier*/*/*.dot | tred | dot -Tpng > kf5.png
 
 You can also generate the diagram for one particular framework using the
 "--framework" option:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot --framework kcrash | tred | dot -Tpng > kcrash.png
+    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash | tred | dot -Tpng > kcrash.png
 
 To include Qt libs, use the "--qt" option:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | dot -Tpng > kcrash.png
+    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | dot -Tpng > kcrash.png
 
 And to include targets within the framework, use the "--detailed" option:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot --framework kcrash --detailed | tred | dot -Tpng > kcrash.png
+    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --detailed | tred | dot -Tpng > kcrash.png
 
 
 #### Useful tools
@@ -133,14 +133,15 @@ And to include targets within the framework, use the "--detailed" option:
 
 `xdot`, can be used instead of `dot` to display the graph:
 
-    kf5dot-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | xdot
+    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | xdot
 
 
 #### Generating all diagrams at once
 
-You can use the kf5dot-generate-all tool to generate diagrams for all frameworks at once:
+You can use the depdiagram-generate-all tool to generate diagrams for all
+frameworks at once:
 
-    kf5dot-generate-all ~/dots ~/pngs
+    depdiagram-generate-all ~/dots ~/pngs
 
 This command creates two pngs for each framework: "$framework.png" and
 "$framework-simplified.png" (same diagram, ran through tred). It also creates a

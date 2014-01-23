@@ -28,9 +28,9 @@ import itertools
 import sys
 
 
-from kapidox.kf5dot.block import Block, quote
-from kapidox.kf5dot.framework import Framework
-from kapidox.kf5dot.frameworkdb import FrameworkDb
+from kapidox.depdiagram.block import Block, quote
+from kapidox.depdiagram.framework import Framework
+from kapidox.depdiagram.frameworkdb import FrameworkDb
 
 DESCRIPTION = """\
 """

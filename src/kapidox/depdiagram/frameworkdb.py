@@ -173,7 +173,7 @@ class FrameworkDb(object):
         """
         Init db from dot files
         """
-        tmp_dir = tempfile.mkdtemp(prefix="kf5dot")
+        tmp_dir = tempfile.mkdtemp(prefix="depdiagram")
         parser = DotFileParser(tmp_dir, with_qt)
         try:
             for dot_file in dot_files:

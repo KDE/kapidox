@@ -12,19 +12,19 @@ setup(
         url='https://projects.kde.org/projects/frameworks/kapidox',
         packages = [
             'kapidox',
-            'kapidox.kf5dot'
+            'kapidox.depdiagram'
         ],
         package_dir = {
             'kapidox': 'src/kapidox',
-            'kapidox.kf5dot': 'src/kapidox/kf5dot',
+            'kapidox.depdiagram': 'src/kapidox/depdiagram',
         },
         package_data = {'kapidox': ['data/*.*', 'data/htmlresource/*']},
         scripts = [
             'src/kgenapidox',
             'src/kgenframeworksapidox',
-            'src/kf5dot-prepare',
-            'src/kf5dot-generate',
-            'src/kf5dot-generate-all',
+            'src/depdiagram-prepare',
+            'src/depdiagram-generate',
+            'src/depdiagram-generate-all',
         ],
         classifiers = [
             'Environment :: Console',
