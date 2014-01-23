@@ -47,14 +47,12 @@ Most importantly, there should be a README.md file (much like this file).  The
 first line of this file is particularly important, as it will be used as the
 title of the documentation.
 
-If the documentation refers to any dot files, these should be in docs/api/dot.
-Images should be in docs/api/pics (or docs/pics), and snippets of example code
-should be in docs/api/examples or docs/examples.  See the doxygen documentation
-for help on how to refer to these files from the dox comments in the source
-files.
+If the documentation refers to any dot files, these should be in docs/dot.
+Images should be in docs/pics, and snippets of example code should be in
+docs/examples.  See the doxygen documentation for help on how to refer to these
+files from the dox comments in the source files.
 
-If you need to override any doxygen settings, put them in
-docs/api/Doxyfile.local.
+If you need to override any doxygen settings, put them in docs/Doxyfile.local.
 
 
 ## Generating the documentation

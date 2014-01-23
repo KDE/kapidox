@@ -317,23 +317,6 @@ def build_classmap(tagfile):
                             'filename': filename_el.text})
     return mapping
 
-def make_dir_list(topdir, paths):
-    """Filters a list of directories based on whether they exist
-
-    Looks for each path listed in paths (relative to topdir).  The absolute
-    paths of the ones that exist are returned.
-
-    topdir -- the directory to search for paths relative to
-    paths  -- a list of paths to check for (these can be relative or absolute)
-
-    Returns a list
-    """
-    lst = []
-    for p in paths:
-        if os.path.isdir(os.path.join(topdir,p)):
-            lst.append(os.path.join(topdir,p))
-    return lst
-
 def write_mapping_to_php(mapping, outputfile, varname='map'):
     """Write a mapping out as PHP code
 
@@ -390,6 +373,13 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         doxyfile_entries={},resourcedir=None, dependency_diagram=None):
     """Generate the API documentation for a single directory"""
 
+    def find_src_subdir(d):
+        pth = os.path.join(srcdir, d)
+        if os.path.isdir(pth):
+            return [pth]
+        else:
+            return []
+
     # Paths and basic project info
     html_subdir = 'html'
 
@@ -408,8 +398,6 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     if resourcedir is None:
         copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
         resourcedir = '.'
-    if os.path.isdir(os.path.join(srcdir,'docs/api/htmlresource')):
-        copy_dir_contents(os.path.join(srcdir,'docs/api/htmlresource'),htmldir)
 
     input_list = [srcdir]
     image_path_list = []
@@ -437,12 +425,11 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         # FIXME: can we get the project version from CMake?
 
         # Input locations
-        image_path_list.extend(
-                make_dir_list(srcdir, ['docs/api','docs/api/pics','docs/pics']))
+        image_path_list.extend(find_src_subdir('docs/pics'))
         writer.write_entries(
                 INPUT=input_list,
-                DOTFILE_DIRS=make_dir_list(srcdir, ['docs/api','docs/api/dot']),
-                EXAMPLE_PATH=make_dir_list(srcdir, ['docs/api/examples','docs/examples']),
+                DOTFILE_DIRS=find_src_subdir('docs/dot'),
+                EXAMPLE_PATH=find_src_subdir('docs/examples'),
                 IMAGE_PATH=image_path_list)
 
         # Other input settings
@@ -474,7 +461,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         writer.write_entries(**doxyfile_entries)
 
         # Module-specific overrides
-        localdoxyfile = os.path.join(srcdir, 'docs/api/Doxyfile.local')
+        localdoxyfile = os.path.join(srcdir, 'docs/Doxyfile.local')
         if os.path.isfile(localdoxyfile):
             with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                 for line in f:
