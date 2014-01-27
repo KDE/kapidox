@@ -137,6 +137,10 @@ def main():
             help='(Path to) the doxygen executable.')
     parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
             help='(Path to) the qhelpgenerator executable.')
+    parser.add_argument('--logfile-dir', default=None,
+            help='Log doxygen warnings and errors to files in LOGFILE_DIR ' +
+                 'instead of outputting them to stderr.  The files will be ' +
+                 'named <module>.log.')
     args = parser.parse_args()
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
@@ -150,11 +154,18 @@ def main():
         print(args.frameworksdir + " is not a directory")
         exit(2)
 
+    if args.logfile_dir and not os.path.isdir(args.logfile_dir):
+        print(args.logfile_dir + " is not a directory")
+        exit(2)
+
     framework_list = os.listdir(args.frameworksdir)
     tiers = {1:[],2:[],3:[],4:[]}
     for framework in framework_list:
         fwdir = os.path.join(args.frameworksdir, framework)
         outputdir = framework
+        logfile = ''
+        if args.logfile_dir:
+            logfile = os.path.join(args.logfile_dir, framework + '.log')
         if args.use_suffix:
             outputdir += '-apidocs'
         readme_file = os.path.join(fwdir, 'README.md')
@@ -175,7 +186,8 @@ def main():
                     'framework': framework,
                     'fancyname': fancyname,
                     'srcdir': fwdir,
-                    'outputdir': outputdir
+                    'outputdir': outputdir,
+                    'logfile': logfile
                     })
 
     for t in range(1,5):
@@ -216,7 +228,10 @@ def main():
                         },
                     'group_menu': group_menu
                     },
-                doxyfile_entries = { 'WARN_IF_UNDOCUMENTED': True }
+                doxyfile_entries = {
+                    'WARN_IF_UNDOCUMENTED': True,
+                    'WARN_LOGFILE': fwinfo['logfile']
+                    }
                 )
         if not rebuild:
             tagfile = os.path.abspath(
@@ -237,6 +252,8 @@ def main():
             # FIXME: can we be cleverer about deps?
             for fwinfo in tiers[t]:
                 shutil.rmtree(fwinfo['outputdir'])
+                if fwinfo['logfile']:
+                    os.remove(fwinfo['logfile'])
                 gen_fw_apidocs(fwinfo, rebuild=True)
 
 
