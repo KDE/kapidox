@@ -439,7 +439,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         writer.write_entries(
                 OUTPUT_DIRECTORY=outputdir,
                 GENERATE_TAGFILE=moduletagfile,
-                HTML_OUTPUT=html_subdir)
+                HTML_OUTPUT=html_subdir,
+                WARN_LOGFILE=os.path.join(outputdir, 'doxygen-warnings.log'))
 
         # Other output settings
         writer.write_entries(
