@@ -116,10 +116,6 @@ def main():
             help="Enable Doxygen's search engine feature.")
     parser.add_argument('--api-searchbox', action='store_true',
             help="Enable the API searchbox (only useful for api.kde.org).")
-    parser.add_argument('--no-apidocs-suffix', action='store_false',
-            dest='use_suffix',
-            help='Call the apidocs folders "<framework>" instead of ' +
-                 '"<framework>-apidocs".')
     parser.add_argument('--doxdatadir',
             help='Location of the HTML header files and support graphics.')
     parser.add_argument('--qtdoc-dir',
@@ -155,8 +151,6 @@ def main():
     for framework in framework_list:
         fwdir = os.path.join(args.frameworksdir, framework)
         outputdir = framework
-        if args.use_suffix:
-            outputdir += '-apidocs'
         readme_file = os.path.join(fwdir, 'README.md')
         yaml_file = os.path.join(fwdir, framework + '.yaml')
         if not os.path.isfile(readme_file) or not os.path.isfile(yaml_file):
