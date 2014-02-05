@@ -43,9 +43,10 @@ try:
 except ImportError:
     from urlparse import urljoin
 
+import pystache
+
 from .doxyfilewriter import DoxyfileWriter
 
-DEPENDENCY_DIAGRAM_PAGE = 'dependencies'
 
 def smartjoin(pathorurl1,*args):
     """Join paths or URLS
@@ -244,7 +245,7 @@ def parse_fancyname(readme_file, default=None):
         print("The module does not provide a README.md file")
         return default
 
-def menu_items(htmldir):
+def menu_items(htmldir, modulename):
     """Menu items for standard Doxygen files
 
     Looks for a set of standard Doxygen files (like namespaces.html) and
@@ -266,7 +267,7 @@ def menu_items(htmldir):
             {'text': 'File Members', 'href': 'globals.html'},
             {'text': 'Modules', 'href': 'modules.html'},
             {'text': 'Directories', 'href': 'dirs.html'},
-            {'text': 'Dependencies', 'href': DEPENDENCY_DIAGRAM_PAGE + '.html'},
+            {'text': 'Dependencies', 'href': modulename + '-dependencies.html'},
             {'text': 'Related Pages', 'href': 'pages.html'},
             ]
     # NOTE In Python 3 filter() builtin returns an iterable, but not a list
@@ -283,7 +284,6 @@ def postprocess(htmldir, mapping):
     htmldir -- the directory containing the .html files
     mapping -- a dict of mappings
     """
-    import pystache
     renderer = pystache.Renderer(decode_errors='ignore',
                                  search_dirs=htmldir)
 
@@ -366,6 +366,16 @@ def find_all_tagfiles(args):
             searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
     return tagfiles
 
+def generate_dependencies_page(tmp_dir, doxdatadir, modulename):
+    """Create `modulename`-dependencies.md in `tmp_dir`"""
+    template_path = os.path.join(doxdatadir, 'dependencies.md.mustache')
+    out_path = os.path.join(tmp_dir, modulename + '-dependencies.md')
+    renderer = pystache.Renderer()
+    with codecs.open(out_path, 'w', 'utf-8') as outf:
+        txt = renderer.render_path(template_path, { 'modulename': modulename})
+        outf.write(txt)
+    return out_path
+
 def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
@@ -401,77 +411,72 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
 
     input_list = [srcdir]
     image_path_list = []
-    if dependency_diagram:
-        name = os.path.join(doxdatadir, DEPENDENCY_DIAGRAM_PAGE + '.md')
-        input_list.append(name)
 
-        # We must copy the diagram because dependencies.md refers to it as
-        # dependencies.png
-        tmp_dependency_diagram = os.path.join(os.getcwd(), 'dependencies.png')
-        shutil.copy(dependency_diagram, tmp_dependency_diagram)
-        image_path_list.append(tmp_dependency_diagram)
+    tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
+    try:
+        if dependency_diagram:
+            input_list.append(generate_dependencies_page(tmp_dir, doxdatadir, modulename))
+            image_path_list.append(dependency_diagram)
 
-    with tempfile.NamedTemporaryFile(delete=False) as raw_doxyfile:
-        doxyfile_path = os.path.abspath(raw_doxyfile.name)
-        doxyfile = codecs.getwriter('utf-8')(raw_doxyfile)
+        doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
+        with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
 
-        # Global defaults
-        with codecs.open(os.path.join(doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
-            for line in f:
-                doxyfile.write(line)
-
-        writer = DoxyfileWriter(doxyfile)
-        writer.write_entry('PROJECT_NAME', fancyname)
-        # FIXME: can we get the project version from CMake?
-
-        # Input locations
-        image_path_list.extend(find_src_subdir('docs/pics'))
-        writer.write_entries(
-                INPUT=input_list,
-                DOTFILE_DIRS=find_src_subdir('docs/dot'),
-                EXAMPLE_PATH=find_src_subdir('docs/examples'),
-                IMAGE_PATH=image_path_list)
-
-        # Other input settings
-        writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in tagfiles])
-
-        # Output locations
-        writer.write_entries(
-                OUTPUT_DIRECTORY=outputdir,
-                GENERATE_TAGFILE=moduletagfile,
-                HTML_OUTPUT=html_subdir,
-                WARN_LOGFILE=os.path.join(outputdir, 'doxygen-warnings.log'))
-
-        # Other output settings
-        writer.write_entries(
-                HTML_HEADER=doxdatadir + '/header.html',
-                HTML_FOOTER=doxdatadir + '/footer.html',
-                HTML_STYLESHEET=doxdatadir + '/doxygen.css')
-
-        # Always write these, even if QHP is disabled, in case Doxygen.local
-        # overrides it
-        writer.write_entries(
-                QHP_VIRTUAL_FOLDER=modulename,
-                QHG_LOCATION=qhelpgenerator)
-
-        writer.write_entries(
-                GENERATE_MAN=man_pages,
-                GENERATE_QHP=qhp,
-                SEARCHENGINE=searchengine)
-
-        writer.write_entries(**doxyfile_entries)
-
-        # Module-specific overrides
-        localdoxyfile = os.path.join(srcdir, 'docs/Doxyfile.local')
-        if os.path.isfile(localdoxyfile):
-            with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
+            # Global defaults
+            with codecs.open(os.path.join(doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
                 for line in f:
                     doxyfile.write(line)
 
-    subprocess.call([doxygen, doxyfile_path])
-    os.remove(doxyfile_path)
-    if dependency_diagram:
-        os.remove(tmp_dependency_diagram)
+            writer = DoxyfileWriter(doxyfile)
+            writer.write_entry('PROJECT_NAME', fancyname)
+            # FIXME: can we get the project version from CMake?
+
+            # Input locations
+            image_path_list.extend(find_src_subdir('docs/pics'))
+            writer.write_entries(
+                    INPUT=input_list,
+                    DOTFILE_DIRS=find_src_subdir('docs/dot'),
+                    EXAMPLE_PATH=find_src_subdir('docs/examples'),
+                    IMAGE_PATH=image_path_list)
+
+            # Other input settings
+            writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in tagfiles])
+
+            # Output locations
+            writer.write_entries(
+                    OUTPUT_DIRECTORY=outputdir,
+                    GENERATE_TAGFILE=moduletagfile,
+                    HTML_OUTPUT=html_subdir,
+                    WARN_LOGFILE=os.path.join(outputdir, 'doxygen-warnings.log'))
+
+            # Other output settings
+            writer.write_entries(
+                    HTML_HEADER=doxdatadir + '/header.html',
+                    HTML_FOOTER=doxdatadir + '/footer.html',
+                    HTML_STYLESHEET=doxdatadir + '/doxygen.css')
+
+            # Always write these, even if QHP is disabled, in case Doxygen.local
+            # overrides it
+            writer.write_entries(
+                    QHP_VIRTUAL_FOLDER=modulename,
+                    QHG_LOCATION=qhelpgenerator)
+
+            writer.write_entries(
+                    GENERATE_MAN=man_pages,
+                    GENERATE_QHP=qhp,
+                    SEARCHENGINE=searchengine)
+
+            writer.write_entries(**doxyfile_entries)
+
+            # Module-specific overrides
+            localdoxyfile = os.path.join(srcdir, 'docs/Doxyfile.local')
+            if os.path.isfile(localdoxyfile):
+                with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
+                    for line in f:
+                        doxyfile.write(line)
+
+        subprocess.call([doxygen, doxyfile_path])
+    finally:
+        shutil.rmtree(tmp_dir)
 
     classmap = build_classmap(moduletagfile)
     write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
@@ -482,7 +487,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
             'title': title,
             'copyright': copyright,
             'api_searchbox': api_searchbox,
-            'doxygen_menu': {'entries': menu_items(htmldir)},
+            'doxygen_menu': {'entries': menu_items(htmldir, modulename)},
             'class_map': {'classes': classmap}
         }
     mapping.update(template_mapping)
