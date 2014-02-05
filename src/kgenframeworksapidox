@@ -29,9 +29,15 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-import argparse, os, shutil, sys
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
 
 from kapidox import *
+from kapidox import depdiagram
 
 def get_tier(yaml_file):
     """Parse the tier out of a yaml file"""
@@ -101,6 +107,30 @@ def process_toplevel_html_file(inputfile, outputfile, tiers, title,
     with open(outputfile, 'w') as outf:
         outf.write(renderer.render_path(inputfile, mapping))
 
+
+def find_dot_files(dot_dir):
+    """Returns a list of path to files ending with .dot in subdirs of `dot_dir`."""
+    lst = []
+    for (root, dirs, files) in os.walk(dot_dir):
+        lst.extend([os.path.join(root, x) for x in files if x.endswith('.dot')])
+    return lst
+
+
+def generate_diagram(fw_name, tier, dot_files, diagram_dir):
+    """Generate a dependency diagram for a framework.
+
+    Returns the full path to the generated png
+    """
+    dot_path = os.path.join(diagram_dir, fw_name + '.dot')
+    with open(dot_path, 'w') as f:
+        with_qt = tier <= 2
+        depdiagram.generate(f, dot_files, framework=fw_name, with_qt=with_qt)
+
+    png_path = os.path.join(diagram_dir, fw_name + '.png')
+    subprocess.check_call(['dot', '-Tpng', '-o' + png_path, dot_path])
+    return png_path
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
             'for the KDE Frameworks')
@@ -112,6 +142,8 @@ def main():
             help='Generate man page documentation.')
     parser.add_argument('--qhp', action='store_true',
             help='Generate Qt Compressed Help documentation.')
+    parser.add_argument('--dependency-diagrams', action='store_true',
+            help='Generate dependency diagrams.')
     parser.add_argument('--searchengine', action='store_true',
             help="Enable Doxygen's search engine feature.")
     parser.add_argument('--api-searchbox', action='store_true',
@@ -133,6 +165,8 @@ def main():
             help='(Path to) the doxygen executable.')
     parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
             help='(Path to) the qhelpgenerator executable.')
+    parser.add_argument('--keep-temp-dirs', action='store_true',
+            help='Do not delete temporary dirs, useful for debugging.')
     args = parser.parse_args()
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
@@ -170,6 +204,7 @@ def main():
                     'fancyname': fancyname,
                     'srcdir': fwdir,
                     'outputdir': outputdir,
+                    'dependency_diagram': None,
                     })
 
     for t in range(1,5):
@@ -187,6 +222,7 @@ def main():
                 outputdir = fwinfo['outputdir'],
                 doxdatadir = doxdatadir,
                 tagfiles = tagfiles,
+                dependency_diagram = fwinfo['dependency_diagram'],
                 man_pages = args.man_pages,
                 qhp = args.qhp,
                 searchengine = args.searchengine,
@@ -225,15 +261,37 @@ def main():
     process_toplevel_html_file(os.path.join(doxdatadir, 'frameworks.html'), 'index.html',
             title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
-    for t in range(1,5):
-        for fwinfo in tiers[t]:
-            gen_fw_apidocs(fwinfo)
-        if (t >= 3):
-            # Rebuild for interdependencies
-            # FIXME: can we be cleverer about deps?
+    try:
+        if args.dependency_diagrams:
+            tmp_dir = tempfile.mkdtemp(prefix='kapidox-deps-')
+            dot_dir = os.path.join(tmp_dir, 'dot')
+            diagram_dir = os.path.join(tmp_dir, 'diagrams')
+            os.mkdir(dot_dir)
+            os.mkdir(diagram_dir)
+            depdiagram.prepare(args.frameworksdir, dot_dir)
+            dot_files = find_dot_files(dot_dir)
+            assert(dot_files)
+        else:
+            tmp_dir = None
+            diagram_dir = None
+
+        for t in range(1,5):
             for fwinfo in tiers[t]:
-                shutil.rmtree(fwinfo['outputdir'])
-                gen_fw_apidocs(fwinfo, rebuild=True)
+                if args.dependency_diagrams:
+                    fwinfo['dependency_diagram'] = generate_diagram(fwinfo['framework'], t, dot_files, diagram_dir)
+                gen_fw_apidocs(fwinfo)
+            if (t >= 3):
+                # Rebuild for interdependencies
+                # FIXME: can we be cleverer about deps?
+                for fwinfo in tiers[t]:
+                    shutil.rmtree(fwinfo['outputdir'])
+                    gen_fw_apidocs(fwinfo, rebuild=True)
+    finally:
+        if tmp_dir:
+            if args.keep_temp_dirs:
+                print('Kept temp dir at {}'.format(tmp_dir))
+            else:
+                shutil.rmtree(tmp_dir)
 
 
 if __name__ == "__main__":
