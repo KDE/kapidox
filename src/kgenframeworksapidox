@@ -127,7 +127,15 @@ def generate_diagram(fw_name, tier, dot_files, diagram_dir):
         depdiagram.generate(f, dot_files, framework=fw_name, with_qt=with_qt)
 
     png_path = os.path.join(diagram_dir, fw_name + '.png')
-    subprocess.check_call(['dot', '-Tpng', '-o' + png_path, dot_path])
+    tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
+    dot_proc = subprocess.Popen(['dot', '-Tpng', '-o' + png_path],
+                                stdin=tred_proc.stdout)
+    tred_proc.stdout.close()
+    dot_proc.communicate()
+    assert dot_proc >= 0
+    if dot_proc.returncode != 0:
+        print('dot failed with error code {}'.format(dot_proc.returncode))
+        sys.exit(dot_proc.returncode)
     return png_path
 
 
