@@ -36,13 +36,17 @@ import yaml
 __all__ = ('prepare',)
 
 def _generate_dot(fw_dir, build_dir):
+    """Calls cmake to generate the dot file for a framework.
+
+    Returns true on success, false on failure"""
     fw_name = os.path.basename(fw_dir)
     ret = subprocess.call(["cmake", fw_dir, "--graphviz={}.dot".format(fw_name)],
         stdout=open("/dev/null", "w"),
         cwd=build_dir)
     if ret != 0:
-        sys.stdout.write("Generating the dot file for {} failed.\n".format(fw_name))
-        sys.exit(ret)
+        sys.stdout.write("ERROR: Generating the dot file for {} failed.\n".format(fw_name))
+        return False
+    return True
 
 
 def prepare(fw_base_dir, dot_dir):
@@ -68,5 +72,6 @@ def prepare(fw_base_dir, dot_dir):
         build_dir = os.path.join(dot_dir, "tier" + str(tier), fw_name)
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
-        _generate_dot(fw_dir, build_dir)
+        if not _generate_dot(fw_dir, build_dir):
+            continue
         shutil.copy(yaml_path, build_dir)
