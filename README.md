@@ -87,73 +87,11 @@ And (after maybe 15-30 minutes) you will get a complete set of documentation in
 the frameworks-apidocs directory.  This will be about 500Mb in size, so make
 sure you have enough space!
 
+You can ask kgenframeworksapidox to generate dependency diagrams for all the
+frameworks. To do so, pass it the --dependency-diagram option.
 
-### Dependency diagrams
-
-Kapidox can also generate dependency diagrams for the frameworks.  This is done
-using two tools: `src/depdiagram-prepare` and `src/depdiagram-generate`.  The
-way you use it is as follow.
-
-First you need to prepare Graphviz dot files for all frameworks with
-`src/depdiagram-prepare`:
-
-    depdiagram-prepare ~/src/frameworks ~/dots
-
-This will generate many .dot files in ~/dots.
-
-Then you can generate the dependency diagrams with `src/depdiagram-generate`.
-This tool accepts a list of dot files and output a combined dot file to stdout.
-
-Here is how to generate a dependency diagram for all the frameworks:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot | dot -Tpng > kf5.png
-
-The diagram might be very hard to read though, so for complex diagrams, you may
-want to pipe the output through the `tred` tool:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot | tred | dot -Tpng > kf5.png
-
-You can also generate the diagram for one particular framework using the
-"--framework" option:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash | tred | dot -Tpng > kcrash.png
-
-To include Qt libs, use the "--qt" option:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | dot -Tpng > kcrash.png
-
-And to include targets within the framework, use the "--detailed" option:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --detailed | tred | dot -Tpng > kcrash.png
-
-
-#### Useful tools
-
-`tred`, mentioned in Usage, reduces clutter in dot files.
-
-`xdot`, can be used instead of `dot` to display the graph:
-
-    depdiagram-generate ~/dots/tier*/*/*.dot --framework kcrash --qt | tred | xdot
-
-
-#### Generating all diagrams at once
-
-You can use the depdiagram-generate-all tool to generate diagrams for all
-frameworks at once:
-
-    depdiagram-generate-all ~/dots ~/pngs
-
-This command creates two pngs for each framework: "$framework.png" and
-"$framework-simplified.png" (same diagram, ran through tred). It also creates a
-diagram for all of the frameworks, named "kf5.png".
-
-
-#### Integration with kgenapidox
-
-Once you have generated dependency diagrams, you can run kgenapidox with the
-"--dependency-diagram-dir" option pointing to the dir containing the diagrams.
-When this option is set, kgenapidox creates a "Dependencies" page, accessible
-from the documentation sidebar. This page includes the framework diagram.
+More fine-grained tools are available for dependency diagrams. You can learn
+about them in [depdiagrams](depdiagrams.html).
 
 
 ## Links
