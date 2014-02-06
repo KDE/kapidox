@@ -37,7 +37,11 @@ import sys
 import tempfile
 
 from kapidox import *
-from kapidox import depdiagram
+try:
+    from kapidox import depdiagram
+    DEPDIAGRAM_AVAILABLE = True
+except ImportError:
+    DEPDIAGRAM_AVAILABLE = False
 
 def get_tier(yaml_file):
     """Parse the tier out of a yaml file"""
@@ -176,6 +180,10 @@ def main():
     parser.add_argument('--keep-temp-dirs', action='store_true',
             help='Do not delete temporary dirs, useful for debugging.')
     args = parser.parse_args()
+
+    if args.dependency_diagrams and not DEPDIAGRAM_AVAILABLE:
+        print('ERROR: You need to install the yapgvb Python module to generate dependency diagrams.\nSee <http://code.google.com/p/yapgvb/>.')
+        exit(1)
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
     tagfiles = search_for_tagfiles(
