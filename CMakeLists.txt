@@ -22,6 +22,6 @@ install(CODE
      endif()
      execute_process(
         COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix ${CMAKE_INSTALL_PREFIX} \${_root_arg}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY \"${CMAKE_SOURCE_DIR}\"
         )"
     )
