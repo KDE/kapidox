@@ -177,6 +177,9 @@ class FrameworkDb(object):
         parser = DotFileParser(tmp_dir, with_qt)
         try:
             for dot_file in dot_files:
+                # yapgvb is picky: it wants the filename to be a string, not an
+                # unicode object
+                dot_file = dot_file.encode("utf-8")
                 fw = parser.parse(dot_file)
                 yaml_file = dot_file.replace(".dot", ".yaml")
                 if os.path.exists(yaml_file):
