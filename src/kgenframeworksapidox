@@ -182,7 +182,7 @@ def main():
     args = parser.parse_args()
 
     if args.dependency_diagrams and not DEPDIAGRAM_AVAILABLE:
-        print('ERROR: You need to install the yapgvb Python module to generate dependency diagrams.\nSee <http://code.google.com/p/yapgvb/>.')
+        print('ERROR: You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
         exit(1)
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)

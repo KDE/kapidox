@@ -28,9 +28,10 @@ import re
 import shutil
 import tempfile
 
+import gv
 import yaml
-import yapgvb
 
+import gvutils
 from framework import Framework
 
 
@@ -61,7 +62,7 @@ def to_temp_file(dirname, fname, content):
 
 def preprocess(fname):
     lst = []
-    gfx = yapgvb.Graph().read(fname)
+    graph_handle = gv.read(fname)
     txt = open(fname).read()
     targets = []
 
@@ -80,7 +81,8 @@ def preprocess(fname):
     #
     # Using real framework names as labels makes it possible to merge multiple
     # .dot files.
-    for node in gfx.nodes:
+    for node_handle in gvutils.get_node_list(graph_handle):
+        node = gvutils.Node(node_handle)
         label = node.label.replace("KF5::", "")
         if node.shape in TARGET_SHAPES:
             targets.append(label)
@@ -136,16 +138,18 @@ class DotFileParser(object):
         def target_from_node(node):
             return node.name.replace("KF5", "")
 
-        src = yapgvb.Graph().read(dot_file)
+        src_handle = gv.read(dot_file)
 
         targets = set()
-        for node in src.nodes:
+        for node_handle in gvutils.get_node_list(src_handle):
+            node = gvutils.Node(node_handle)
             if node.shape in TARGET_SHAPES and self._want(node):
                 target = target_from_node(node)
                 targets.add(target)
                 fw.add_target(target)
 
-        for edge in src.edges:
+        for edge_handle in gvutils.get_edge_list(src_handle):
+            edge = gvutils.Edge(edge_handle)
             target = target_from_node(edge.tail)
             if target in targets and self._want(edge.head):
                 dep_target = target_from_node(edge.head)
