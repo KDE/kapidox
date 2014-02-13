@@ -22,11 +22,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import fnmatch
 import os
 import re
-import shutil
-import tempfile
 
 import gv
 import yaml
@@ -52,16 +51,7 @@ DEPS_BLACKLIST = [
     ]
 
 
-def to_temp_file(dirname, fname, content):
-    path = os.path.join(dirname, os.path.basename(fname))
-    if os.path.exists(path):
-        raise Exception("{} already exists".format(path))
-    open(path, "w").write(content)
-    return path
-
-
 def preprocess(fname):
-    lst = []
     graph_handle = gv.read(fname)
     txt = open(fname).read()
     targets = []
@@ -114,8 +104,7 @@ def _add_extra_dependencies(fw, yaml_file):
 
 
 class DotFileParser(object):
-    def __init__(self, tmp_dir, with_qt):
-        self._tmp_dir = tmp_dir
+    def __init__(self, with_qt):
         self._with_qt = with_qt
 
     def parse(self, dot_file):
@@ -126,19 +115,17 @@ class DotFileParser(object):
         name = lst[-2]
         fw = Framework(tier, name)
 
-        # Preprocess dot files so that they can be merged together. The
-        # output needs to be stored in a temp file because yapgvb
-        # crashes when reading from a StringIO
-        tmp_file = to_temp_file(self._tmp_dir, dot_file, preprocess(dot_file))
-        self._init_fw_from_dot_file(fw, tmp_file, self._with_qt)
+        # Preprocess dot files so that they can be merged together.
+        dot_data =  preprocess(dot_file)
+        self._init_fw_from_dot_data(fw, dot_data, self._with_qt)
 
         return fw
 
-    def _init_fw_from_dot_file(self, fw, dot_file, with_qt):
+    def _init_fw_from_dot_data(self, fw, dot_data, with_qt):
         def target_from_node(node):
             return node.name.replace("KF5", "")
 
-        src_handle = gv.read(dot_file)
+        src_handle = gv.readstring(dot_data)
 
         targets = set()
         for node_handle in gvutils.get_node_list(src_handle):
@@ -177,20 +164,14 @@ class FrameworkDb(object):
         """
         Init db from dot files
         """
-        tmp_dir = tempfile.mkdtemp(prefix="depdiagram")
-        parser = DotFileParser(tmp_dir, with_qt)
-        try:
-            for dot_file in dot_files:
-                # yapgvb is picky: it wants the filename to be a string, not an
-                # unicode object
-                dot_file = dot_file.encode("utf-8")
-                fw = parser.parse(dot_file)
-                yaml_file = dot_file.replace(".dot", ".yaml")
-                if os.path.exists(yaml_file):
-                    _add_extra_dependencies(fw, yaml_file)
-                self._fw_list.append(fw)
-        finally:
-            shutil.rmtree(tmp_dir)
+        parser = DotFileParser(with_qt)
+        for dot_file in dot_files:
+            dot_file = dot_file.encode("utf-8")
+            fw = parser.parse(dot_file)
+            yaml_file = dot_file.replace(".dot", ".yaml")
+            if os.path.exists(yaml_file):
+                _add_extra_dependencies(fw, yaml_file)
+            self._fw_list.append(fw)
         self._update_fw_for_target()
 
     def _update_fw_for_target(self):
