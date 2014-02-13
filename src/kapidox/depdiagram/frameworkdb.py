@@ -94,8 +94,7 @@ def preprocess(fname):
     return txt
 
 
-def _add_extra_dependencies(fw, yaml_file):
-    dct = yaml.load(open(yaml_file))
+def _add_extra_dependencies(fw, dct):
     lst = dct.get("framework-dependencies")
     if lst is None:
         return
@@ -107,12 +106,8 @@ class DotFileParser(object):
     def __init__(self, with_qt):
         self._with_qt = with_qt
 
-    def parse(self, dot_file):
-        # dot_file is of the form:
-        # <dot-dir>/<tier>/<framework>/<framework>.dot
-        lst = dot_file.split("/")
-        tier = lst[-3]
-        name = lst[-2]
+    def parse(self, tier, dot_file):
+        name = os.path.basename(dot_file).replace(".dot", "")
         fw = Framework(tier, name)
 
         # Preprocess dot files so that they can be merged together.
@@ -166,11 +161,15 @@ class FrameworkDb(object):
         """
         parser = DotFileParser(with_qt)
         for dot_file in dot_files:
-            dot_file = dot_file.encode("utf-8")
-            fw = parser.parse(dot_file)
             yaml_file = dot_file.replace(".dot", ".yaml")
-            if os.path.exists(yaml_file):
-                _add_extra_dependencies(fw, yaml_file)
+            with open(yaml_file) as f:
+                dct = yaml.load(f)
+
+            tier = dct["tier"]
+            dot_file = dot_file.encode("utf-8")
+            fw = parser.parse(tier, dot_file)
+
+            _add_extra_dependencies(fw, dct)
             self._fw_list.append(fw)
         self._update_fw_for_target()
 
