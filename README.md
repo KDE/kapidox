@@ -15,12 +15,16 @@ documentation.
 ## Dependencies
 
 Python 2 or 3 is required to run the scripts.  Whichever version of python you
-use needs to have the pystache and yaml (or pyyaml) modules.  To generate the
-dependency diagrams, you need the yapgvb module.
+use needs to have the pystache and yaml (or pyyaml) modules.
 
 The following command should install them for the current user:
 
-    pip install --user PyYAML pystache yapgvb
+    pip install --user PyYAML pystache
+
+To generate the dependency diagrams, you need the Graphviz Python bindings.
+They are currently not available from pip, but most distributions provide them.
+You can get binaries and source archives from
+<http://www.graphviz.org/Download.php>.
 
 
 ## Installation
