@@ -30,22 +30,39 @@ import sys
 from kapidox import depdiagram
 
 DESCRIPTION = """
-Generate Graphviz dot files for all frameworks.
+Generate Graphviz dot files for one or all frameworks.
 """
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
-    parser.add_argument("fw_base_dir",
-        help="Base dir containing all frameworks")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-s", "--single",
+        help="Generate dot files for the framework stored in DIR",
+        metavar="DIR")
+    group.add_argument("-a", "--all",
+        help="Generate dot files for all frameworks whose dir is in BASE_DIR",
+        metavar="BASE_DIR")
     parser.add_argument("dot_dir",
         help="Destination dir where dot files will be generated")
 
     args = parser.parse_args()
-    fw_base_dir = os.path.abspath(args.fw_base_dir)
+
     dot_dir = os.path.abspath(args.dot_dir)
 
-    depdiagram.prepare(fw_base_dir, dot_dir)
+    if args.single:
+        fw_dir = os.path.abspath(args.single)
+        try:
+            depdiagram.prepare_one(fw_dir, dot_dir)
+        except depdiagram.NoFrameworkError as e:
+            print(e)
+            return 1
+        except depdiagram.GenerationError as e:
+            print(e)
+            return 2
+    else:
+        fw_base_dir = os.path.abspath(args.all)
+        depdiagram.prepare(fw_base_dir, dot_dir)
 
 
 if __name__ == "__main__":

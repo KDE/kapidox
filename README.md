@@ -97,7 +97,7 @@ frameworks with the `depdiagram-prepare` tool, like this:
 
 
     mkdir dot
-    ~/src/frameworks/kapidox/src/depdiagram-prepare ~/src/frameworks dot
+    ~/src/frameworks/kapidox/src/depdiagram-prepare --all ~/src/frameworks dot
 
 Then call `kgenframeworksapidox` with the `--depdiagram-dot-dir` option, like
 this:

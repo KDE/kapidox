@@ -15,11 +15,16 @@ and `src/depdiagram-generate`.  The way you use it is as follow.
 ### 1. Prepare dot files
 
 You need to prepare Graphviz dot files for all frameworks with
-`src/depdiagram-prepare`:
+`src/depdiagram-prepare`. You can prepare dot files for all frameworks at once
+using:
 
-    depdiagram-prepare ~/src/frameworks ~/dots
+    depdiagram-prepare --all ~/src/frameworks ~/dots
 
 This will generate many .dot files in ~/dots.
+
+Or you can prepare dot files for a single framework with:
+
+    depdiagram-prepare --single ~/src/frameworks/myframework ~/dots
 
 ### 2. Generate the diagrams
 
