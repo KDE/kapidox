@@ -30,23 +30,47 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 
-import yaml
+__all__ = ('prepare', 'prepare_one', 'NoFrameworkError', 'GenerationError')
 
-__all__ = ('prepare',)
 
-def _generate_dot(fw_dir, build_dir):
+class NoFrameworkError(Exception):
+    pass
+
+
+class GenerationError(Exception):
+    pass
+
+
+def _generate_dot(fw_dir, output_dir):
     """Calls cmake to generate the dot file for a framework.
 
     Returns true on success, false on failure"""
     fw_name = os.path.basename(fw_dir)
-    ret = subprocess.call(["cmake", fw_dir, "--graphviz={}.dot".format(fw_name)],
-        stdout=open("/dev/null", "w"),
-        cwd=build_dir)
-    if ret != 0:
-        sys.stdout.write("ERROR: Generating the dot file for {} failed.\n".format(fw_name))
-        return False
-    return True
+    dot_path = os.path.join(output_dir, fw_name + ".dot")
+    build_dir = tempfile.mkdtemp(prefix="depdiagram-prepare-build-")
+    try:
+        ret = subprocess.call(["cmake", fw_dir, "--graphviz={}".format(dot_path)],
+            stdout=open("/dev/null", "w"),
+            cwd=build_dir)
+        if ret != 0:
+            raise GenerationError("Generating dot file for {} failed.".format(fw_name))
+    finally:
+        shutil.rmtree(build_dir)
+
+
+def prepare_one(fw_dir, output_dir):
+    fw_name = os.path.basename(fw_dir)
+    yaml_path = os.path.join(fw_dir, fw_name + ".yaml")
+    if not os.path.exists(yaml_path):
+        raise NoFrameworkError("'{}' is not a framework: '{}' does not exist.".format(fw_dir, yaml_path))
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    _generate_dot(fw_dir, output_dir)
+    shutil.copy(yaml_path, output_dir)
 
 
 def prepare(fw_base_dir, dot_dir):
@@ -58,20 +82,15 @@ def prepare(fw_base_dir, dot_dir):
     lst = os.listdir(fw_base_dir)
     for idx, fw_name in enumerate(lst):
         fw_dir = os.path.join(fw_base_dir, fw_name)
-        yaml_path = os.path.join(fw_dir, fw_name + ".yaml")
-        if not os.path.exists(yaml_path):
+        if not os.path.isdir(fw_dir):
             continue
 
         progress = int(100 * (idx + 1) / len(lst))
         print("{}% {}".format(progress, fw_name))
 
-        with open(yaml_path) as f:
-            fw_info = yaml.load(f)
-            tier = fw_info["tier"]
-
-        build_dir = os.path.join(dot_dir, "tier" + str(tier), fw_name)
-        if not os.path.exists(build_dir):
-            os.makedirs(build_dir)
-        if not _generate_dot(fw_dir, build_dir):
-            continue
-        shutil.copy(yaml_path, build_dir)
+        try:
+            prepare_one(fw_dir, dot_dir)
+        except NoFrameworkError as e:
+            print(e)
+        except GenerationError as e:
+            print(e)
