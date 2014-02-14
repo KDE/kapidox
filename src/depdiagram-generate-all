@@ -55,27 +55,36 @@ read_tier() {
 gen_fws() {
     tier=$1
 
+    tmp_dot=/tmp/diagram.dot
+
     for fw_dot in $dot_dir/*.dot ; do
         fw=$(basename $fw_dot .dot)
+        echo "$fw"
+
+        # Gather info
         tier=$(read_tier $dot_dir/$fw.yaml)
-        echo "# $fw tier=$tier"
         if [ $tier -lt 3 ] ; then
             opts=--qt
         else
             opts=""
         fi
-        png=$png_dir/$fw.png
-        echo $png
-        $generate $dot_dir/*.dot --framework $fw $opts | dot -Tpng > $png
-        png=$png_dir/$fw-simplified.png
-        echo $png
-        $generate $dot_dir/*.dot --framework $fw $opts | tred | dot -Tpng > $png
+
+        # Generate .dot file
+        $generate $dot_dir/*.dot --framework $fw $opts > $tmp_dot
+
+        # Turn .dot into a .png
+        dot -Tpng $tmp_dot > $png_dir/$fw.png
+
+        # Simplify .dot and turn it into a .png
+        tred $tmp_dot | dot -Tpng > $png_dir/$fw-simplified.png
     done
+
+    rm $tmp_dot
 }
 
 mkdir -p $png_dir
 
 gen_fws
 
-echo "kf5.png"
+echo "kf5"
 $generate $dot_dir/*.dot | tred | dot -Tpng > $png_dir/kf5.png
