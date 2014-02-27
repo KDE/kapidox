@@ -23,29 +23,130 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Python 2/3 compatibility (NB: we require at least 2.7)
+from __future__ import division, absolute_import, print_function, unicode_literals
+
 import argparse
 import os
+import shutil
+import subprocess
 import sys
-
-from kapidox import depdiagram
+import tempfile
 
 DESCRIPTION = """
-Generate Graphviz dot files for all frameworks.
+Generate Graphviz dot files for one or all frameworks.
 """
+
+def err(msg):
+    print("ERROR:", msg, file=sys.stderr)
+
+
+def generate_dot(fw_dir, fw_name, output_dir):
+    """Calls cmake to generate the dot file for a framework.
+
+    Returns true on success, false on failure"""
+    dot_path = os.path.join(output_dir, fw_name + ".dot")
+    build_dir = tempfile.mkdtemp(prefix="depdiagram-prepare-build-")
+    try:
+        ret = subprocess.call(["cmake", fw_dir, "--graphviz={}".format(dot_path)],
+            stdout=open("/dev/null", "w"),
+            cwd=build_dir)
+        if ret != 0:
+            if os.path.exists(dot_path):
+                os.remove(dot_path)
+            err("Generating dot file for {} failed.".format(fw_name))
+            return False
+    finally:
+        shutil.rmtree(build_dir)
+    return True
+
+
+def find_fw_name(fw_dir):
+    """Returns the framework name for a give source dir
+
+    We can't always assume the framework dir is the name of the framework so
+    instead we use the name of the .yaml file (assuming there is no other .yaml
+    file in fw_dir)
+    """
+    for name in os.listdir(fw_dir):
+        root, ext = os.path.splitext(name)
+        if ext == ".yaml":
+            return root
+    err("Failed to find framework name: Could not find a .yaml file in {}.".format(fw_dir))
+    return None
+
+
+def prepare_one(fw_dir, output_dir):
+    fw_name = find_fw_name(fw_dir)
+    if fw_name is None:
+        return False
+
+    yaml_path = os.path.join(fw_dir, fw_name + ".yaml")
+    if not os.path.exists(yaml_path):
+        err("'{}' is not a framework: '{}' does not exist.".format(fw_dir, yaml_path))
+        return False
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    if not generate_dot(fw_dir, fw_name, output_dir):
+        return False
+    shutil.copy(yaml_path, output_dir)
+    return True
+
+
+def prepare_all(fw_base_dir, dot_dir):
+    """Generate dot files for all frameworks.
+
+    Looks for frameworks in `fw_base_dir`. Output the dot files in sub dirs of
+    `dot_dir`.
+    """
+    lst = os.listdir(fw_base_dir)
+    fails = []
+    for idx, fw_name in enumerate(lst):
+        fw_dir = os.path.join(fw_base_dir, fw_name)
+        if not os.path.isdir(fw_dir):
+            continue
+
+        progress = int(100 * (idx + 1) / len(lst))
+        print("{}% {}".format(progress, fw_name))
+        if not prepare_one(fw_dir, dot_dir):
+            fails.append(fw_name)
+    return fails
+
 
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
-    parser.add_argument("fw_base_dir",
-        help="Base dir containing all frameworks")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-s", "--single",
+        help="Generate dot files for the framework stored in DIR",
+        metavar="DIR")
+    group.add_argument("-a", "--all",
+        help="Generate dot files for all frameworks whose dir is in BASE_DIR",
+        metavar="BASE_DIR")
     parser.add_argument("dot_dir",
         help="Destination dir where dot files will be generated")
 
     args = parser.parse_args()
-    fw_base_dir = os.path.abspath(args.fw_base_dir)
+
     dot_dir = os.path.abspath(args.dot_dir)
 
-    depdiagram.prepare(fw_base_dir, dot_dir)
+    if args.single:
+        fw_dir = os.path.abspath(args.single)
+        if prepare_one(fw_dir, dot_dir):
+            return 0
+        else:
+            return 1
+    else:
+        fw_base_dir = os.path.abspath(args.all)
+        fails = prepare_all(fw_base_dir, dot_dir)
+        if fails:
+            err("{} framework(s) failed: {}".format(len(fails), ", ".join(fails)))
+            return 1
+        else:
+            return 0
 
 
 if __name__ == "__main__":

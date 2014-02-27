@@ -91,8 +91,20 @@ And (after maybe 15-30 minutes) you will get a complete set of documentation in
 the frameworks-apidocs directory.  This will be about 500Mb in size, so make
 sure you have enough space!
 
-You can ask kgenframeworksapidox to generate dependency diagrams for all the
-frameworks. To do so, pass it the --dependency-diagram option.
+You can ask `kgenframeworksapidox` to generate dependency diagrams for all the
+frameworks.  To do so, you must first generate Graphviz .dot files for all
+frameworks with the `depdiagram-prepare` tool, like this:
+
+
+    mkdir dot
+    ~/src/frameworks/kapidox/src/depdiagram-prepare --all ~/src/frameworks dot
+
+Then call `kgenframeworksapidox` with the `--depdiagram-dot-dir` option, like
+this:
+
+    mkdir frameworks-apidocs
+    cd frameworks-apidocs
+    ~/src/frameworks/kapidox/src/kgenframeworksapidox --depdiagram-dot-dir ../dot ~/src/frameworks
 
 More fine-grained tools are available for dependency diagrams. You can learn
 about them in [depdiagrams](depdiagrams.html).

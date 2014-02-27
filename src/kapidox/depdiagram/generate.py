@@ -106,7 +106,8 @@ class DotWriter(Block):
 
             lst = sorted([x for x in self.db], key=lambda x: x.tier)
             for tier, frameworks in itertools.groupby(lst, lambda x: x.tier):
-                with root.cluster_block(tier, **GROUP_ATTRS) as tier_block:
+                cluster_title = "Tier {}".format(tier)
+                with root.cluster_block(cluster_title, **GROUP_ATTRS) as tier_block:
                     tier_block.write_list_attrs("node", **FW_ATTRS)
                     # Sort frameworks within the tier to ensure frameworks which
                     # depend on other frameworks from that tier are listed after

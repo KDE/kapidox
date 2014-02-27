@@ -154,8 +154,9 @@ def main():
             help='Generate man page documentation.')
     parser.add_argument('--qhp', action='store_true',
             help='Generate Qt Compressed Help documentation.')
-    parser.add_argument('--dependency-diagrams', action='store_true',
-            help='Generate dependency diagrams.')
+    parser.add_argument('--depdiagram-dot-dir',
+            help='Generate dependency diagrams, using the .dot files from DIR.',
+            metavar="DIR")
     parser.add_argument('--searchengine', action='store_true',
             help="Enable Doxygen's search engine feature.")
     parser.add_argument('--api-searchbox', action='store_true',
@@ -181,7 +182,7 @@ def main():
             help='Do not delete temporary dirs, useful for debugging.')
     args = parser.parse_args()
 
-    if args.dependency_diagrams and not DEPDIAGRAM_AVAILABLE:
+    if args.depdiagram_dot_dir and not DEPDIAGRAM_AVAILABLE:
         print('ERROR: You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
         exit(1)
 
@@ -278,23 +279,17 @@ def main():
             title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
     try:
-        if args.dependency_diagrams:
+        if args.depdiagram_dot_dir:
             tmp_dir = tempfile.mkdtemp(prefix='kapidox-deps-')
-            dot_dir = os.path.join(tmp_dir, 'dot')
-            diagram_dir = os.path.join(tmp_dir, 'diagrams')
-            os.mkdir(dot_dir)
-            os.mkdir(diagram_dir)
-            depdiagram.prepare(args.frameworksdir, dot_dir)
-            dot_files = find_dot_files(dot_dir)
+            dot_files = find_dot_files(args.depdiagram_dot_dir)
             assert(dot_files)
         else:
             tmp_dir = None
-            diagram_dir = None
 
         for t in range(1,5):
             for fwinfo in tiers[t]:
-                if args.dependency_diagrams:
-                    fwinfo['dependency_diagram'] = generate_diagram(fwinfo['framework'], t, dot_files, diagram_dir)
+                if args.depdiagram_dot_dir:
+                    fwinfo['dependency_diagram'] = generate_diagram(fwinfo['framework'], t, dot_files, tmp_dir)
                 gen_fw_apidocs(fwinfo)
             if (t >= 3):
                 # Rebuild for interdependencies
