@@ -212,7 +212,7 @@ def find_doxdatadir_or_exit(suggestion):
     scriptdir = os.path.dirname(os.path.realpath(__file__))
     doxdatadir = find_datadir(
             searchpaths=[os.path.join(scriptdir,'data')],
-            testentries=['doxygen.css','header.html','footer.html','htmlresource'],
+            testentries=['header.html','footer.html','htmlresource'],
             suggestion=suggestion)
     if doxdatadir is None:
         print("Could not find a valid doxdatadir")
@@ -451,8 +451,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
             # Other output settings
             writer.write_entries(
                     HTML_HEADER=doxdatadir + '/header.html',
-                    HTML_FOOTER=doxdatadir + '/footer.html',
-                    HTML_STYLESHEET=doxdatadir + '/doxygen.css')
+                    HTML_FOOTER=doxdatadir + '/footer.html'
+                    )
 
             # Always write these, even if QHP is disabled, in case Doxygen.local
             # overrides it
