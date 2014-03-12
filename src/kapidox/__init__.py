@@ -262,7 +262,6 @@ def menu_items(htmldir, modulename):
             {'text': 'Alphabetical List', 'href': 'classes.html'},
             {'text': 'Class List', 'href': 'annotated.html'},
             {'text': 'Class Hierarchy', 'href': 'hierarchy.html'},
-            {'text': 'Class Members', 'href': 'functions.html'},
             {'text': 'File List', 'href': 'files.html'},
             {'text': 'File Members', 'href': 'globals.html'},
             {'text': 'Modules', 'href': 'modules.html'},
