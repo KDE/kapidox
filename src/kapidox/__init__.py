@@ -380,7 +380,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
         tagfiles=[], man_pages=False, qhp=False, searchengine=False,
         api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
         title='KDE API Documentation', template_mapping=[],
-        doxyfile_entries={},resourcedir=None, dependency_diagram=None):
+        doxyfile_entries={},resourcedir=None, dependency_diagram=None,
+        keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
     def find_src_subdir(d):
@@ -476,7 +477,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
 
         subprocess.call([doxygen, doxyfile_path])
     finally:
-        shutil.rmtree(tmp_dir)
+        if not keep_temp_dirs:
+            shutil.rmtree(tmp_dir)
 
     classmap = build_classmap(moduletagfile)
     write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
@@ -493,3 +495,5 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     mapping.update(template_mapping)
     postprocess(htmldir, mapping)
 
+    if keep_temp_dirs:
+        print('Kept temp dir at {}'.format(tmp_dir))

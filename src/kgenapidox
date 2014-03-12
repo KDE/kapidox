@@ -79,6 +79,8 @@ def main():
             help='(Path to) the doxygen executable.')
     parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
             help='(Path to) the qhelpgenerator executable.')
+    parser.add_argument('--keep-temp-dirs', action='store_true',
+            help='Do not delete temporary dirs, useful for debugging.')
     args = parser.parse_args()
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
@@ -122,7 +124,8 @@ def main():
             doxygen = args.doxygen,
             qhelpgenerator = args.qhelpgenerator,
             title = args.title,
-            fancyname = parse_fancyname(readme_file, default=modulename)
+            fancyname = parse_fancyname(readme_file, default=modulename),
+            keep_temp_dirs = args.keep_temp_dirs
             )
 
 if __name__ == "__main__":
