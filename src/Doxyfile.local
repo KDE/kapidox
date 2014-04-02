@@ -1,6 +1,10 @@
 ## In kdelibs, everything is supposed to be documented.
 WARN_IF_UNDOCUMENTED = YES
 
+## Be strict, we want all parameters
+## to be documented as well.
+WARN_NO_PARAMDOC = YES
+
 ## Predefined macros, to remove all the _EXPORT things
 ## from function definitions.
 PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS \
