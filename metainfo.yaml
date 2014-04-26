@@ -1,0 +1,10 @@
+maintainer: gateau
+description: Scripts and data for building API documentation (dox) in a standard format and style
+tier: 1
+type: functional
+platforms:
+    - name: All
+      note: Python is required
+portingAid: false
+deprecated: false
+release: true
