@@ -221,29 +221,25 @@ def find_doxdatadir_or_exit(suggestion):
         print("Found doxdatadir at " + doxdatadir)
     return doxdatadir
 
-def parse_fancyname(readme_file, default=None):
-    """Parse the header text out of a Markdown file
 
-    Extracts the first line of a file, stripping any Markdown formatting
-    (actually, it just strips a starting # and any {#ref} at the end.
+# This function is duplicated in depdiagram-prepare because depdiagram-prepare
+# runs on build.kde.org, where we can't import kapidox
+def parse_fancyname(fw_dir):
+    """Returns the framework name for a given source dir
 
-    readme_file -- the Markdown file to extract the text from
-    default     -- a default value to use if the file does not exist
-
-    Returns the header text found on the first line of readme_file if the file
-    exists, of the value of default otherwise.
+    The framework name is the name of the toplevel CMake project
     """
-    if os.path.isfile(readme_file):
-        with codecs.open(readme_file, 'r', 'utf-8') as f:
-            topline = f.readline(100)
-        fancyname = re.sub(r'\s*{#.*}\s*$', '', topline.lstrip(' #')).rstrip()
-        if len(fancyname) == 0:
-            return default
-        else:
-            return fancyname
-    else:
-        print("The module does not provide a README.md file")
-        return default
+    cmakelists_path = os.path.join(fw_dir, "CMakeLists.txt")
+    if not os.path.exists(cmakelists_path):
+        return None
+    project_re = re.compile(r"project\s*\(\s*(\w+)", re.I)
+    with open(cmakelists_path) as f:
+        for line in f.readlines():
+            match = project_re.search(line)
+            if match:
+                return match.group(1)
+    return None
+
 
 def menu_items(htmldir, modulename):
     """Menu items for standard Doxygen files
@@ -365,13 +361,16 @@ def find_all_tagfiles(args):
             searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
     return tagfiles
 
-def generate_dependencies_page(tmp_dir, doxdatadir, modulename):
+def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram):
     """Create `modulename`-dependencies.md in `tmp_dir`"""
     template_path = os.path.join(doxdatadir, 'dependencies.md.mustache')
     out_path = os.path.join(tmp_dir, modulename + '-dependencies.md')
     renderer = pystache.Renderer()
     with codecs.open(out_path, 'w', 'utf-8') as outf:
-        txt = renderer.render_path(template_path, { 'modulename': modulename})
+        txt = renderer.render_path(template_path, {
+                'modulename': modulename,
+                'diagramname': os.path.basename(dependency_diagram),
+                })
         outf.write(txt)
     return out_path
 
@@ -415,7 +414,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
     tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
     try:
         if dependency_diagram:
-            input_list.append(generate_dependencies_page(tmp_dir, doxdatadir, modulename))
+            input_list.append(generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram))
             image_path_list.append(dependency_diagram)
 
         doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')

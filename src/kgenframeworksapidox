@@ -81,7 +81,7 @@ def process_toplevel_html_file(inputfile, outputfile, tiers, title,
                 'href': rellink,
                 'name': fw['fancyname']
                 })
-            frameworks[fw['framework']] = {'link': rellink, 'name': fw['fancyname']}
+            frameworks[fw['modulename']] = {'link': rellink, 'name': fw['fancyname']}
         gm_sections.append({
             'title': 'Tier ' + str(t),
             'members': gm_frameworks
@@ -120,27 +120,28 @@ def find_dot_files(dot_dir):
     return lst
 
 
-def generate_diagram(fw_name, tier, dot_files, diagram_dir):
+def generate_diagram(png_path, fancyname, tier, dot_files):
     """Generate a dependency diagram for a framework.
-
-    Returns the full path to the generated png
     """
-    dot_path = os.path.join(diagram_dir, fw_name + '.dot')
-    with open(dot_path, 'w') as f:
-        with_qt = tier <= 2
-        depdiagram.generate(f, dot_files, framework=fw_name, with_qt=with_qt)
+    dot_path = tempfile.mkstemp(suffix=fancyname + '.dot')[1]
+    try:
+        with open(dot_path, 'w') as f:
+            with_qt = tier <= 2
+            ok = depdiagram.generate(f, dot_files, framework=fancyname, with_qt=with_qt)
+            assert ok
 
-    png_path = os.path.join(diagram_dir, fw_name + '.png')
-    tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
-    dot_proc = subprocess.Popen(['dot', '-Tpng', '-o' + png_path],
-                                stdin=tred_proc.stdout)
-    tred_proc.stdout.close()
-    dot_proc.communicate()
-    assert dot_proc >= 0
-    if dot_proc.returncode != 0:
-        print('dot failed with error code {}'.format(dot_proc.returncode))
-        sys.exit(dot_proc.returncode)
-    return png_path
+        tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
+        dot_proc = subprocess.Popen(['dot', '-Tpng', '-o' + png_path],
+                                    stdin=tred_proc.stdout)
+        tred_proc.stdout.close()
+        dot_proc.communicate()
+        assert dot_proc >= 0
+
+        if dot_proc.returncode != 0:
+            print('dot failed with error code {}'.format(dot_proc.returncode))
+            sys.exit(dot_proc.returncode)
+    finally:
+        os.unlink(dot_path)
 
 
 def main():
@@ -199,30 +200,36 @@ def main():
 
     framework_list = os.listdir(args.frameworksdir)
     tiers = {1:[],2:[],3:[],4:[]}
-    for framework in framework_list:
-        fwdir = os.path.join(args.frameworksdir, framework)
-        outputdir = framework
-        readme_file = os.path.join(fwdir, 'README.md')
-        yaml_file = os.path.join(fwdir, framework + '.yaml')
-        if not os.path.isfile(readme_file) or not os.path.isfile(yaml_file):
-            print(framework + " is not a framework (README.md or " +
-                 framework + ".yaml missing)")
+    for modulename in framework_list:
+        fwdir = os.path.join(args.frameworksdir, modulename)
+        yaml_file = os.path.join(fwdir, 'metainfo.yaml')
+
+        if not os.path.isfile(yaml_file):
+            print("{} does not contain a framework (metainfo.yaml missing)".format(fwdir))
+            continue
+
+        fancyname = parse_fancyname(fwdir)
+        if not fancyname:
+            print('ERROR: Could not find fancy name for {}'.format(fwdir))
+            exit(1)
+        assert(fancyname)
+
+        outputdir = modulename
+
+        # FIXME: option in yaml file to disable docs
+        tier = get_tier(yaml_file)
+        if tier is None:
+            print("Could not find tier for " + framework + "!")
+        elif tier < 1 or tier > 4:
+            print("Invalid tier " + tier + " for " + framework + "!")
         else:
-            # FIXME: option in yaml file to disable docs
-            fancyname = parse_fancyname(readme_file, default=framework)
-            tier = get_tier(yaml_file)
-            if tier is None:
-                print("Could not find tier for " + framework + "!")
-            elif tier < 1 or tier > 4:
-                print("Invalid tier " + tier + " for " + framework + "!")
-            else:
-                tiers[tier].append({
-                    'framework': framework,
-                    'fancyname': fancyname,
-                    'srcdir': fwdir,
-                    'outputdir': outputdir,
-                    'dependency_diagram': None,
-                    })
+            tiers[tier].append({
+                'modulename': modulename,
+                'fancyname': fancyname,
+                'srcdir': fwdir,
+                'outputdir': outputdir,
+                'dependency_diagram': None,
+                })
 
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
@@ -233,7 +240,7 @@ def main():
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
         generate_apidocs(
-                modulename = fwinfo['framework'],
+                modulename = fwinfo['modulename'],
                 fancyname = fwinfo['fancyname'],
                 srcdir = fwinfo['srcdir'],
                 outputdir = fwinfo['outputdir'],
@@ -272,7 +279,7 @@ def main():
                         os.path.join(
                             fwinfo['outputdir'],
                             'html',
-                            fwinfo['framework']+'.tags'))
+                            fwinfo['modulename']+'.tags'))
             tagfiles.append((tagfile,'../../' + fwinfo['outputdir'] + '/html/'))
 
     process_toplevel_html_file(os.path.join(doxdatadir, 'frameworks.html'), 'index.html',
@@ -289,7 +296,9 @@ def main():
         for t in range(1,5):
             for fwinfo in tiers[t]:
                 if args.depdiagram_dot_dir:
-                    fwinfo['dependency_diagram'] = generate_diagram(fwinfo['framework'], t, dot_files, tmp_dir)
+                    png_path = os.path.join(tmp_dir, fwinfo['modulename']) + '.png'
+                    generate_diagram(png_path, fwinfo['fancyname'], t, dot_files)
+                    fwinfo['dependency_diagram'] = png_path
                 gen_fw_apidocs(fwinfo)
             if (t >= 3):
                 # Rebuild for interdependencies
