@@ -371,7 +371,7 @@ def find_all_tagfiles(args):
 
 def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram):
     """Create `modulename`-dependencies.md in `tmp_dir`"""
-    template_path = os.path.join(doxdatadir, 'dependencies.md.mustache')
+    template_path = os.path.join(doxdatadir, 'dependencies.md.tmpl')
     out_path = os.path.join(tmp_dir, modulename + '-dependencies.md')
     tmpl = load_template(template_path)
     with codecs.open(out_path, 'w', 'utf-8') as outf:
