@@ -48,15 +48,15 @@
       </div>
     </div>
     <div id="header_bottom">
-      {{#breadcrumbs}}
+      {% if breadcrumbs %}
       <div id="location">
         <ul>
-          {{#entries}}
-          <li><a href="{{href}}">{{text}}</a></li>
-          {{/entries}}
+          {% for entry in breadcrumbs.entries %}
+          <li><a href="{{entry.href}}">{{entry.text}}</a></li>
+          {% endfor %}
         </ul>
       </div>
-      {{/breadcrumbs}}
+      {% endif %}
       <div id="menu">
         <ul>
           <li><a href="http://www.kde.org/">KDE Home</a></li>
@@ -98,35 +98,32 @@
       </div>
       <div id="left">
         <div class="menu_box">
-          {{#group_menu}}
+          {% if group_menu %}
           <div class="menu_box">
             <a name="cp-menu" />
             <div class="menutitle">
               <div>
-                <h2 id="cp-menu-project">{{group_title}}</h2>
+                <h2 id="cp-menu-project">{{group_menu.group_title}}</h2>
                 <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_title}}"</a>
               </div>
             </div>
             <div class="nav_list">
               <ul>
-                {{#members}}
-                  <li><a href="{{href}}">{{name}}</a></li>
-                {{/members}}
-                {{#sections}}
-                  <li>{{title}}
+                {% for section in group_menu.sections %}
+                  <li>{{section.title}}
                     <ul>
-                      {{#members}}
-                        <li><a href="{{href}}">{{name}}</a></li>
-                      {{/members}}
+                      {% for member in section.members %}
+                        <li><a href="{{member.href}}">{{member.name}}</a></li>
+                      {% endfor %}
                     </ul>
                   </li>
-                {{/sections}}
+                {% endfor %}
               </ul>
             </div>
           </div>
-          {{/group_menu}}
+          {% endif %}
 
-          {{#api_searchbox}}
+          {% if api_searchbox %}
           <div class="menu_box">
             <div class="menutitle"><div><h2>Search</h2></div></div>
             <div style="text-align: left;">
@@ -166,7 +163,7 @@
               </form>
             </div>
           </div>
-          {{/api_searchbox}}
+          {% endif %}
         </div>
       </div>
       <div class="clearer"></div>

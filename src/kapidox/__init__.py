@@ -43,9 +43,20 @@ try:
 except ImportError:
     from urlparse import urljoin
 
-import pystache
+import jinja2
 
 from .doxyfilewriter import DoxyfileWriter
+
+
+def load_template(path):
+    # Set errors to 'ignore' because we don't want weird characters in Doxygen
+    # output (for example source code listing) to cause a failure
+    content = codecs.open(path, encoding='utf-8', errors='ignore').read()
+    try:
+        return jinja2.Template(content)
+    except jinja2.exceptions.TemplateSyntaxError as exc:
+        print('Failed to parse template {}'.format(path))
+        raise
 
 
 def smartjoin(pathorurl1,*args):
@@ -279,18 +290,15 @@ def postprocess(htmldir, mapping):
     htmldir -- the directory containing the .html files
     mapping -- a dict of mappings
     """
-    renderer = pystache.Renderer(decode_errors='ignore',
-                                 search_dirs=htmldir)
-
     for f in os.listdir(htmldir):
         if f.endswith('.html'):
             print("Postprocessing " + f)
             path = os.path.join(htmldir,f)
             newpath = path + '.new'
             with codecs.open(newpath, 'w', 'utf-8') as outf:
-                outf.write(renderer.render_path(path, mapping))
-            os.remove(path)
-            os.rename(newpath,path)
+                tmpl = load_template(path)
+                outf.write(tmpl.render(mapping))
+            os.rename(newpath, path)
 
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
@@ -365,9 +373,9 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
     """Create `modulename`-dependencies.md in `tmp_dir`"""
     template_path = os.path.join(doxdatadir, 'dependencies.md.mustache')
     out_path = os.path.join(tmp_dir, modulename + '-dependencies.md')
-    renderer = pystache.Renderer()
+    tmpl = load_template(template_path)
     with codecs.open(out_path, 'w', 'utf-8') as outf:
-        txt = renderer.render_path(template_path, {
+        txt = tmpl.render({
                 'modulename': modulename,
                 'diagramname': os.path.basename(dependency_diagram),
                 })

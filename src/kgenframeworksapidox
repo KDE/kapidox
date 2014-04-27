@@ -36,6 +36,8 @@ import subprocess
 import sys
 import tempfile
 
+import jinja2
+
 from kapidox import *
 try:
     from kapidox import depdiagram
@@ -106,10 +108,9 @@ def process_toplevel_html_file(inputfile, outputfile, tiers, title,
             'group_menu': group_menu,
             'frameworks': frameworks
         }
-    import pystache
-    renderer = pystache.Renderer(decode_errors='ignore')
+    tmpl = load_template(inputfile)
     with open(outputfile, 'w') as outf:
-        outf.write(renderer.render_path(inputfile, mapping))
+        outf.write(tmpl.render(mapping))
 
 
 def find_dot_files(dot_dir):

@@ -15,11 +15,11 @@ documentation.
 ## Dependencies
 
 Python 2 or 3 is required to run the scripts.  Whichever version of python you
-use needs to have the pystache and yaml (or pyyaml) modules.
+use needs to have the jinja2 and yaml (or pyyaml) modules.
 
 The following command should install them for the current user:
 
-    pip install --user PyYAML pystache
+    pip install --user PyYAML jinja2
 
 To generate the dependency diagrams, you need the Graphviz Python bindings.
 They are currently not available from pip, but most distributions provide them.

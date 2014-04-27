@@ -40,15 +40,15 @@
     <img alt ="" src="{{resources}}/top-kde.jpg"/>
     {{title}}</div></div></div>
   <div id="header_bottom">
-    {{#breadcrumbs}}
-    <div id="location">
-      <ul>
-        {{#entries}}
-        <li><a href="{{href}}">{{text}}</a></li>
-        {{/entries}}
-      </ul>
-    </div>
-    {{/breadcrumbs}}
+    {% if breadcrumbs %}
+      <div id="location">
+        <ul>
+          {% for entry in breadcrumbs.entries %}
+          <li><a href="{{entry.href}}">{{entry.text}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
     <div id="menu">
 <ul>
@@ -69,3 +69,4 @@
 <h2><a name="content"></a>$projectname</h2>
 
 <div id="top">
+{% raw %}
