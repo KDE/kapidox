@@ -129,7 +129,9 @@ def generate_diagram(png_path, fancyname, tier, dot_files):
         with open(dot_path, 'w') as f:
             with_qt = tier <= 2
             ok = depdiagram.generate(f, dot_files, framework=fancyname, with_qt=with_qt)
-            assert ok
+            if not ok:
+                print("ERROR: generating diagram for {} failed".format(fancyname))
+                return False
 
         tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
         dot_proc = subprocess.Popen(['dot', '-Tpng', '-o' + png_path],
@@ -139,10 +141,11 @@ def generate_diagram(png_path, fancyname, tier, dot_files):
         assert dot_proc >= 0
 
         if dot_proc.returncode != 0:
-            print('dot failed with error code {}'.format(dot_proc.returncode))
-            sys.exit(dot_proc.returncode)
+            print('ERROR: dot failed with error code {}'.format(dot_proc.returncode))
+            return False
     finally:
         os.unlink(dot_path)
+    return True
 
 
 def main():
@@ -297,8 +300,9 @@ def main():
             for fwinfo in tiers[t]:
                 if args.depdiagram_dot_dir:
                     png_path = os.path.join(tmp_dir, fwinfo['modulename']) + '.png'
-                    generate_diagram(png_path, fwinfo['fancyname'], t, dot_files)
-                    fwinfo['dependency_diagram'] = png_path
+                    ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files)
+                    if ok:
+                        fwinfo['dependency_diagram'] = png_path
                 gen_fw_apidocs(fwinfo)
             if (t >= 3):
                 # Rebuild for interdependencies
