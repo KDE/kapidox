@@ -8,10 +8,12 @@
   </li>
 {% endmacro %}
 
-{% macro write_framework_list(lst, id_prefix) %}
+{% macro write_framework_list(lst, id_prefix, info) %}
   {% for tier, frameworks in lst|groupby('tier') %}
     <h3><a name="{{ id_prefix }}-tier{{ tier }}"></a>Tier {{tier}}</h3>
-    <p>{{ tierinfo.tiers[tier] }}</p>
+    {% if info %}
+      <p>{{ info.tiers[tier] }}</p>
+    {% endif %}
     <table class="doxtable frameworks">
       <tr>
         <th>Framework</th>
@@ -137,9 +139,9 @@
                 {% endfor %}
               </div>
               <h2>Frameworks</h2>
-              {{ write_framework_list(framework_lst, 'fw') }}
+              {{ write_framework_list(framework_lst, 'fw', tierinfo) }}
               <h2>Porting Aids</h2>
-              {{ write_framework_list(porting_aid_lst, 'pa') }}
+              {{ write_framework_list(porting_aid_lst, 'pa', None) }}
             </div>
           </div>
         </div>
