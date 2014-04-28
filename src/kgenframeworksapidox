@@ -206,14 +206,13 @@ def main():
         yaml_file = os.path.join(fwdir, 'metainfo.yaml')
 
         if not os.path.isfile(yaml_file):
-            print("{} does not contain a framework (metainfo.yaml missing)".format(fwdir))
+            print("WARNING: {} does not contain a framework (metainfo.yaml missing)".format(fwdir))
             continue
 
         fancyname = parse_fancyname(fwdir)
         if not fancyname:
-            print('ERROR: Could not find fancy name for {}'.format(fwdir))
-            exit(1)
-        assert(fancyname)
+            print('WARNING: Could not find fancy name for {}, skipping it'.format(fwdir))
+            continue
 
         outputdir = modulename
 
