@@ -65,6 +65,11 @@ def generate_group_menu(tiers):
             })
     return {'group_title': 'Frameworks', 'sections': sections}
 
+
+def framework_sort(lst):
+    lst.sort(key=lambda x: x["fancyname"].lower())
+
+
 def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
         api_searchbox=False):
     """Pass a HTML file through the templating filters"""
@@ -74,6 +79,8 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
         tierinfo = yaml.load(f)
 
     gm_sections = []
+    framework_lst = []
+    porting_aid_lst = []
     for t in range(1,5):
         gm_frameworks = []
         for fw in tiers[t]:
@@ -82,10 +89,16 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
                 'href': rellink,
                 'name': fw['fancyname']
                 })
+            if fw.get('portingAid'):
+                porting_aid_lst.append(fw)
+            else:
+                framework_lst.append(fw)
         gm_sections.append({
             'title': 'Tier ' + str(t),
             'members': gm_frameworks
             })
+    framework_sort(framework_lst)
+    framework_sort(porting_aid_lst)
     group_menu = {'group_title': 'Frameworks', 'sections': gm_sections}
 
     mapping = {
@@ -104,7 +117,8 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
                     ]
                 },
             'group_menu': group_menu,
-            'tiers': tiers,
+            'framework_lst': framework_lst,
+            'porting_aid_lst': porting_aid_lst,
             'tierinfo': tierinfo,
         }
     tmpl = load_template(inputfile)

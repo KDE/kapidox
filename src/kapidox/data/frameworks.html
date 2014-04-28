@@ -1,3 +1,41 @@
+{% macro write_framework_list(lst) %}
+  {% for tier, frameworks in lst|groupby('tier') %}
+    <h3>Tier {{tier}}</h3>
+    <p>{{ tierinfo.tiers[tier] }}</p>
+    <table class="doxtable frameworks">
+      <tr>
+        <th>Framework</th>
+        <th class="framework-detail framework-maintainer">Maintainer</th>
+        <th class="framework-detail framework-type">Type</th>
+        <th class="framework-detail framework-platforms">Platforms</th>
+      </tr>
+    {% for fw in frameworks %}
+      <tr>
+        <td>
+          <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
+          <span class="framework-description">{{fw.description}}</span>
+        </td>
+        <td class="framework-detail framework-maintainer">{{ fw.maintainer }}</td>
+        <td class="framework-detail framework-type">{{ fw.type }}</td>
+        <td class="framework-detail framework-platforms">
+          {% if fw.platforms %}
+            {% for platform in fw.platforms %}
+              {{ platform.name }}
+              {%- if platform.note %}
+                <span title="{{ platform.note }}" class="platform-note">*</span>
+              {% endif %}
+              {%- if not loop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <span class="error">Unknown</span>
+          {% endif %}
+          </td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endfor %}
+{% endmacro %}
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -86,41 +124,10 @@
                   <p>{{ para }}</p>
                 {% endfor %}
               </div>
-              {% for tier, frameworks in tiers.items() %}
-                <h2>Tier {{tier}}</h2>
-                <p>{{ tierinfo.tiers[tier] }}</p>
-                <table class="doxtable frameworks">
-                  <tr>
-                    <th>Framework</th>
-                    <th class="framework-detail framework-maintainer">Maintainer</th>
-                    <th class="framework-detail framework-type">Type</th>
-                    <th class="framework-detail framework-platforms">Platforms</th>
-                  </tr>
-                {% for fw in frameworks %}
-                  <tr>
-                    <td>
-                      <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
-                      <span class="framework-description">{{fw.description}}</span>
-                    </td>
-                    <td class="framework-detail framework-maintainer">{{ fw.maintainer }}</td>
-                    <td class="framework-detail framework-type">{{ fw.type }}</td>
-                    <td class="framework-detail framework-platforms">
-                      {% if fw.platforms %}
-                        {% for platform in fw.platforms %}
-                          {{ platform.name }}
-                          {%- if platform.note %}
-                            <span title="{{ platform.note }}" class="platform-note">*</span>
-                          {% endif %}
-                          {%- if not loop.last %}, {% endif %}
-                        {% endfor %}
-                      {% else %}
-                        <span class="error">Unknown</span>
-                      {% endif %}
-                      </td>
-                  </tr>
-                {% endfor %}
-                </table>
-              {% endfor %}
+              <h2>Frameworks</h2>
+              {{ write_framework_list(framework_lst) }}
+              <h2>Porting Aids</h2>
+              {{ write_framework_list(porting_aid_lst) }}
             </div>
           </div>
         </div>
