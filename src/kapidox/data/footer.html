@@ -26,16 +26,22 @@ KDE's <a href="http://techbase.kde.org/Policies/Library_Documentation_Policy">Do
 </ul>
 {% endif %}
 {% if class_map %}
-<h2>Class Picker</h2>
-<div style="text-align: center;">
-<form name="guideform">
-<select name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
-<option value="annotated.html">-- Choose --</option>
-{% for class in class_map.classes %}
-<option value="{{class.filename}}">{{class.classname}}</option>
-{% endfor %}
-</select>
-</form>
+<div class="menu_box">
+  <div class="menutitle">
+    <div>
+      <h2>Class Picker</h2>
+    </div>
+  </div>
+  <div class="nav_list">
+    <form name="guideform">
+      <select name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
+        <option value="annotated.html">-- Choose --</option>
+        {% for class in class_map.classes %}
+        <option value="{{class.filename}}">{{class.classname}}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
 </div>
 {% endif %}
 
