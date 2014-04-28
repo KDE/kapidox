@@ -1,6 +1,16 @@
-{% macro write_framework_list(lst) %}
+{% macro write_toc(title, lst, id_prefix) %}
+  <li>{{ title }}
+    <ul>
+      {% for tier, frameworks in lst|groupby('tier') %}
+        <li><a href="#fw-tier{{tier}}">Tier {{ tier }}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+{% endmacro %}
+
+{% macro write_framework_list(lst, id_prefix) %}
   {% for tier, frameworks in lst|groupby('tier') %}
-    <h3>Tier {{tier}}</h3>
+    <h3><a name="{{ id_prefix }}-tier{{ tier }}"></a>Tier {{tier}}</h3>
     <p>{{ tierinfo.tiers[tier] }}</p>
     <table class="doxtable frameworks">
       <tr>
@@ -10,7 +20,7 @@
         <th class="framework-detail framework-platforms">Platforms</th>
       </tr>
     {% for fw in frameworks %}
-      <tr>
+      <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platforms|join(',', attribute='name') }}">
         <td>
           <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
           <span class="framework-description">{{fw.description}}</span>
@@ -18,17 +28,13 @@
         <td class="framework-detail framework-maintainer">{{ fw.maintainer }}</td>
         <td class="framework-detail framework-type">{{ fw.type }}</td>
         <td class="framework-detail framework-platforms">
-          {% if fw.platforms %}
-            {% for platform in fw.platforms %}
-              {{ platform.name }}
-              {%- if platform.note %}
-                <span title="{{ platform.note }}" class="platform-note">*</span>
-              {% endif %}
-              {%- if not loop.last %}, {% endif %}
-            {% endfor %}
-          {% else %}
-            <span class="error">Unknown</span>
-          {% endif %}
+          {% for platform in fw.platforms|sort(attribute='name') %}
+            {{ platform.name }}
+            {%- if platform.note %}
+              <span title="{{ platform.note }}" class="platform-note">*</span>
+            {% endif %}
+            {%- if not loop.last %}, {% endif %}
+          {% endfor %}
           </td>
       </tr>
     {% endfor %}
@@ -63,7 +69,13 @@
   <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
   <link rel="stylesheet" type="text/css" href="{{resources}}/kde.css" />
 
+  {# frameworks.html specific stuff #}
+  <script type="text/javascript" src="{{resources}}/jquery-2.1.0.min.js"></script>
+  <script type="text/javascript" src="{{resources}}/frameworks.js"></script>
   <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script>
+  $(document).ready(main);
+  </script>
 </head>
 
 <body>
@@ -125,41 +137,62 @@
                 {% endfor %}
               </div>
               <h2>Frameworks</h2>
-              {{ write_framework_list(framework_lst) }}
+              {{ write_framework_list(framework_lst, 'fw') }}
               <h2>Porting Aids</h2>
-              {{ write_framework_list(porting_aid_lst) }}
+              {{ write_framework_list(porting_aid_lst, 'pa') }}
             </div>
           </div>
         </div>
-      </div>
+      </div> <!-- /right -->
       <div id="left">
+
         <div class="menu_box">
-          {% if group_menu %}
-          <div class="menu_box">
-            <a name="cp-menu" />
-            <div class="menutitle">
-              <div>
-                <h2 id="cp-menu-project">{{group_menu.group_title}}</h2>
-                <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_title}}"</a>
-              </div>
-            </div>
-            <div class="nav_list">
-              <ul>
-                {% for section in group_menu.sections %}
-                  <li>{{section.title}}
-                    <ul>
-                      {% for member in section.members %}
-                        <li><a href="{{member.href}}">{{member.name}}</a></li>
-                      {% endfor %}
-                    </ul>
-                  </li>
-                {% endfor %}
-              </ul>
+          <div class="menutitle">
+            <div>
+              <h2>Table of Content</h2>
             </div>
           </div>
-          {% endif %}
+          <div class="nav_list">
+            <ul>
+              {{ write_toc('Frameworks', framework_lst, 'fw') }}
+              {{ write_toc('Porting Aids', porting_aid_lst, 'pa') }}
+            </ul>
+          </div>
+        </div>
 
-          {% if api_searchbox %}
+        <div class="menu_box">
+          <div class="menutitle">
+            <div>
+              <h2>Filters</h2>
+            </div>
+          </div>
+          <div>
+            <ul>
+              <li>
+                <label>
+                  <input id="platform-filter" type="checkbox">Filter by platform
+                </label>
+                <ul id="platform-filter-group" style="display: none">
+                  <li>Only show frameworks which supports all of:</li>
+                  {% for platform in available_platforms|sort() %}
+                    <li>
+                      <label>
+                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+              <li>
+                <label>
+                  <input id="showMaintainers" type="checkbox">Show maintainers
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {% if api_searchbox %}
           <div class="menu_box">
             <div class="menutitle"><div><h2>Search</h2></div></div>
             <div style="text-align: left;">
@@ -199,11 +232,11 @@
               </form>
             </div>
           </div>
-          {% endif %}
-        </div>
-      </div>
+        {% endif %}
+        </div> <!-- /left -->
+      </div> <!-- /body -->
       <div class="clearer"></div>
-    </div>
+    </div> <!-- /body-wrapper -->
     <div class="clearer"></div>
   </div>
 

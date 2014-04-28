@@ -48,6 +48,10 @@ try:
 except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
+PLATFORM_ALL = "All"
+PLATFORM_UNKNOWN = "UNKNOWN"
+
+
 def generate_group_menu(tiers):
     """Generate a menu for the frameworks"""
     sections = []
@@ -66,8 +70,18 @@ def generate_group_menu(tiers):
     return {'group_title': 'Frameworks', 'sections': sections}
 
 
-def framework_sort(lst):
-    lst.sort(key=lambda x: x["fancyname"].lower())
+def expand_platform_all(fw, available_platforms):
+    dct = dict((x['name'], x.get('note', '')) for x in fw['platforms'])
+    if not PLATFORM_ALL in dct and not PLATFORM_UNKNOWN in dct:
+        return
+    if PLATFORM_ALL in dct:
+        del dct[PLATFORM_ALL]
+    if PLATFORM_UNKNOWN in dct:
+        del dct[PLATFORM_UNKNOWN]
+    for platform in available_platforms:
+        if not platform in dct:
+            dct[platform] = ''
+    fw['platforms'] = [dict(name=k, note=v) for k, v in dct.items()]
 
 
 def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
@@ -78,28 +92,38 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
     with open(os.path.join(doxdatadir, 'frameworks.yaml')) as f:
         tierinfo = yaml.load(f)
 
-    gm_sections = []
+    # Gather a list of all frameworks and available platforms
+    lst = []
+    available_platforms = set()
+
+    for t in range(1,5):
+        for fw in tiers[t]:
+            # Extend framework info
+            fw['href'] = fw['outputdir'] + '/html/index.html'
+
+            # Fix broken frameworks lacking platform definitions
+            if fw['platforms'] is None:
+                logging.warning('{} framework lacks platform definitions'.format(fw['fancyname']))
+                fw['platforms'] = [dict(name=PLATFORM_UNKNOWN)]
+
+            platform_lst = [x['name'] for x in fw['platforms'] if x['name'] not in (PLATFORM_ALL, PLATFORM_UNKNOWN)]
+            available_platforms.update(set(platform_lst))
+
+            lst.append(fw)
+
+    lst.sort(key=lambda x: x["fancyname"].lower())
+
+    for fw in lst:
+        expand_platform_all(fw, available_platforms)
+
+    # Separate "real" frameworks and porting aids
     framework_lst = []
     porting_aid_lst = []
-    for t in range(1,5):
-        gm_frameworks = []
-        for fw in tiers[t]:
-            rellink = fw['outputdir'] + '/html/index.html'
-            gm_frameworks.append({
-                'href': rellink,
-                'name': fw['fancyname']
-                })
-            if fw.get('portingAid'):
-                porting_aid_lst.append(fw)
-            else:
-                framework_lst.append(fw)
-        gm_sections.append({
-            'title': 'Tier ' + str(t),
-            'members': gm_frameworks
-            })
-    framework_sort(framework_lst)
-    framework_sort(porting_aid_lst)
-    group_menu = {'group_title': 'Frameworks', 'sections': gm_sections}
+    for fw in lst:
+        if fw.get('portingAid'):
+            porting_aid_lst.append(fw)
+        else:
+            framework_lst.append(fw)
 
     mapping = {
             'resources': '.',
@@ -116,10 +140,10 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
                     }
                     ]
                 },
-            'group_menu': group_menu,
             'framework_lst': framework_lst,
             'porting_aid_lst': porting_aid_lst,
             'tierinfo': tierinfo,
+            'available_platforms': available_platforms,
         }
     tmpl = load_template(inputfile)
     with open(outputfile, 'w') as outf:
