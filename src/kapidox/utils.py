@@ -29,6 +29,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import logging
 import os
 import re
+import sys
 
 """
 This module contains code which is shared between depdiagram-prepare and other
@@ -61,3 +62,44 @@ def parse_fancyname(fw_dir):
                 return match.group(1)
     logging.error("Failed to find framework name: Could not find a 'project()' command in {}.".format(cmakelists_path))
     return None
+
+
+_KAPIDOX_VERSION = None
+def get_kapidox_version():
+    """Get commit id of running code if it is running from git repository.
+
+    May return an empty string if it failed to extract the commit id.
+
+    Assumes .git/HEAD looks like this:
+
+        ref: refs/heads/master
+
+    and assumes .git/refs/heads/master contains the commit id
+    """
+    global _KAPIDOX_VERSION
+
+    if _KAPIDOX_VERSION is not None:
+        return _KAPIDOX_VERSION
+
+    _KAPIDOX_VERSION = ""
+    bin_dir = os.path.dirname(sys.argv[0])
+    git_dir = os.path.join(bin_dir, "..", ".git")
+    if not os.path.isdir(git_dir):
+        # Looks like we are not running from the git repo, exit silently
+        return _KAPIDOX_VERSION
+
+    git_HEAD = os.path.join(git_dir, "HEAD")
+    if not os.path.isfile(git_HEAD):
+        logging.warning("Getting git info failed: {} is not a file".format(git_HEAD))
+        return _KAPIDOX_VERSION
+
+    try:
+        line = open(git_HEAD).readline()
+        ref_name = line.split(": ")[1].strip()
+        with open(os.path.join(git_dir, ref_name)) as f:
+            _KAPIDOX_VERSION = f.read().strip()
+    except Exception as exc:
+        # Catch all exceptions here: whatever fails in this function should not
+        # cause the code to fail
+        logging.warning("Getting git info failed: {}".format(exc))
+    return _KAPIDOX_VERSION

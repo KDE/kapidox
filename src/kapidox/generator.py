@@ -480,6 +480,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
             'api_searchbox': api_searchbox,
             'doxygen_menu': {'entries': menu_items(htmldir, modulename)},
             'class_map': {'classes': classmap},
+            'kapidox_version': utils.get_kapidox_version(),
         }
     mapping.update(template_mapping)
     logging.info('Postprocessing')

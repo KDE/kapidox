@@ -34,6 +34,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 from kapidox import utils
 
@@ -56,6 +57,12 @@ def generate_dot(fw_dir, fw_name, output_dir):
                 os.remove(dot_path)
             logging.error("Generating dot file for {} failed.".format(fw_name))
             return False
+        # Add a timestamp and version info to help with diagnostics
+        with open(dot_path, "a") as f:
+            f.write("\n# Generated on {}\n".format(time.ctime()))
+            version = utils.get_kapidox_version()
+            if version:
+                f.write("# By {} {}\n".format(sys.argv[0], version))
     finally:
         shutil.rmtree(build_dir)
     return True
