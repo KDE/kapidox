@@ -122,31 +122,37 @@ def find_dot_files(dot_dir):
     return lst
 
 
-def generate_diagram(png_path, fancyname, tier, dot_files):
+def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     """Generate a dependency diagram for a framework.
     """
-    logging.info('Generating dependency diagram for {}'.format(fancyname))
-    dot_path = tempfile.mkstemp(suffix=fancyname + '.dot')[1]
-    try:
-        with open(dot_path, 'w') as f:
-            with_qt = tier <= 2
-            ok = depdiagram.generate(f, dot_files, framework=fancyname, with_qt=with_qt)
-            if not ok:
-                logging.error('Generating diagram for {} failed'.format(fancyname))
-                return False
-
-        tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
-        dot_proc = subprocess.Popen(['dot', '-Tpng', '-o' + png_path],
-                                    stdin=tred_proc.stdout)
-        tred_proc.stdout.close()
-        dot_proc.communicate()
-        assert dot_proc >= 0
-
-        if dot_proc.returncode != 0:
-            logging.error('dot failed with error code {}'.format(dot_proc.returncode))
+    def run_cmd(cmd, **kwargs):
+        try:
+            subprocess.check_call(cmd, **kwargs)
+        except subprocess.CalledProcessError as exc:
+            logging.error(
+                    'Command {exc.cmd} failed with error code {exc.returncode}.'.format(exc=exc))
             return False
-    finally:
-        os.unlink(dot_path)
+        return True
+
+    logging.info('Generating dependency diagram')
+    dot_path = os.path.join(tmp_dir, fancyname + '.dot')
+
+    with open(dot_path, 'w') as f:
+        with_qt = tier <= 2
+        ok = depdiagram.generate(f, dot_files, framework=fancyname, with_qt=with_qt)
+        if not ok:
+            logging.error('Generating diagram failed')
+            return False
+
+    logging.info('- Simplifying diagram')
+    simplified_dot_path = os.path.join(tmp_dir, fancyname + '-simplified.dot')
+    with open(simplified_dot_path, 'w') as f:
+        if not run_cmd(['tred', dot_path], stdout=f):
+            return False
+
+    logging.info('- Generating diagram png')
+    if not run_cmd(['dot', '-Tpng', '-o' + png_path, simplified_dot_path]):
+        return False
     return True
 
 
@@ -305,7 +311,7 @@ def main():
             for fwinfo in tiers[t]:
                 if args.depdiagram_dot_dir:
                     png_path = os.path.join(tmp_dir, fwinfo['modulename']) + '.png'
-                    ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files)
+                    ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files, tmp_dir)
                     if ok:
                         fwinfo['dependency_diagram'] = png_path
                 gen_fw_apidocs(fwinfo)
