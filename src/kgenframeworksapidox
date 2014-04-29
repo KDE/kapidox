@@ -30,6 +30,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import argparse
+import logging
 import os
 import shutil
 import subprocess
@@ -124,13 +125,14 @@ def find_dot_files(dot_dir):
 def generate_diagram(png_path, fancyname, tier, dot_files):
     """Generate a dependency diagram for a framework.
     """
+    logging.info('Generating dependency diagram for {}'.format(fancyname))
     dot_path = tempfile.mkstemp(suffix=fancyname + '.dot')[1]
     try:
         with open(dot_path, 'w') as f:
             with_qt = tier <= 2
             ok = depdiagram.generate(f, dot_files, framework=fancyname, with_qt=with_qt)
             if not ok:
-                print("ERROR: generating diagram for {} failed".format(fancyname))
+                logging.error('Generating diagram for {} failed'.format(fancyname))
                 return False
 
         tred_proc = subprocess.Popen(['tred', dot_path], stdout=subprocess.PIPE)
@@ -141,7 +143,7 @@ def generate_diagram(png_path, fancyname, tier, dot_files):
         assert dot_proc >= 0
 
         if dot_proc.returncode != 0:
-            print('ERROR: dot failed with error code {}'.format(dot_proc.returncode))
+            logging.error('dot failed with error code {}'.format(dot_proc.returncode))
             return False
     finally:
         os.unlink(dot_path)
@@ -149,6 +151,8 @@ def generate_diagram(png_path, fancyname, tier, dot_files):
 
 
 def main():
+    setup_logging()
+
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
             'for the KDE Frameworks')
     parser.add_argument('frameworksdir',
@@ -188,7 +192,7 @@ def main():
     args = parser.parse_args()
 
     if args.depdiagram_dot_dir and not DEPDIAGRAM_AVAILABLE:
-        print('ERROR: You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
+        logging.error('You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
         exit(1)
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
@@ -199,7 +203,7 @@ def main():
             searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
 
     if not os.path.isdir(args.frameworksdir):
-        print(args.frameworksdir + " is not a directory")
+        logging.error(args.frameworksdir + " is not a directory")
         exit(2)
 
     framework_list = os.listdir(args.frameworksdir)
@@ -209,12 +213,12 @@ def main():
         yaml_file = os.path.join(fwdir, 'metainfo.yaml')
 
         if not os.path.isfile(yaml_file):
-            print("WARNING: {} does not contain a framework (metainfo.yaml missing)".format(fwdir))
+            logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
             continue
 
         fancyname = parse_fancyname(fwdir)
         if not fancyname:
-            print('WARNING: Could not find fancy name for {}, skipping it'.format(fwdir))
+            logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
             continue
 
         outputdir = modulename
@@ -222,9 +226,9 @@ def main():
         # FIXME: option in yaml file to disable docs
         tier = get_tier(yaml_file)
         if tier is None:
-            print("Could not find tier for " + framework + "!")
+            logging.warning('Could not find tier for {}'.format(framework))
         elif tier < 1 or tier > 4:
-            print("Invalid tier " + tier + " for " + framework + "!")
+            logging.warning('Invalid tier {} for {}'.format(tier, framework))
         else:
             tiers[tier].append({
                 'modulename': modulename,
@@ -242,6 +246,7 @@ def main():
     group_menu = generate_group_menu(tiers)
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
+        logging.info('# Generating doc for {}'.format(fwinfo['fancyname']))
         generate_apidocs(
                 modulename = fwinfo['modulename'],
                 fancyname = fwinfo['fancyname'],
@@ -304,7 +309,9 @@ def main():
                     if ok:
                         fwinfo['dependency_diagram'] = png_path
                 gen_fw_apidocs(fwinfo)
-            if (t >= 3):
+
+            if t >= 3:
+                logging.info('# Rebuilding for interdependencies')
                 # Rebuild for interdependencies
                 # FIXME: can we be cleverer about deps?
                 for fwinfo in tiers[t]:
@@ -313,7 +320,7 @@ def main():
     finally:
         if tmp_dir:
             if args.keep_temp_dirs:
-                print('Kept temp dir at {}'.format(tmp_dir))
+                logging.info('Kept temp dir at {}'.format(tmp_dir))
             else:
                 shutil.rmtree(tmp_dir)
 

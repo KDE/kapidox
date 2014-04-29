@@ -31,6 +31,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import codecs
 import datetime
 import os
+import logging
 import re
 import shutil
 import subprocess
@@ -48,6 +49,11 @@ import jinja2
 from .doxyfilewriter import DoxyfileWriter
 
 
+def setup_logging():
+    FORMAT = '%(asctime)s %(levelname)s %(message)s'
+    logging.basicConfig(format=FORMAT, datefmt='%H:%M:%S', level=logging.DEBUG)
+
+
 def load_template(path):
     # Set errors to 'ignore' because we don't want weird characters in Doxygen
     # output (for example source code listing) to cause a failure
@@ -55,7 +61,7 @@ def load_template(path):
     try:
         return jinja2.Template(content)
     except jinja2.exceptions.TemplateSyntaxError as exc:
-        print('Failed to parse template {}'.format(path))
+        logging.error('Failed to parse template {}'.format(path))
         raise
 
 
@@ -94,9 +100,9 @@ def find_datadir(searchpaths, testentries, suggestion=None, complain=True):
 
     if not suggestion is None:
         if not os.path.isdir(suggestion):
-            print(suggestion + " is not a directory")
+            logging.warning(suggestion + " is not a directory")
         elif not check_datadir_entries(suggestion):
-            print(suggestion + " does not contain the expected files")
+            logging.warning(suggestion + " does not contain the expected files")
         else:
             return suggestion
 
@@ -176,18 +182,18 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
 
     if not suggestion is None:
         if not os.path.isdir(suggestion):
-            print(suggestion + " is not a directory")
+            logging.warning(suggestion + " is not a directory")
         else:
             tagfiles = find_tagfiles(suggestion, doclink, flattenlinks)
             if len(tagfiles) == 0:
-                print(suggestion + " does not contain any tag files")
+                logging.warning(suggestion + " does not contain any tag files")
             else:
                 return tagfiles
 
     for d in searchpaths:
         tagfiles = find_tagfiles(d, doclink, flattenlinks)
         if len(tagfiles) > 0:
-            print("Documentation tag files found at " + d)
+            logging.info("Documentation tag files found at " + d)
             return tagfiles
 
     return []
@@ -200,7 +206,7 @@ def copy_dir_contents(directory, dest):
     """
     ignored = ['CMakeLists.txt']
     ignore = shutil.ignore_patterns(*ignored)
-    print("Copying contents of " + directory)
+    logging.info("Copying contents of " + directory)
     for fn in os.listdir(directory):
         f = os.path.join(directory,fn)
         if os.path.isfile(f):
@@ -226,10 +232,10 @@ def find_doxdatadir_or_exit(suggestion):
             testentries=['header.html','footer.html','htmlresource'],
             suggestion=suggestion)
     if doxdatadir is None:
-        print("Could not find a valid doxdatadir")
+        logging.error("Could not find a valid doxdatadir")
         sys.exit(1)
     else:
-        print("Found doxdatadir at " + doxdatadir)
+        logging.info("Found doxdatadir at " + doxdatadir)
     return doxdatadir
 
 
@@ -292,13 +298,16 @@ def postprocess(htmldir, mapping):
     """
     for f in os.listdir(htmldir):
         if f.endswith('.html'):
-            print("Postprocessing " + f)
             path = os.path.join(htmldir,f)
             newpath = path + '.new'
-            with codecs.open(newpath, 'w', 'utf-8') as outf:
-                tmpl = load_template(path)
-                outf.write(tmpl.render(mapping))
-            os.rename(newpath, path)
+            try:
+                with codecs.open(newpath, 'w', 'utf-8') as outf:
+                    tmpl = load_template(path)
+                    outf.write(tmpl.render(mapping))
+                os.rename(newpath, path)
+            except Exception:
+                logging.error('postprocessing {} failed'.format(path))
+                raise
 
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
@@ -333,7 +342,7 @@ def write_mapping_to_php(mapping, outputfile, varname='map'):
     outputfile -- the file to write to
     varname    -- override the PHP variable name (defaults to 'map')
     """
-    print("Generating " + outputfile)
+    logging.info('Generating PHP mapping')
     with codecs.open(outputfile,'w','utf-8') as f:
         f.write('<?php $' + varname + ' = array(')
         first = True
@@ -481,6 +490,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
                     for line in f:
                         doxyfile.write(line)
 
+        logging.info('Running Doxygen')
         subprocess.call([doxygen, doxyfile_path])
     finally:
         if not keep_temp_dirs:
@@ -499,7 +509,8 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
             'class_map': {'classes': classmap}
         }
     mapping.update(template_mapping)
+    logging.info('Postprocessing')
     postprocess(htmldir, mapping)
 
     if keep_temp_dirs:
-        print('Kept temp dir at {}'.format(tmp_dir))
+        logging.info('Kept temp dir at {}'.format(tmp_dir))

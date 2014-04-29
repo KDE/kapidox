@@ -1,6 +1,8 @@
 # Default settings for KDE projects
 # See http://www.stack.nl/~dimitri/doxygen/manual/config.html for help
 
+QUIET = YES
+
 # Put the brief description in the same place as the detailed one
 BRIEF_MEMBER_DESC      = NO
 ALWAYS_DETAILED_SEC    = YES

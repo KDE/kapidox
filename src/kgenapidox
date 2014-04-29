@@ -35,6 +35,8 @@ import os
 from kapidox import *
 
 def main():
+    setup_logging()
+
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
     parser.add_argument('moduledir',
             help='Location of the module to build API documentation for; it ' +
@@ -87,7 +89,7 @@ def main():
     tagfiles = find_all_tagfiles(args)
 
     if not os.path.isdir(args.moduledir):
-        print(args.moduledir + " is not a directory")
+        logging.error(args.moduledir + ' is not a directory')
         exit(2)
 
     modulename = os.path.basename(os.path.abspath(os.path.realpath(args.moduledir)))
@@ -98,12 +100,12 @@ def main():
 
     if args.dependency_diagram_dir:
         if not os.path.isdir(args.dependency_diagram_dir):
-            print(args.dependency_diagram_dir + " is not a directory")
+            logging.error(args.dependency_diagram_dir + ' is not a directory')
             exit(2)
 
         dependency_diagram = os.path.join(args.dependency_diagram_dir, modulename + '.png')
         if not os.path.isfile(dependency_diagram):
-            print('No file named {}.png in {}'.format(modulename, args.dependency_diagram_dir))
+            logging.error('No file named {}.png in {}'.format(modulename, args.dependency_diagram_dir))
             exit(2)
     else:
         dependency_diagram = None
@@ -125,6 +127,7 @@ def main():
             fancyname = parse_fancyname(args.moduledir),
             keep_temp_dirs = args.keep_temp_dirs
             )
+    logging.info('Done')
 
 if __name__ == "__main__":
     main()

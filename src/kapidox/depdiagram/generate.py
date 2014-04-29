@@ -23,8 +23,8 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import logging
 import itertools
-import sys
 
 from kapidox.depdiagram.block import Block, quote
 from kapidox.depdiagram.framework import Framework
@@ -159,7 +159,7 @@ def generate(out, dot_files, framework=None, with_qt=False, detailed=False):
     if framework:
         wanted_fw = db.find_by_name(framework)
         if wanted_fw is None:
-            sys.stderr.write("No framework named {}.\n".format(framework))
+            logging.error("No framework named {}.".format(framework))
             return False
         db.remove_unused_frameworks(wanted_fw)
     else:
