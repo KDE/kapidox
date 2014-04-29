@@ -216,6 +216,8 @@ def main():
     tiers = {1:[],2:[],3:[],4:[]}
     for modulename in framework_list:
         fwdir = os.path.join(args.frameworksdir, modulename)
+        if not os.path.isdir(fwdir):
+            continue
         yaml_file = os.path.join(fwdir, 'metainfo.yaml')
 
         if not os.path.isfile(yaml_file):
