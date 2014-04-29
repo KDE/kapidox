@@ -39,7 +39,8 @@ import tempfile
 
 import jinja2
 
-from kapidox import *
+from kapidox import utils
+from kapidox.generator import *
 try:
     from kapidox import depdiagram
     DEPDIAGRAM_AVAILABLE = True
@@ -165,7 +166,7 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
 
 
 def main():
-    setup_logging()
+    utils.setup_logging()
 
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
             'for the KDE Frameworks')
@@ -232,7 +233,7 @@ def main():
             logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
             continue
 
-        fancyname = parse_fancyname(fwdir)
+        fancyname = utils.parse_fancyname(fwdir)
         if not fancyname:
             logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
             continue

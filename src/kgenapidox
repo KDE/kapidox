@@ -30,12 +30,14 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import argparse
+import logging
 import os
 
-from kapidox import *
+from kapidox import utils
+from kapidox.generator import *
 
 def main():
-    setup_logging()
+    utils.setup_logging()
 
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
     parser.add_argument('moduledir',
@@ -124,7 +126,7 @@ def main():
             doxygen = args.doxygen,
             qhelpgenerator = args.qhelpgenerator,
             title = args.title,
-            fancyname = parse_fancyname(args.moduledir),
+            fancyname = utils.parse_fancyname(args.moduledir),
             keep_temp_dirs = args.keep_temp_dirs
             )
     logging.info('Done')

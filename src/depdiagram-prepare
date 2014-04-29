@@ -29,19 +29,17 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import argparse
 import os
-import re
+import logging
 import shutil
 import subprocess
 import sys
 import tempfile
 
+from kapidox import utils
+
 DESCRIPTION = """
 Generate Graphviz dot files for one or all frameworks.
 """
-
-def err(msg):
-    print("ERROR:", msg, file=sys.stderr)
-
 
 def generate_dot(fw_dir, fw_name, output_dir):
     """Calls cmake to generate the dot file for a framework.
@@ -56,42 +54,21 @@ def generate_dot(fw_dir, fw_name, output_dir):
         if ret != 0:
             if os.path.exists(dot_path):
                 os.remove(dot_path)
-            err("Generating dot file for {} failed.".format(fw_name))
+            logging.error("Generating dot file for {} failed.".format(fw_name))
             return False
     finally:
         shutil.rmtree(build_dir)
     return True
 
 
-# This function is duplicated from src/kapidox/__init__.py because this code
-# runs on build.kde.org, where we can't import kapidox
-def parse_fancyname(fw_dir):
-    """Returns the framework name for a given source dir
-
-    The framework name is the name of the toplevel CMake project
-    """
-    cmakelists_path = os.path.join(fw_dir, "CMakeLists.txt")
-    if not os.path.exists(cmakelists_path):
-        err("No CMakeLists.txt in {}".format(fw_dir))
-        return None
-    project_re = re.compile(r"project\s*\(\s*(\w+)", re.I)
-    with open(cmakelists_path) as f:
-        for line in f.readlines():
-            match = project_re.search(line)
-            if match:
-                return match.group(1)
-    err("Failed to find framework name: Could not find a 'project()' command in {}.".format(cmakelists_path))
-    return None
-
-
 def prepare_one(fw_dir, output_dir):
-    fw_name = parse_fancyname(fw_dir)
+    fw_name = utils.parse_fancyname(fw_dir)
     if fw_name is None:
         return False
 
     yaml_path = os.path.join(fw_dir, "metainfo.yaml")
     if not os.path.exists(yaml_path):
-        err("'{}' is not a framework: '{}' does not exist.".format(fw_dir, yaml_path))
+        logging.error("'{}' is not a framework: '{}' does not exist.".format(fw_dir, yaml_path))
         return False
 
     if not os.path.exists(output_dir):
@@ -150,7 +127,7 @@ def main():
         fw_base_dir = os.path.abspath(args.all)
         fails = prepare_all(fw_base_dir, dot_dir)
         if fails:
-            err("{} framework(s) failed: {}".format(len(fails), ", ".join(fails)))
+            logging.error("{} framework(s) failed: {}".format(len(fails), ", ".join(fails)))
             return 1
         else:
             return 0
