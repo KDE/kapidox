@@ -153,6 +153,14 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     logging.info('- Generating diagram png')
     if not run_cmd(['dot', '-Tpng', '-o' + png_path, simplified_dot_path]):
         return False
+
+    # These os.unlink() calls are not in a 'finally' block on purpose.
+    # Keeping the dot files around makes it possible to inspect their content
+    # when running with the --keep-temp-dirs option. If generation fails and
+    # --keep-temp-dirs is not set, the files will be removed when the program
+    # ends because they were created in `tmp_dir`.
+    os.unlink(dot_path)
+    os.unlink(simplified_dot_path)
     return True
 
 
