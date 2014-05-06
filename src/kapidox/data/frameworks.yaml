@@ -1,0 +1,23 @@
+intro:
+    - This is the online reference for developing with the KDE frameworks.
+    - The KDE Frameworks build on the <a href="http://qt-project.org">Qt
+      framework</a>, providing everything from simple utility classes (such as
+      those in KCoreAddons) to integrated solutions for common requirements of
+      desktop applications (such as KNewStuff, for fetching downloadable add-on
+      content in an application, or the powerful KIO multi-protocol file access
+      framework).
+    - The frameworks are divided into four tiers.
+
+tiers:
+    1: Tier 1 frameworks depend only on Qt (and possibly a small number of other
+       third-party libraries), so can easily be used by an Qt-based project.
+
+    2: Tier 2 frameworks additionally depend on tier 1 frameworks, but still have
+       easily manageable dependencies.
+
+    3: Tier 3 frameworks are generally more powerful, comprehensive packages, and
+       consequently have more complex dependencies.
+
+    4: Tier 4 frameworks can be mostly ignored by application programmers; this
+       tier consists of plugins acting behind the scenes to provide additional
+       functionality or platform integration to existing frameworks (including Qt).

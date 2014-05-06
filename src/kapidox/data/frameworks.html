@@ -24,6 +24,8 @@
   <link rel="shortcut icon" href="{{resources}}/favicon.ico" /><link rel="icon" href="{{resources}}/favicon.ico" />
   <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
   <link rel="stylesheet" type="text/css" href="{{resources}}/kde.css" />
+
+  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
 </head>
 
 <body>
@@ -80,14 +82,45 @@
             </div>
             <div class="contents">
               <div class="textblock">
-                <p>This is the online reference for developing with the KDE frameworks.</p>
-                <p>The KDE Frameworks build on the <a href="http://qt-project.org/">Qt</a> framework, providing everything from simple utility classes (such as those in <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>) to integrated solutions for common requirements of desktop applications (such as <a href="{{frameworks.knewstuff.link}}">KNewStuff</a>, for fetching downloadable add-on content in an application, or the powerful <a href="{{frameworks.kio.link}}">KIO</a> multi-protocol file access framework).</p>
-                <p>The frameworks are divided into four tiers.  Tier 1 frameworks depend only on Qt (and possibly a small number of other third-party libraries), so can easily be used by an Qt-based project.  Several are collections of classes to extend the functionality of existing Qt frameworks (like <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>, <a href="{{frameworks.kguiaddons.link}}">KGuiAddons</a> and <a href="{{frameworks.kdbusaddons.link}}">KDBusAddons</a>), while others, like <a href="{{frameworks.threadweaver.link}}">ThreadWeaver</a> and <a href="{{frameworks.karchive.link}}">KArchive</a>, provide a complete package to solve a common problem.</p>
-                <p>Tier 2 frameworks additionally depend on tier 1 frameworks, but still have easily manageable dependencies.</p>
-                <p>Tier 3 frameworks are generally more powerful, comprehensive packages, and consequently have more complex dependencies.</p>
-                <p>Tier 4 frameworks can be mostly ignored by application programmers; apart from the transitional <a href="{{frameworks.kdelibs4support.link}}">KDELibs 4 support framework</a>, this tier consists of plugins acting behind the scenes to provide additional functionality or platform integration to existing frameworks (including Qt).</p>
-                <p>For a complete list of frameworks for which API documentation is available, see the list on the left of the page.</p>
+                {% for para in tierinfo.intro %}
+                  <p>{{ para }}</p>
+                {% endfor %}
               </div>
+              {% for tier, frameworks in tiers.items() %}
+                <h2>Tier {{tier}}</h2>
+                <p>{{ tierinfo.tiers[tier] }}</p>
+                <table class="doxtable frameworks">
+                  <tr>
+                    <th>Framework</th>
+                    <th class="framework-detail framework-maintainer">Maintainer</th>
+                    <th class="framework-detail framework-type">Type</th>
+                    <th class="framework-detail framework-platforms">Platforms</th>
+                  </tr>
+                {% for fw in frameworks %}
+                  <tr>
+                    <td>
+                      <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
+                      <span class="framework-description">{{fw.description}}</span>
+                    </td>
+                    <td class="framework-detail framework-maintainer">{{ fw.maintainer }}</td>
+                    <td class="framework-detail framework-type">{{ fw.type }}</td>
+                    <td class="framework-detail framework-platforms">
+                      {% if fw.platforms %}
+                        {% for platform in fw.platforms %}
+                          {{ platform.name }}
+                          {%- if platform.note %}
+                            <span title="{{ platform.note }}" class="platform-note">*</span>
+                          {% endif %}
+                          {%- if not loop.last %}, {% endif %}
+                        {% endfor %}
+                      {% else %}
+                        <span class="error">Unknown</span>
+                      {% endif %}
+                      </td>
+                  </tr>
+                {% endfor %}
+                </table>
+              {% endfor %}
             </div>
           </div>
         </div>

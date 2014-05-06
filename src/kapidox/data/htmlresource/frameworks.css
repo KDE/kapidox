@@ -1,0 +1,23 @@
+table.frameworks {
+    width: 100%;
+}
+
+table.frameworks h3 {
+    margin: 0;
+    padding: 0;
+}
+
+table.frameworks td {
+    padding: 0.5em;
+}
+
+td.framework-detail {
+    text-align: center;
+    width: 120px;
+}
+
+.platform-note {
+    cursor: help;
+    color: #f7800a;
+    font-weight: bold;
+}

@@ -48,12 +48,6 @@ try:
 except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
-def get_tier(yaml_file):
-    """Parse the tier out of a yaml file"""
-    with open(yaml_file) as f:
-        data = yaml.load(f)
-        return data['tier']
-
 def generate_group_menu(tiers):
     """Generate a menu for the frameworks"""
     sections = []
@@ -71,11 +65,14 @@ def generate_group_menu(tiers):
             })
     return {'group_title': 'Frameworks', 'sections': sections}
 
-def process_toplevel_html_file(inputfile, outputfile, tiers, title,
+def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
         api_searchbox=False):
     """Pass a HTML file through the templating filters"""
 
-    frameworks = {}
+    inputfile = os.path.join(doxdatadir, 'frameworks.html')
+    with open(os.path.join(doxdatadir, 'frameworks.yaml')) as f:
+        tierinfo = yaml.load(f)
+
     gm_sections = []
     for t in range(1,5):
         gm_frameworks = []
@@ -85,7 +82,6 @@ def process_toplevel_html_file(inputfile, outputfile, tiers, title,
                 'href': rellink,
                 'name': fw['fancyname']
                 })
-            frameworks[fw['modulename']] = {'link': rellink, 'name': fw['fancyname']}
         gm_sections.append({
             'title': 'Tier ' + str(t),
             'members': gm_frameworks
@@ -108,7 +104,8 @@ def process_toplevel_html_file(inputfile, outputfile, tiers, title,
                     ]
                 },
             'group_menu': group_menu,
-            'frameworks': frameworks
+            'tiers': tiers,
+            'tierinfo': tierinfo,
         }
     tmpl = load_template(inputfile)
     with open(outputfile, 'w') as outf:
@@ -288,19 +285,21 @@ def main():
         outputdir = modulename
 
         # FIXME: option in yaml file to disable docs
-        tier = get_tier(yaml_file)
+        metainfo = yaml.load(open(yaml_file))
+        tier = metainfo["tier"]
         if tier is None:
             logging.warning('Could not find tier for {}'.format(framework))
         elif tier < 1 or tier > 4:
             logging.warning('Invalid tier {} for {}'.format(tier, framework))
         else:
-            tiers[tier].append({
+            metainfo.update({
                 'modulename': modulename,
                 'fancyname': fancyname,
                 'srcdir': fwdir,
                 'outputdir': outputdir,
                 'dependency_diagram': None,
                 })
+            tiers[tier].append(metainfo)
 
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
@@ -309,7 +308,7 @@ def main():
 
     group_menu = generate_group_menu(tiers)
 
-    process_toplevel_html_file(os.path.join(doxdatadir, 'frameworks.html'), 'index.html',
+    process_toplevel_html_file('index.html', doxdatadir,
             title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
     try:
