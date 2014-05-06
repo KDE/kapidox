@@ -263,7 +263,6 @@ def main():
     group_menu = generate_group_menu(tiers)
 
     def gen_fw_apidocs(fwinfo, rebuild=False):
-        logging.info('# Generating doc for {}'.format(fwinfo['fancyname']))
         generate_apidocs(
                 modulename = fwinfo['modulename'],
                 fancyname = fwinfo['fancyname'],
@@ -320,6 +319,7 @@ def main():
 
         for t in range(1,5):
             for fwinfo in tiers[t]:
+                logging.info('# Generating doc for {}'.format(fwinfo['fancyname']))
                 if args.depdiagram_dot_dir:
                     png_path = os.path.join(tmp_dir, fwinfo['modulename']) + '.png'
                     ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files, tmp_dir)
@@ -328,12 +328,13 @@ def main():
                 gen_fw_apidocs(fwinfo)
 
             if t >= 3:
-                logging.info('# Rebuilding for interdependencies')
                 # Rebuild for interdependencies
                 # FIXME: can we be cleverer about deps?
                 for fwinfo in tiers[t]:
+                    logging.info('# Rebuilding {} for interdependencies'.format(fwinfo['fancyname']))
                     shutil.rmtree(fwinfo['outputdir'])
                     gen_fw_apidocs(fwinfo, rebuild=True)
+        logging.info('# Done')
     finally:
         if tmp_dir:
             if args.keep_temp_dirs:
