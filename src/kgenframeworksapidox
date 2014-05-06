@@ -165,6 +165,53 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     return True
 
 
+def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
+    generate_apidocs(
+            modulename = fwinfo['modulename'],
+            fancyname = fwinfo['fancyname'],
+            srcdir = fwinfo['srcdir'],
+            outputdir = fwinfo['outputdir'],
+            doxdatadir = doxdatadir,
+            tagfiles = tagfiles,
+            dependency_diagram = fwinfo['dependency_diagram'],
+            man_pages = args.man_pages,
+            qhp = args.qhp,
+            searchengine = args.searchengine,
+            api_searchbox = args.api_searchbox,
+            doxygen = args.doxygen,
+            qhelpgenerator = args.qhelpgenerator,
+            title = args.title,
+            resourcedir = '../..',
+            template_mapping = {
+                'breadcrumbs': {
+                    'entries': [
+                        {
+                            'href': 'http://api.kde.org/',
+                            'text': 'KDE API Reference'
+                        },
+                        {
+                            'href': '../../index.html',
+                            'text': 'Frameworks'
+                        }
+                        ]
+                    },
+                'group_menu': group_menu
+                },
+            doxyfile_entries = {
+                'WARN_IF_UNDOCUMENTED': True
+                }
+            )
+
+
+def create_fw_tagfile_tuple(fwinfo):
+    tagfile = os.path.abspath(
+                os.path.join(
+                    fwinfo['outputdir'],
+                    'html',
+                    fwinfo['modulename']+'.tags'))
+    return (tagfile, '../../' + fwinfo['outputdir'] + '/html/')
+
+
 def main():
     utils.setup_logging()
 
@@ -262,50 +309,6 @@ def main():
 
     group_menu = generate_group_menu(tiers)
 
-    def gen_fw_apidocs(fwinfo, rebuild=False):
-        generate_apidocs(
-                modulename = fwinfo['modulename'],
-                fancyname = fwinfo['fancyname'],
-                srcdir = fwinfo['srcdir'],
-                outputdir = fwinfo['outputdir'],
-                doxdatadir = doxdatadir,
-                tagfiles = tagfiles,
-                dependency_diagram = fwinfo['dependency_diagram'],
-                man_pages = args.man_pages,
-                qhp = args.qhp,
-                searchengine = args.searchengine,
-                api_searchbox = args.api_searchbox,
-                doxygen = args.doxygen,
-                qhelpgenerator = args.qhelpgenerator,
-                title = args.title,
-                resourcedir = '../..',
-                template_mapping = {
-                    'breadcrumbs': {
-                        'entries': [
-                            {
-                                'href': 'http://api.kde.org/',
-                                'text': 'KDE API Reference'
-                            },
-                            {
-                                'href': '../../index.html',
-                                'text': 'Frameworks'
-                            }
-                            ]
-                        },
-                    'group_menu': group_menu
-                    },
-                doxyfile_entries = {
-                    'WARN_IF_UNDOCUMENTED': True
-                    }
-                )
-        if not rebuild:
-            tagfile = os.path.abspath(
-                        os.path.join(
-                            fwinfo['outputdir'],
-                            'html',
-                            fwinfo['modulename']+'.tags'))
-            tagfiles.append((tagfile,'../../' + fwinfo['outputdir'] + '/html/'))
-
     process_toplevel_html_file(os.path.join(doxdatadir, 'frameworks.html'), 'index.html',
             title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
@@ -325,7 +328,8 @@ def main():
                     ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files, tmp_dir)
                     if ok:
                         fwinfo['dependency_diagram'] = png_path
-                gen_fw_apidocs(fwinfo)
+                gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
+                tagfiles.append(create_fw_tagfile_tuple(fwinfo))
 
             if t >= 3:
                 # Rebuild for interdependencies
@@ -333,7 +337,7 @@ def main():
                 for fwinfo in tiers[t]:
                     logging.info('# Rebuilding {} for interdependencies'.format(fwinfo['fancyname']))
                     shutil.rmtree(fwinfo['outputdir'])
-                    gen_fw_apidocs(fwinfo, rebuild=True)
+                    gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
         logging.info('# Done')
     finally:
         if tmp_dir:
