@@ -23,6 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 import fnmatch
 import os
 import re
@@ -186,32 +187,25 @@ class FrameworkDb(object):
         return None
 
     def remove_unused_frameworks(self, wanted_fw):
-        def is_used_in_list(the_fw, lst):
-            for fw in lst:
-                if fw == the_fw:
-                    continue
-                for target in fw.get_all_target_dependencies():
-                    if the_fw.has_target(target):
-                        return True
-                if the_fw.name in fw.get_extra_frameworks():
-                    return True
-            return False
+        def add_to_set(fw_set, wanted_fw):
+            fw_set.add(wanted_fw)
 
-        done = False
-        old_lst = self._fw_list
-        while not done:
-            lst = []
-            done = True
-            for fw in old_lst:
-                if fw == wanted_fw:
-                    lst.append(fw)
+            for target in wanted_fw.get_all_target_dependencies():
+                fw = self._fw_for_target.get(target)
+                if fw is not None and not fw in fw_set:
+                    add_to_set(fw_set, fw)
+
+            for fw_name in wanted_fw.get_extra_frameworks():
+                fw = self.find_by_name(fw_name)
+                if not fw:
+                    logging.warning("Framework {} has an extra dependency on {}, but there is no such framework".format(wanted_fw, fw_name))
                     continue
-                if is_used_in_list(fw, old_lst):
-                    lst.append(fw)
-                else:
-                    done = False
-            old_lst = lst
-        self._fw_list = lst
+                if not fw in fw_set:
+                    add_to_set(fw_set, fw)
+
+        fw_set = set()
+        add_to_set(fw_set, wanted_fw)
+        self._fw_list = list(fw_set)
 
     def find_external_targets(self):
         all_targets = set([])
