@@ -1,3 +1,5 @@
+"use strict";
+
 function updateMaintainers() {
     var checkbox = document.getElementById("showMaintainers");
     if (checkbox.checked) {
@@ -43,48 +45,26 @@ function updatePlatforms() {
     });
 }
 
-var g_noteElement;
+var g_noteTip;
 var g_currentlyDescribedElement;
 
 function initNoteTip() {
-    g_noteElement = document.createElement("div");
-    $(g_noteElement).addClass("note-tip");
-    $(g_noteElement).html("<span class='note-tip-text'></span> <a class='note-close' href='#'>&#9447;</a>");
-
-    $("body").append(g_noteElement);
-
-    $(".note-close", g_noteElement).click(function() {
-        hideNoteTip();
-        return false;
-    });
+    g_noteTip = new NoteTip();
+    g_noteTip.onHide = function() {
+        g_currentlyDescribedElement = null;
+    }
 
     $(".framework-platform > a").click(function() {
         if (g_currentlyDescribedElement == this) {
-            hideNoteTip();
+            g_noteTip.hide();
         } else {
+            g_currentlyDescribedElement = this;
             var text = this.getAttribute("data-note");
-            showNoteTip(this, text);
+            g_noteTip.setText(text);
+            g_noteTip.show(this);
         }
         return false;
     });
-}
-
-function showNoteTip(anchorElement, text) {
-    g_currentlyDescribedElement = anchorElement;
-
-    var offset = $(anchorElement).offset();
-    var note = $(g_noteElement);
-    $(".note-tip-text", note).text(text);
-    note.css({
-            left: (offset.left + $(anchorElement).width() / 2 - note.outerWidth(true) / 2) + "px",
-            top: (offset.top - note.outerHeight(true) - 6) + "px"
-        })
-        .fadeIn();
-}
-
-function hideNoteTip() {
-    g_currentlyDescribedElement = null;
-    $(g_noteElement).fadeOut();
 }
 
 function main() {
