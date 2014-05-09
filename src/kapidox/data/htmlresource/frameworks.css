@@ -11,7 +11,7 @@ table.frameworks td {
     padding: 0.5em;
 }
 
-td.framework-detail {
+.framework-detail-column {
     text-align: center;
     width: 120px;
 }
@@ -20,6 +20,12 @@ td.framework-detail {
     cursor: help;
     color: #f7800a;
     font-weight: bold;
+}
+
+.framework-platforms-column ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
 /* Platform filtering --------------------------------*/

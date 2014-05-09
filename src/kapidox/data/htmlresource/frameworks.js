@@ -1,9 +1,9 @@
 function updateMaintainers() {
     var checkbox = document.getElementById("showMaintainers");
     if (checkbox.checked) {
-        $(".framework-maintainer").show();
+        $(".framework-maintainer-column").show();
     } else {
-        $(".framework-maintainer").hide();
+        $(".framework-maintainer-column").hide();
     }
 }
 

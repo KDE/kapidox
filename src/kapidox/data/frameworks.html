@@ -16,10 +16,10 @@
     {% endif %}
     <table class="doxtable frameworks">
       <tr>
-        <th>Framework</th>
-        <th class="framework-detail framework-maintainer">Maintainer</th>
-        <th class="framework-detail framework-type">Type</th>
-        <th class="framework-detail framework-platforms">Platforms</th>
+        <th class="framework-main-column">Framework</th>
+        <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
+        <th class="framework-detail-column framework-type-column">Type</th>
+        <th class="framework-detail-column framework-platforms-column">Platforms</th>
       </tr>
     {% for fw in frameworks %}
       <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platforms|join(',', attribute='name') }}">
@@ -29,9 +29,9 @@
           <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
           <span class="framework-description">{{fw.description}}</span>
         </td>
-        <td class="framework-detail framework-maintainer">{{ fw.maintainer }}</td>
-        <td class="framework-detail framework-type">{{ fw.type }}</td>
-        <td class="framework-detail framework-platforms">
+        <td class="framework-detail-column framework-maintainer-column">{{ fw.maintainer }}</td>
+        <td class="framework-detail-column framework-type-column">{{ fw.type }}</td>
+        <td class="framework-detail-column framework-platforms-column">
           {% for platform in fw.platforms|sort(attribute='name') %}
             {{ platform.name }}
             {%- if platform.note %}
@@ -39,7 +39,7 @@
             {% endif %}
             {%- if not loop.last %}, {% endif %}
           {% endfor %}
-          </td>
+        </td>
       </tr>
     {% endfor %}
     </table>
