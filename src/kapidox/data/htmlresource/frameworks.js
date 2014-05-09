@@ -13,7 +13,7 @@ function updatePlatforms() {
         $("#platform-filter-group").show();
     } else {
         $("#platform-filter-group").hide();
-        $(".framework-row").show();
+        $(".framework-row").removeClass("not-available").removeClass("available");
         return;
     }
 
@@ -31,9 +31,9 @@ function updatePlatforms() {
             return fwPlatforms.indexOf(platform) != -1;
         });
         if (show) {
-            $(tr).show();
+            $(tr).removeClass("not-available").addClass("available");
         } else {
-            $(tr).hide();
+            $(tr).removeClass("available").addClass("not-available");
         }
     });
 }

@@ -21,3 +21,28 @@ td.framework-detail {
     color: #f7800a;
     font-weight: bold;
 }
+
+/* Platform filtering --------------------------------*/
+.not-available-indicator, .available-indicator {
+    display: none;
+    float: left;
+    padding-right: 0.5em;
+}
+
+.not-available .not-available-indicator {
+    display: inline;
+}
+
+.available .available-indicator {
+    display: inline;
+}
+
+tr.not-available td.framework-platforms {
+    background-color: #fee;
+    color: red;
+}
+
+tr.available td.framework-platforms {
+    background-color: #efe;
+    color: green;
+}

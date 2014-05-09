@@ -23,7 +23,9 @@
       </tr>
     {% for fw in frameworks %}
       <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platforms|join(',', attribute='name') }}">
-        <td>
+        <td class="framework-main-column">
+          <img class="not-available-indicator" src="{{resources}}/icons/bad.png">
+          <img class="available-indicator" src="{{resources}}/icons/ok.png">
           <h3><a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a></h3>
           <span class="framework-description">{{fw.description}}</span>
         </td>
