@@ -1,4 +1,4 @@
-{% macro write_toc(title, lst, id_prefix) %}
+{% macro write_toc(title, lst) %}
   <li>{{ title }}
     <ul>
       {% for tier, frameworks in lst|groupby('tier') %}
@@ -8,48 +8,42 @@
   </li>
 {% endmacro %}
 
-{% macro write_framework_list(lst, id_prefix, info) %}
-  {% for tier, frameworks in lst|groupby('tier') %}
-    <h3><a name="{{ id_prefix }}-tier{{ tier }}"></a>Tier {{tier}}</h3>
-    {% if info %}
-      <p>{{ info.tiers[tier] }}</p>
-    {% endif %}
-    <table class="doxtable frameworks">
-      <tr>
-        <th class="framework-main-column">Framework</th>
-        <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
-        <th class="framework-detail-column framework-type-column">Type</th>
-      </tr>
-    {% for fw in frameworks %}
-      <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platform_dict|join(',') }}">
-        <td class="framework-main-column">
-          <img class="not-available-indicator" src="{{resources}}/icons/bad.png"/>
-          <img class="available-indicator" src="{{resources}}/icons/ok.png"/>
-          <div>
-            <div class="framework-platforms">
-            {% for platform in available_platforms %}
-              <span class="framework-platform
-                framework-platform-{{ platform }}
-                {% if platform not in fw.platform_dict %}framework-platform-unsupported{% endif %}"
-                >
-                <span class="framework-platform-text">{{ platform }}</span>
-              {% if fw.platform_dict.get(platform) %}
-                <span title="{{ fw.platform_dict.get(platform) }}" class="platform-note">*</span>
-              {% endif %}
-              </span>
-            {% endfor %}
-            </div>
-            <a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a>
+{% macro write_framework_list(frameworks) %}
+  <table class="doxtable frameworks">
+    <tr>
+      <th class="framework-main-column">Framework</th>
+      <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
+      <th class="framework-detail-column framework-type-column">Type</th>
+    </tr>
+  {% for fw in frameworks %}
+    <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platform_dict|join(',') }}">
+      <td class="framework-main-column">
+        <img class="not-available-indicator" src="{{resources}}/icons/bad.png"/>
+        <img class="available-indicator" src="{{resources}}/icons/ok.png"/>
+        <div>
+          <div class="framework-platforms">
+          {% for platform in available_platforms %}
+            <span class="framework-platform
+              framework-platform-{{ platform }}
+              {% if platform not in fw.platform_dict %}framework-platform-unsupported{% endif %}"
+              >
+              <span class="framework-platform-text">{{ platform }}</span>
+            {% if fw.platform_dict.get(platform) %}
+              <span title="{{ fw.platform_dict.get(platform) }}" class="platform-note">*</span>
+            {% endif %}
+            </span>
+          {% endfor %}
           </div>
-          <span class="framework-description">{{fw.description}}</span>
-        </td>
-        <td class="framework-detail-column framework-maintainer-column">{{ fw.maintainer }}</td>
-        <td class="framework-detail-column framework-type-column">{{ fw.type }}</td>
-        </td>
-      </tr>
-    {% endfor %}
-    </table>
+          <a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a>
+        </div>
+        <span class="framework-description">{{fw.description}}</span>
+      </td>
+      <td class="framework-detail-column framework-maintainer-column">{{ fw.maintainer }}</td>
+      <td class="framework-detail-column framework-type-column">{{ fw.type }}</td>
+      </td>
+    </tr>
   {% endfor %}
+  </table>
 {% endmacro %}
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -147,9 +141,13 @@
                 {% endfor %}
               </div>
               <h2>Frameworks</h2>
-              {{ write_framework_list(framework_lst, 'fw', tierinfo) }}
-              <h2>Porting Aids</h2>
-              {{ write_framework_list(porting_aid_lst, 'pa', None) }}
+              {% for tier, frameworks in framework_lst|groupby('tier') %}
+                <h3><a name="fw-tier{{ tier }}"></a>Tier {{tier}}</h3>
+                <p>{{ tierinfo.tiers[tier] }}</p>
+                {{ write_framework_list(frameworks) }}
+              {% endfor %}
+              <h2><a name="porting-aids"></a>Porting Aids</h2>
+              {{ write_framework_list(porting_aid_lst) }}
             </div>
           </div>
         </div>
@@ -164,8 +162,14 @@
           </div>
           <div class="nav_list">
             <ul>
-              {{ write_toc('Frameworks', framework_lst, 'fw') }}
-              {{ write_toc('Porting Aids', porting_aid_lst, 'pa') }}
+              <li>Frameworks
+                <ul>
+                  {% for tier, _ in framework_lst|groupby('tier') %}
+                    <li><a href="#fw-tier{{tier}}">Tier {{ tier }}</a></li>
+                  {% endfor %}
+                </ul>
+              </li>
+              <li><a href="#porting-aids">Porting Aids</a></li>
             </ul>
           </div>
         </div>
