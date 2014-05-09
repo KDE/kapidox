@@ -15,3 +15,9 @@ td.framework-detail {
     text-align: center;
     width: 120px;
 }
+
+.platform-note {
+    cursor: help;
+    color: #f7800a;
+    font-weight: bold;
+}
