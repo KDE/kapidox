@@ -11,9 +11,17 @@ table.frameworks td {
     padding: 0.5em;
 }
 
+.framework-main-column {
+    vertical-align: top;
+}
+
 .framework-detail-column {
     text-align: center;
     width: 120px;
+}
+
+.framework-fancyname {
+    font-size: 120%;
 }
 
 .platform-note {
@@ -22,10 +30,26 @@ table.frameworks td {
     font-weight: bold;
 }
 
-.framework-platforms-column ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
+.framework-platforms {
+    float: right;
+    font-size: 8px;
+}
+
+.framework-platform {
+    color: #666;
+    padding-left: 6px;
+    margin-left: 6px;
+    border-left: 1px solid #ccc;
+}
+
+.framework-platform:first-child {
+    padding-left: 0;
+    border-left: none;
+}
+
+.framework-platform-unsupported .framework-platform-text {
+    text-decoration: line-through;
+    color: #aaa;
 }
 
 /* Platform filtering --------------------------------*/
@@ -43,12 +67,18 @@ table.frameworks td {
     display: inline;
 }
 
-tr.not-available td.framework-platforms {
-    background-color: #fee;
-    color: red;
+.not-available {
+    background-color: #f8f8f8;
 }
 
-tr.available td.framework-platforms {
-    background-color: #efe;
+.not-available .framework-description {
+    display: none;
+}
+
+.framework-platform-required .framework-platform-text {
     color: green;
+}
+
+.framework-platform-required.framework-platform-unsupported .framework-platform-text {
+    color: red;
 }

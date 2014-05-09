@@ -9,6 +9,7 @@ function updateMaintainers() {
 
 function updatePlatforms() {
     var doFilter = document.getElementById("platform-filter").checked;
+    $(".framework-platform").removeClass("framework-platform-required");
     if (doFilter) {
         $("#platform-filter-group").show();
     } else {
@@ -25,6 +26,10 @@ function updatePlatforms() {
             wantedPlatforms.push(platform);
         }
     });
+    for (var idx=0; idx < wantedPlatforms.length; ++idx) {
+        var platform = wantedPlatforms[idx];
+        $(".framework-platform-" + platform).addClass("framework-platform-required");
+    };
     $(".framework-row").each(function(idx, tr) {
         var fwPlatforms = tr.getAttribute("data-platforms").split(",");
         var show = wantedPlatforms.every(function(platform) {

@@ -70,18 +70,19 @@ def generate_group_menu(tiers):
     return {'group_title': 'Frameworks', 'sections': sections}
 
 
-def expand_platform_all(fw, available_platforms):
-    dct = dict((x['name'], x.get('note', '')) for x in fw['platforms'])
-    if not PLATFORM_ALL in dct and not PLATFORM_UNKNOWN in dct:
-        return
+def expand_platform_all(dct, available_platforms):
+    """If one of the keys of dct is PLATFORM_ALL (or PLATFORM_UNKNOWN), remove it and add entries for all available platforms to dct"""
+    add_all_platforms = False
     if PLATFORM_ALL in dct:
+        add_all_platforms = True
         del dct[PLATFORM_ALL]
     if PLATFORM_UNKNOWN in dct:
+        add_all_platforms = True
         del dct[PLATFORM_UNKNOWN]
-    for platform in available_platforms:
-        if not platform in dct:
-            dct[platform] = ''
-    fw['platforms'] = [dict(name=k, note=v) for k, v in dct.items()]
+    if add_all_platforms:
+        for platform in available_platforms:
+            if not platform in dct:
+                dct[platform] = ''
 
 
 def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
@@ -111,10 +112,13 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
 
             lst.append(fw)
 
-    lst.sort(key=lambda x: x["fancyname"].lower())
+    lst.sort(key=lambda x: x['fancyname'].lower())
 
+    # Create platform_dict, a dictionary where keys are platform name and values are platform notes
     for fw in lst:
-        expand_platform_all(fw, available_platforms)
+        dct = dict((x['name'], x.get('note', '')) for x in fw['platforms'])
+        expand_platform_all(dct, available_platforms)
+        fw['platform_dict'] = dct
 
     # Separate "real" frameworks and porting aids
     framework_lst = []
@@ -143,7 +147,7 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
             'framework_lst': framework_lst,
             'porting_aid_lst': porting_aid_lst,
             'tierinfo': tierinfo,
-            'available_platforms': available_platforms,
+            'available_platforms': sorted(available_platforms),
         }
     tmpl = load_template(inputfile)
     with open(outputfile, 'w') as outf:
