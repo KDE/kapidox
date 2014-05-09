@@ -24,12 +24,6 @@ table.frameworks td {
     font-size: 120%;
 }
 
-.platform-note {
-    cursor: help;
-    color: #f7800a;
-    font-weight: bold;
-}
-
 .framework-platforms {
     float: right;
     font-size: 8px;
@@ -81,4 +75,22 @@ table.frameworks td {
 
 .framework-platform-required.framework-platform-unsupported .framework-platform-text {
     color: red;
+}
+
+/* Platform note -------------------------------------*/
+.note-tip {
+    display: none;
+    z-index: 3000;
+    position: absolute;
+
+    background-color: #222;
+    color: white;
+    padding: 6px;
+    border-radius: 5px;
+}
+
+a.note-close, a.note-close:active, a.note-close:visited {
+    color: white;
+    text-decoration: none;
+    margin-left: 6px;
 }

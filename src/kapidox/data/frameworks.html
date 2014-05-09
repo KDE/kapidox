@@ -29,7 +29,7 @@
               >
               <span class="framework-platform-text">{{ platform }}</span>
             {% if fw.platform_dict.get(platform) %}
-              <span title="{{ fw.platform_dict.get(platform) }}" class="platform-note">*</span>
+              <a data-note="{{ fw.platform_dict.get(platform) }}" class="platform-note" href="#"><img src="{{resources}}/icons/warning.png"/></a>
             {% endif %}
             </span>
           {% endfor %}
