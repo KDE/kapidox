@@ -41,6 +41,10 @@ table.frameworks td {
     border-left: none;
 }
 
+.framework-platform a {
+    text-decoration: none;
+}
+
 .framework-platform-unsupported .framework-platform-text {
     text-decoration: line-through;
     color: #aaa;

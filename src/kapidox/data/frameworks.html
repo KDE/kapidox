@@ -27,9 +27,12 @@
               framework-platform-{{ platform }}
               {% if platform not in fw.platform_dict %}framework-platform-unsupported{% endif %}"
               >
-              <span class="framework-platform-text">{{ platform }}</span>
             {% if fw.platform_dict.get(platform) %}
-              <a data-note="{{ fw.platform_dict.get(platform) }}" class="platform-note" href="#"><img src="{{resources}}/icons/warning.png"/></a>
+              <a data-note="{{ fw.platform_dict.get(platform) }}" href="#">
+            {% endif %}
+                <span class="framework-platform-text">{{ platform }}</span>
+            {% if fw.platform_dict.get(platform) %}
+                <img src="{{resources}}/icons/warning.png"/></a>
             {% endif %}
             </span>
           {% endfor %}

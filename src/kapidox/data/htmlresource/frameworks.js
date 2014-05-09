@@ -58,7 +58,7 @@ function initNoteTip() {
         return false;
     });
 
-    $(".platform-note").click(function() {
+    $(".framework-platform > a").click(function() {
         if (g_currentlyDescribedElement == this) {
             hideNoteTip();
         } else {
