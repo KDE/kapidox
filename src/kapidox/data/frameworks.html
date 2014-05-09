@@ -1,3 +1,54 @@
+{% macro write_toc(title, lst) %}
+  <li>{{ title }}
+    <ul>
+      {% for tier, frameworks in lst|groupby('tier') %}
+        <li><a href="#fw-tier{{tier}}">Tier {{ tier }}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+{% endmacro %}
+
+{% macro write_framework_list(frameworks) %}
+  <table class="doxtable frameworks">
+    <tr>
+      <th class="framework-main-column">Framework</th>
+      <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
+      <th class="framework-detail-column framework-type-column">Type</th>
+    </tr>
+  {% for fw in frameworks %}
+    <tr class="framework-row" id="framework-{{ fw.fancyname }}" data-platforms="{{ fw.platform_dict|join(',') }}">
+      <td class="framework-main-column">
+        <img class="not-available-indicator" src="{{resources}}/icons/bad.png"/>
+        <img class="available-indicator" src="{{resources}}/icons/ok.png"/>
+        <div>
+          <div class="framework-platforms">
+          {% for platform in available_platforms %}
+            <span class="framework-platform
+              framework-platform-{{ platform }}
+              {% if platform not in fw.platform_dict %}framework-platform-unsupported{% endif %}"
+              >
+            {% if fw.platform_dict.get(platform) %}
+              <a data-note="{{ fw.platform_dict.get(platform) }}" href="#">
+            {% endif %}
+                <span class="framework-platform-text">{{ platform }}</span>
+            {% if fw.platform_dict.get(platform) %}
+                <img src="{{resources}}/icons/warning.png"/></a>
+            {% endif %}
+            </span>
+          {% endfor %}
+          </div>
+          <a class="framework-fancyname" href="{{fw.href}}">{{fw.fancyname}}</a>
+        </div>
+        <span class="framework-description">{{fw.description}}</span>
+      </td>
+      <td class="framework-detail-column framework-maintainer-column">{{ fw.maintainer }}</td>
+      <td class="framework-detail-column framework-type-column">{{ fw.type }}</td>
+      </td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endmacro %}
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -24,6 +75,14 @@
   <link rel="shortcut icon" href="{{resources}}/favicon.ico" /><link rel="icon" href="{{resources}}/favicon.ico" />
   <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
   <link rel="stylesheet" type="text/css" href="{{resources}}/kde.css" />
+
+  {# frameworks.html specific stuff #}
+  <script type="text/javascript" src="{{resources}}/jquery-2.1.0.min.js"></script>
+  <script type="text/javascript" src="{{resources}}/frameworks.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script>
+  $(document).ready(main);
+  </script>
 </head>
 
 <body>
@@ -80,46 +139,77 @@
             </div>
             <div class="contents">
               <div class="textblock">
-                <p>This is the online reference for developing with the KDE frameworks.</p>
-                <p>The KDE Frameworks build on the <a href="http://qt-project.org/">Qt</a> framework, providing everything from simple utility classes (such as those in <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>) to integrated solutions for common requirements of desktop applications (such as <a href="{{frameworks.knewstuff.link}}">KNewStuff</a>, for fetching downloadable add-on content in an application, or the powerful <a href="{{frameworks.kio.link}}">KIO</a> multi-protocol file access framework).</p>
-                <p>The frameworks are divided into four tiers.  Tier 1 frameworks depend only on Qt (and possibly a small number of other third-party libraries), so can easily be used by an Qt-based project.  Several are collections of classes to extend the functionality of existing Qt frameworks (like <a href="{{frameworks.kcoreaddons.link}}">KCoreAddons</a>, <a href="{{frameworks.kguiaddons.link}}">KGuiAddons</a> and <a href="{{frameworks.kdbusaddons.link}}">KDBusAddons</a>), while others, like <a href="{{frameworks.threadweaver.link}}">ThreadWeaver</a> and <a href="{{frameworks.karchive.link}}">KArchive</a>, provide a complete package to solve a common problem.</p>
-                <p>Tier 2 frameworks additionally depend on tier 1 frameworks, but still have easily manageable dependencies.</p>
-                <p>Tier 3 frameworks are generally more powerful, comprehensive packages, and consequently have more complex dependencies.</p>
-                <p>Tier 4 frameworks can be mostly ignored by application programmers; apart from the transitional <a href="{{frameworks.kdelibs4support.link}}">KDELibs 4 support framework</a>, this tier consists of plugins acting behind the scenes to provide additional functionality or platform integration to existing frameworks (including Qt).</p>
-                <p>For a complete list of frameworks for which API documentation is available, see the list on the left of the page.</p>
+                {% for para in tierinfo.intro %}
+                  <p>{{ para }}</p>
+                {% endfor %}
               </div>
+              <h2>Frameworks</h2>
+              {% for tier, frameworks in framework_lst|groupby('tier') %}
+                <h3><a name="fw-tier{{ tier }}"></a>Tier {{tier}}</h3>
+                <p>{{ tierinfo.tiers[tier] }}</p>
+                {{ write_framework_list(frameworks) }}
+              {% endfor %}
+              <h2><a name="porting-aids"></a>Porting Aids</h2>
+              {{ write_framework_list(porting_aid_lst) }}
             </div>
           </div>
         </div>
-      </div>
+      </div> <!-- /right -->
       <div id="left">
+
         <div class="menu_box">
-          {% if group_menu %}
-          <div class="menu_box">
-            <a name="cp-menu" />
-            <div class="menutitle">
-              <div>
-                <h2 id="cp-menu-project">{{group_menu.group_title}}</h2>
-                <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_title}}"</a>
-              </div>
-            </div>
-            <div class="nav_list">
-              <ul>
-                {% for section in group_menu.sections %}
-                  <li>{{section.title}}
-                    <ul>
-                      {% for member in section.members %}
-                        <li><a href="{{member.href}}">{{member.name}}</a></li>
-                      {% endfor %}
-                    </ul>
-                  </li>
-                {% endfor %}
-              </ul>
+          <div class="menutitle">
+            <div>
+              <h2>Table of Content</h2>
             </div>
           </div>
-          {% endif %}
+          <div class="nav_list">
+            <ul>
+              <li>Frameworks
+                <ul>
+                  {% for tier, _ in framework_lst|groupby('tier') %}
+                    <li><a href="#fw-tier{{tier}}">Tier {{ tier }}</a></li>
+                  {% endfor %}
+                </ul>
+              </li>
+              <li><a href="#porting-aids">Porting Aids</a></li>
+            </ul>
+          </div>
+        </div>
 
-          {% if api_searchbox %}
+        <div class="menu_box">
+          <div class="menutitle">
+            <div>
+              <h2>Filters</h2>
+            </div>
+          </div>
+          <div>
+            <ul>
+              <li>
+                <label>
+                  <input id="platform-filter" type="checkbox">Filter by platform
+                </label>
+                <ul id="platform-filter-group" style="display: none">
+                  <li>Only show frameworks which supports all of:</li>
+                  {% for platform in available_platforms %}
+                    <li>
+                      <label>
+                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+              <li>
+                <label>
+                  <input id="showMaintainers" type="checkbox">Show maintainers
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {% if api_searchbox %}
           <div class="menu_box">
             <div class="menutitle"><div><h2>Search</h2></div></div>
             <div style="text-align: left;">
@@ -159,11 +249,11 @@
               </form>
             </div>
           </div>
-          {% endif %}
-        </div>
-      </div>
+        {% endif %}
+        </div> <!-- /left -->
+      </div> <!-- /body -->
       <div class="clearer"></div>
-    </div>
+    </div> <!-- /body-wrapper -->
     <div class="clearer"></div>
   </div>
 

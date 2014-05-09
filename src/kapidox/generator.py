@@ -222,7 +222,10 @@ def copy_dir_contents(directory, dest):
             if docopy:
                 shutil.copy(f,dest)
         elif os.path.isdir(f):
-            shutil.copytree(f,os.path.join(dest,fn),ignore=ignore)
+            dest_f = os.path.join(dest,fn)
+            if os.path.isdir(dest_f):
+                shutil.rmtree(dest_f)
+            shutil.copytree(f, dest_f, ignore=ignore)
 
 def find_doxdatadir_or_exit(suggestion):
     """Finds the common documentation data directory
