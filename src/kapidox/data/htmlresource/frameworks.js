@@ -9,11 +9,6 @@ function updateMaintainers() {
 
 function updatePlatforms() {
     var doFilter = document.getElementById("platform-filter").checked;
-    /*
-    $(".platform-checkbox").each(function(idx, checkbox) {
-        checkbox.disabled = !doFilter;
-    });
-    */
     if (doFilter) {
         $("#platform-filter-group").show();
     } else {
