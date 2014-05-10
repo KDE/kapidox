@@ -18,7 +18,13 @@ setup(
             'kapidox': 'src/kapidox',
             'kapidox.depdiagram': 'src/kapidox/depdiagram',
         },
-        package_data = {'kapidox': ['data/*.*', 'data/htmlresource/*']},
+        package_data = {
+            'kapidox': [
+                'data/*.*',
+                'data/htmlresource/*.*',
+                'data/htmlresource/icons/*.*'
+            ]
+        },
         scripts = [
             'src/kgenapidox',
             'src/kgenframeworksapidox',
