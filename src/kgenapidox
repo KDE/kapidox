@@ -36,6 +36,8 @@ import os
 from kapidox import utils
 from kapidox.generator import *
 
+DEFAULT_OUTPUT_DIR = 'apidocs'
+
 def main():
     utils.setup_logging()
 
@@ -56,10 +58,10 @@ def main():
             help="Enable Doxygen's search engine feature.")
     parser.add_argument('--api-searchbox', action='store_true',
             help="Enable the API searchbox (only useful for api.kde.org).")
-    parser.add_argument('--no-modulename', action='store_false',
-            dest='use_modulename',
-            help='Call the apidocs folder "apidocs" instead of ' +
-                 '"<modulename>-apidocs".')
+    parser.add_argument('-o', '--output',
+            default=DEFAULT_OUTPUT_DIR,
+            help='Location where the documentation will be generated. ' +
+                 'Defaults to {}.'.format(DEFAULT_OUTPUT_DIR))
     parser.add_argument('--doxdatadir',
             help='Location of the HTML header files and support graphics.')
     parser.add_argument('--kdedoc-dir',
@@ -98,10 +100,6 @@ def main():
         exit(2)
 
     modulename = os.path.basename(os.path.abspath(os.path.realpath(args.moduledir)))
-    if args.use_modulename:
-        outputdir = modulename + '-apidocs'
-    else:
-        outputdir = 'apidocs'
 
     if args.dependency_diagram_dir:
         if not os.path.isdir(args.dependency_diagram_dir):
@@ -118,7 +116,7 @@ def main():
     generate_apidocs(
             modulename = modulename,
             srcdir = args.moduledir,
-            outputdir = outputdir,
+            outputdir = args.output,
             doxdatadir = doxdatadir,
             dependency_diagram = dependency_diagram,
             tagfiles = tagfiles,
