@@ -38,6 +38,20 @@ from kapidox.generator import *
 
 DEFAULT_OUTPUT_DIR = 'apidocs'
 
+
+def find_all_tagfiles(args):
+    tagfiles = search_for_tagfiles(
+            suggestion = args.qtdoc_dir,
+            doclink = args.qtdoc_link,
+            flattenlinks = args.qtdoc_flatten_links,
+            searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
+    tagfiles += search_for_tagfiles(
+            suggestion = args.kdedoc_dir,
+            doclink = args.kdedoc_link,
+            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
+    return tagfiles
+
+
 def main():
     utils.setup_logging()
 

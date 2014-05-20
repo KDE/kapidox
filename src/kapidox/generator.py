@@ -51,7 +51,6 @@ from .doxyfilewriter import DoxyfileWriter
 
 __all__ = (
     "copy_dir_contents",
-    "find_all_tagfiles",
     "find_doxdatadir_or_exit",
     "generate_apidocs",
     "load_template",
@@ -344,18 +343,6 @@ def write_mapping_to_php(mapping, outputfile, varname='map'):
                 f.write(',')
             f.write("'" + entry['classname'] + "' => '" + entry['filename'] + "'")
         f.write(') ?>')
-
-def find_all_tagfiles(args):
-    tagfiles = search_for_tagfiles(
-            suggestion = args.qtdoc_dir,
-            doclink = args.qtdoc_link,
-            flattenlinks = args.qtdoc_flatten_links,
-            searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
-    tagfiles += search_for_tagfiles(
-            suggestion = args.kdedoc_dir,
-            doclink = args.kdedoc_link,
-            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
-    return tagfiles
 
 def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram):
     """Create `modulename`-dependencies.md in `tmp_dir`"""
