@@ -132,7 +132,9 @@ def main():
             )
     logging.info('Done')
     warn_log_path = os.path.join(args.output, WARN_LOGFILE)
+    index_path = os.path.join(args.output, 'html/index.html')
     logging.info('Doxygen warnings are listed in {}'.format(warn_log_path))
+    logging.info('API documentation has been generated in {}'.format(index_path))
 
 if __name__ == "__main__":
     main()
