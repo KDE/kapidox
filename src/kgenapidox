@@ -41,8 +41,11 @@ def main():
 
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
     parser.add_argument('moduledir',
+            nargs='?',
+            default=os.getcwd(),
             help='Location of the module to build API documentation for; it ' +
-                 'should contain a README.md file and a src/ subdirectory.')
+                 'should contain a README.md file and a src/ subdirectory.' +
+                 'Defaults to the current folder.')
     parser.add_argument('--title', default='KDE API Documentation',
             help='String to use for page titles.')
     parser.add_argument('--man-pages', action='store_true',
