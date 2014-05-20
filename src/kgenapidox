@@ -39,7 +39,8 @@ from kapidox.generator import *
 DEFAULT_OUTPUT_DIR = 'apidocs'
 
 
-def find_all_tagfiles(args):
+def find_all_tagfiles(args, modulename):
+    module_tag_name = modulename + '.tags'
     tagfiles = search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
@@ -49,7 +50,8 @@ def find_all_tagfiles(args):
             suggestion = args.kdedoc_dir,
             doclink = args.kdedoc_link,
             searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
-    return tagfiles
+    # Return all tags but ours, to ensure multiple runs produce the same output
+    return [x for x in tagfiles if os.path.basename(x[0]) != module_tag_name]
 
 
 def main():
@@ -107,13 +109,14 @@ def main():
     args = parser.parse_args()
 
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
-    tagfiles = find_all_tagfiles(args)
 
     if not os.path.isdir(args.moduledir):
         logging.error(args.moduledir + ' is not a directory')
         exit(2)
 
     modulename = os.path.basename(os.path.abspath(os.path.realpath(args.moduledir)))
+
+    tagfiles = find_all_tagfiles(args, modulename)
 
     if args.dependency_diagram_dir:
         if not os.path.isdir(args.dependency_diagram_dir):
