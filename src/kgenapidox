@@ -130,6 +130,8 @@ def main():
             keep_temp_dirs = args.keep_temp_dirs
             )
     logging.info('Done')
+    warn_log_path = os.path.join(args.output, WARN_LOGFILE)
+    logging.info('Doxygen warnings are listed in {}'.format(warn_log_path))
 
 if __name__ == "__main__":
     main()

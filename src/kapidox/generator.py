@@ -56,7 +56,10 @@ __all__ = (
     "generate_apidocs",
     "load_template",
     "search_for_tagfiles",
+    "WARN_LOGFILE",
     )
+
+WARN_LOGFILE = 'doxygen-warnings.log'
 
 def load_template(path):
     # Set errors to 'ignore' because we don't want weird characters in Doxygen
@@ -438,7 +441,7 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
                     OUTPUT_DIRECTORY=outputdir,
                     GENERATE_TAGFILE=moduletagfile,
                     HTML_OUTPUT=html_subdir,
-                    WARN_LOGFILE=os.path.join(outputdir, 'doxygen-warnings.log'))
+                    WARN_LOGFILE=os.path.join(outputdir, WARN_LOGFILE))
 
             # Other output settings
             writer.write_entries(
