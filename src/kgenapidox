@@ -31,6 +31,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import logging
 import os
+import shutil
+import tempfile
 
 from kapidox import utils
 from kapidox.generator import *
@@ -126,7 +128,14 @@ def main():
             qhelpgenerator=args.qhelpgenerator,
             )
     create_dirs(context)
-    generate_apidocs(context, keep_temp_dirs=args.keep_temp_dirs)
+    tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
+    try:
+        generate_apidocs(context, tmp_dir)
+    finally:
+        if args.keep_temp_dirs:
+            logging.info('Kept temp dir at {}'.format(tmp_dir))
+        else:
+            shutil.rmtree(tmp_dir)
     classmap = build_classmap(context.tagfile)
     postprocess(context, classmap)
 

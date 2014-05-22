@@ -36,7 +36,6 @@ import logging
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from fnmatch import fnmatch
 try:
@@ -448,7 +447,7 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
-def generate_apidocs(ctx, doxyfile_entries=None, keep_temp_dirs=False):
+def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
     def find_src_subdir(d):
@@ -467,76 +466,69 @@ def generate_apidocs(ctx, doxyfile_entries=None, keep_temp_dirs=False):
     input_list = [ctx.srcdir]
     image_path_list = []
 
-    tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
-    try:
-        if ctx.dependency_diagram:
-            input_list.append(generate_dependencies_page(tmp_dir, ctx.doxdatadir, ctx.modulename, ctx.dependency_diagram))
-            image_path_list.append(ctx.dependency_diagram)
+    if ctx.dependency_diagram:
+        input_list.append(generate_dependencies_page(tmp_dir, ctx.doxdatadir, ctx.modulename, ctx.dependency_diagram))
+        image_path_list.append(ctx.dependency_diagram)
 
-        doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
-        with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
+    doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
+    with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
 
-            # Global defaults
-            with codecs.open(os.path.join(ctx.doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+        # Global defaults
+        with codecs.open(os.path.join(ctx.doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+            for line in f:
+                doxyfile.write(line)
+
+        writer = DoxyfileWriter(doxyfile)
+        writer.write_entry('PROJECT_NAME', ctx.fancyname)
+        # FIXME: can we get the project version from CMake?
+
+        # Input locations
+        image_path_list.extend(find_src_subdir('docs/pics'))
+        writer.write_entries(
+                INPUT=input_list,
+                DOTFILE_DIRS=find_src_subdir('docs/dot'),
+                EXAMPLE_PATH=find_src_subdir('docs/examples'),
+                IMAGE_PATH=image_path_list)
+
+        # Other input settings
+        writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in ctx.tagfiles])
+
+        # Output locations
+        writer.write_entries(
+                OUTPUT_DIRECTORY=ctx.outputdir,
+                GENERATE_TAGFILE=ctx.tagfile,
+                HTML_OUTPUT=HTML_SUBDIR,
+                WARN_LOGFILE=os.path.join(ctx.outputdir, WARN_LOGFILE))
+
+        # Other output settings
+        writer.write_entries(
+                HTML_HEADER=ctx.doxdatadir + '/header.html',
+                HTML_FOOTER=ctx.doxdatadir + '/footer.html'
+                )
+
+        # Always write these, even if QHP is disabled, in case Doxygen.local
+        # overrides it
+        writer.write_entries(
+                QHP_VIRTUAL_FOLDER=ctx.modulename,
+                QHG_LOCATION=ctx.qhelpgenerator)
+
+        writer.write_entries(
+                GENERATE_MAN=ctx.man_pages,
+                GENERATE_QHP=ctx.qhp,
+                SEARCHENGINE=ctx.searchengine)
+
+        if doxyfile_entries:
+            writer.write_entries(**doxyfile_entries)
+
+        # Module-specific overrides
+        localdoxyfile = os.path.join(ctx.srcdir, 'docs/Doxyfile.local')
+        if os.path.isfile(localdoxyfile):
+            with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                 for line in f:
                     doxyfile.write(line)
 
-            writer = DoxyfileWriter(doxyfile)
-            writer.write_entry('PROJECT_NAME', ctx.fancyname)
-            # FIXME: can we get the project version from CMake?
-
-            # Input locations
-            image_path_list.extend(find_src_subdir('docs/pics'))
-            writer.write_entries(
-                    INPUT=input_list,
-                    DOTFILE_DIRS=find_src_subdir('docs/dot'),
-                    EXAMPLE_PATH=find_src_subdir('docs/examples'),
-                    IMAGE_PATH=image_path_list)
-
-            # Other input settings
-            writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in ctx.tagfiles])
-
-            # Output locations
-            writer.write_entries(
-                    OUTPUT_DIRECTORY=ctx.outputdir,
-                    GENERATE_TAGFILE=ctx.tagfile,
-                    HTML_OUTPUT=HTML_SUBDIR,
-                    WARN_LOGFILE=os.path.join(ctx.outputdir, WARN_LOGFILE))
-
-            # Other output settings
-            writer.write_entries(
-                    HTML_HEADER=ctx.doxdatadir + '/header.html',
-                    HTML_FOOTER=ctx.doxdatadir + '/footer.html'
-                    )
-
-            # Always write these, even if QHP is disabled, in case Doxygen.local
-            # overrides it
-            writer.write_entries(
-                    QHP_VIRTUAL_FOLDER=ctx.modulename,
-                    QHG_LOCATION=ctx.qhelpgenerator)
-
-            writer.write_entries(
-                    GENERATE_MAN=ctx.man_pages,
-                    GENERATE_QHP=ctx.qhp,
-                    SEARCHENGINE=ctx.searchengine)
-
-            if doxyfile_entries:
-                writer.write_entries(**doxyfile_entries)
-
-            # Module-specific overrides
-            localdoxyfile = os.path.join(ctx.srcdir, 'docs/Doxyfile.local')
-            if os.path.isfile(localdoxyfile):
-                with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
-                    for line in f:
-                        doxyfile.write(line)
-
-        logging.info('Running Doxygen')
-        subprocess.call([ctx.doxygen, doxyfile_path])
-    finally:
-        if keep_temp_dirs:
-            logging.info('Kept temp dir at {}'.format(tmp_dir))
-        else:
-            shutil.rmtree(tmp_dir)
+    logging.info('Running Doxygen')
+    subprocess.call([ctx.doxygen, doxyfile_path])
 
 
 def postprocess(ctx, classmap, template_mapping=None):
