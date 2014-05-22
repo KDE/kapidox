@@ -52,13 +52,13 @@ __all__ = (
     "Context",
     "copy_dir_contents",
     "generate_apidocs",
-    "load_template",
     "search_for_tagfiles",
     "WARN_LOGFILE",
     "build_classmap",
     "postprocess",
     "create_dirs",
     "write_mapping_to_php",
+    "create_jinja_environment",
     )
 
 WARN_LOGFILE = 'doxygen-warnings.log'
@@ -113,6 +113,11 @@ class Context(object):
         for key in self.__slots__:
             if not hasattr(self, key):
                 setattr(self, key, kwargs.get(key))
+
+
+def create_jinja_environment(doxdatadir):
+    loader = jinja2.FileSystemLoader(os.path.join(doxdatadir, 'templates'))
+    return jinja2.Environment(loader=loader)
 
 
 def create_dirs(ctx):
@@ -475,6 +480,7 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 def postprocess(ctx, classmap, template_mapping=None):
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     mapping = {
+            'doxygencss': 'doxygen.css',
             'resources': ctx.resourcedir,
             'title': ctx.title,
             'copyright': copyright,
@@ -487,6 +493,5 @@ def postprocess(ctx, classmap, template_mapping=None):
         mapping.update(template_mapping)
     logging.info('Postprocessing')
 
-    tmpl_path = os.path.join(ctx.doxdatadir, 'templates/default.html')
-    tmpl = load_template(tmpl_path)
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
     postprocess_internal(ctx.htmldir, tmpl, mapping)
