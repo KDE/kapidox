@@ -293,7 +293,21 @@ def menu_items(htmldir, modulename):
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
             entries))
 
-def postprocess_internal(htmldir, mapping):
+def parse_dox_html(stream):
+    """Parse html produced by Doxygen, extract the header fields we add through
+    header.html and return a dict ready for the Jinja template"""
+    dct = {}
+    while True:
+        line = stream.readline().strip()
+        if line == '----': # Must match header.html
+            dct['content'] = stream.read()
+            return dct
+        else:
+            key, value = line.split(': ', 1)
+            dct[key] = value
+
+
+def postprocess_internal(htmldir, tmpl, mapping):
     """Substitute text in HTML files
 
     Performs text substitutions on each line in each .html file in a directory.
@@ -301,18 +315,20 @@ def postprocess_internal(htmldir, mapping):
     htmldir -- the directory containing the .html files
     mapping -- a dict of mappings
     """
-    for f in os.listdir(htmldir):
-        if f.endswith('.html'):
-            path = os.path.join(htmldir,f)
+    for name in os.listdir(htmldir):
+        if name.endswith('.html'):
+            path = os.path.join(htmldir, name)
             newpath = path + '.new'
-            try:
-                with codecs.open(newpath, 'w', 'utf-8') as outf:
-                    tmpl = load_template(path)
-                    outf.write(tmpl.render(mapping))
-                os.rename(newpath, path)
-            except Exception:
-                logging.error('postprocessing {} failed'.format(path))
-                raise
+            with codecs.open(path, 'r', 'utf-8', errors='ignore') as f:
+                mapping['dox'] = parse_dox_html(f)
+            with codecs.open(newpath, 'w', 'utf-8') as outf:
+                try:
+                    html = tmpl.render(mapping)
+                except Exception:
+                    logging.error('postprocessing {} failed'.format(path))
+                    raise
+                outf.write(html)
+            os.rename(newpath, path)
 
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
@@ -470,4 +486,7 @@ def postprocess(ctx, classmap, template_mapping=None):
     if template_mapping:
         mapping.update(template_mapping)
     logging.info('Postprocessing')
-    postprocess_internal(ctx.htmldir, mapping)
+
+    tmpl_path = os.path.join(ctx.doxdatadir, 'templates/default.html')
+    tmpl = load_template(tmpl_path)
+    postprocess_internal(ctx.htmldir, tmpl, mapping)
