@@ -204,6 +204,43 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     return True
 
 
+def create_fw_info(frameworksdir, modulename):
+    fwdir = os.path.join(frameworksdir, modulename)
+    if not os.path.isdir(fwdir):
+        return None
+
+    yaml_file = os.path.join(fwdir, 'metainfo.yaml')
+    if not os.path.isfile(yaml_file):
+        logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
+        return None
+
+    fancyname = utils.parse_fancyname(fwdir)
+    if not fancyname:
+        logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
+        return None
+
+    outputdir = modulename
+
+    # FIXME: option in yaml file to disable docs
+    metainfo = yaml.load(open(yaml_file))
+    tier = metainfo["tier"]
+    if tier is None:
+        logging.warning('Could not find tier for {}'.format(framework))
+        return None
+    elif tier < 1 or tier > 4:
+        logging.warning('Invalid tier {} for {}'.format(tier, framework))
+        return None
+
+    metainfo.update({
+        'modulename': modulename,
+        'fancyname': fancyname,
+        'srcdir': fwdir,
+        'outputdir': outputdir,
+        'dependency_diagram': None,
+        })
+    return metainfo
+
+
 def create_fw_context(args, fwinfo, doxdatadir, tagfiles):
     return Context(
             # Names
@@ -321,41 +358,11 @@ def main():
         logging.error(args.frameworksdir + " is not a directory")
         exit(2)
 
-    framework_list = os.listdir(args.frameworksdir)
     tiers = {1:[],2:[],3:[],4:[]}
-    for modulename in framework_list:
-        fwdir = os.path.join(args.frameworksdir, modulename)
-        if not os.path.isdir(fwdir):
-            continue
-        yaml_file = os.path.join(fwdir, 'metainfo.yaml')
-
-        if not os.path.isfile(yaml_file):
-            logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
-            continue
-
-        fancyname = utils.parse_fancyname(fwdir)
-        if not fancyname:
-            logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
-            continue
-
-        outputdir = modulename
-
-        # FIXME: option in yaml file to disable docs
-        metainfo = yaml.load(open(yaml_file))
-        tier = metainfo["tier"]
-        if tier is None:
-            logging.warning('Could not find tier for {}'.format(framework))
-        elif tier < 1 or tier > 4:
-            logging.warning('Invalid tier {} for {}'.format(tier, framework))
-        else:
-            metainfo.update({
-                'modulename': modulename,
-                'fancyname': fancyname,
-                'srcdir': fwdir,
-                'outputdir': outputdir,
-                'dependency_diagram': None,
-                })
-            tiers[tier].append(metainfo)
+    for modulename in os.listdir(args.frameworksdir):
+        fwinfo = create_fw_info(args.frameworksdir, modulename)
+        if fwinfo:
+            tiers[fwinfo["tier"]].append(fwinfo)
 
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
