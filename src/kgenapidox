@@ -124,6 +124,8 @@ def main():
             # Names
             modulename=modulename,
             fancyname=utils.parse_fancyname(args.moduledir),
+            # KApidox files
+            resourcedir='.',
             # Input
             srcdir=args.moduledir,
             tagfiles=tagfiles,
@@ -132,6 +134,7 @@ def main():
             outputdir=args.output,
             )
     create_dirs(context)
+    copy_dir_contents(os.path.join(context.doxdatadir, 'htmlresource'), context.htmldir)
     tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
     try:
         generate_apidocs(context, tmp_dir)

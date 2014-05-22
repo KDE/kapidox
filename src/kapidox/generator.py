@@ -135,10 +135,6 @@ def create_dirs(ctx):
         shutil.rmtree(ctx.htmldir)
     os.makedirs(ctx.htmldir)
 
-    if ctx.resourcedir is None:
-        copy_dir_contents(os.path.join(ctx.doxdatadir, 'htmlresource'), ctx.htmldir)
-        ctx.resourcedir = '.'
-
 
 def load_template(path):
     # Set errors to 'ignore' because we don't want weird characters in Doxygen
