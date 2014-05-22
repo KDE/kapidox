@@ -28,15 +28,14 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import codecs
 import datetime
 import os
 import logging
-import re
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from fnmatch import fnmatch
 try:
@@ -50,13 +49,90 @@ from kapidox import utils
 from .doxyfilewriter import DoxyfileWriter
 
 __all__ = (
+    "Context",
     "copy_dir_contents",
-    "find_all_tagfiles",
-    "find_doxdatadir_or_exit",
     "generate_apidocs",
-    "load_template",
     "search_for_tagfiles",
+    "WARN_LOGFILE",
+    "build_classmap",
+    "postprocess",
+    "create_dirs",
+    "write_mapping_to_php",
+    "create_jinja_environment",
     )
+
+WARN_LOGFILE = 'doxygen-warnings.log'
+
+HTML_SUBDIR = 'html'
+
+
+class Context(object):
+    """
+    Holds parameters used by the various functions of the generator
+    """
+    __slots__ = (
+        # Names
+        'modulename',
+        'fancyname',
+        'title',
+        # KApidox files
+        'doxdatadir',
+        'resourcedir',
+        # Input
+        'srcdir',
+        'tagfiles',
+        'dependency_diagram',
+        # Output
+        'outputdir',
+        'htmldir',
+        'tagfile',
+        # Output options
+        'man_pages',
+        'qhp',
+        'searchengine',
+        'api_searchbox',
+        # Binaries
+        'doxygen',
+        'qhelpgenerator',
+    )
+
+    def __init__(self, args, **kwargs):
+        # Names
+        self.title = args.title
+        # KApidox files
+        self.doxdatadir = args.doxdatadir
+        # Output options
+        self.man_pages = args.man_pages
+        self.qhp = args.qhp
+        self.searchengine = args.searchengine
+        self.api_searchbox = args.api_searchbox
+        # Binaries
+        self.doxygen = args.doxygen
+        self.qhelpgenerator = args.qhelpgenerator
+
+        for key in self.__slots__:
+            if not hasattr(self, key):
+                setattr(self, key, kwargs.get(key))
+
+
+def create_jinja_environment(doxdatadir):
+    loader = jinja2.FileSystemLoader(os.path.join(doxdatadir, 'templates'))
+    return jinja2.Environment(loader=loader)
+
+
+def create_dirs(ctx):
+    ctx.htmldir = os.path.join(ctx.outputdir, HTML_SUBDIR)
+    ctx.tagfile = os.path.join(ctx.htmldir, ctx.modulename + '.tags')
+
+    if not os.path.exists(ctx.outputdir):
+        os.makedirs(ctx.outputdir)
+    if not os.path.exists(ctx.htmldir):
+        os.makedirs(ctx.htmldir)
+
+    if ctx.resourcedir is None:
+        copy_dir_contents(os.path.join(ctx.doxdatadir, 'htmlresource'), ctx.htmldir)
+        ctx.resourcedir = '.'
+
 
 def load_template(path):
     # Set errors to 'ignore' because we don't want weird characters in Doxygen
@@ -81,42 +157,6 @@ def smartjoin(pathorurl1,*args):
     else:
         return os.path.join(pathorurl1,*args)
 
-def find_datadir(searchpaths, testentries, suggestion=None, complain=True):
-    """Find data files
-
-    Looks at suggestion and the elements of searchpaths to see if any of them
-    is a directory that contains the entries listed in testentries.
-
-    searchpaths -- directories to test
-    testfiles   -- files to check for in the directory
-    suggestion  -- the first place to look
-    complain    -- print a warning if suggestion is not correct
-
-    Returns a path to a directory containing everything in testentries, or None
-    """
-
-    def check_datadir_entries(directory):
-        """Check for the existence of entries in a directory"""
-        for e in testentries:
-            if not os.path.exists(os.path.join(directory,e)):
-                return False
-        return True
-
-    if not suggestion is None:
-        if not os.path.isdir(suggestion):
-            logging.warning(suggestion + " is not a directory")
-        elif not check_datadir_entries(suggestion):
-            logging.warning(suggestion + " does not contain the expected files")
-        else:
-            return suggestion
-
-
-    for d in searchpaths:
-        d = os.path.realpath(d)
-        if os.path.isdir(d) and check_datadir_entries(d):
-            return d
-
-    return None
 
 def find_tagfiles(docdir, doclink=None, flattenlinks=False, _depth=0):
     """Find Doxygen-generated tag files in a directory
@@ -227,24 +267,6 @@ def copy_dir_contents(directory, dest):
                 shutil.rmtree(dest_f)
             shutil.copytree(f, dest_f, ignore=ignore)
 
-def find_doxdatadir_or_exit(suggestion):
-    """Finds the common documentation data directory
-
-    Exits if not found.
-    """
-    # FIXME: use setuptools and pkg_resources?
-    scriptdir = os.path.dirname(os.path.realpath(__file__))
-    doxdatadir = find_datadir(
-            searchpaths=[os.path.join(scriptdir,'data')],
-            testentries=['header.html','footer.html','htmlresource'],
-            suggestion=suggestion)
-    if doxdatadir is None:
-        logging.error("Could not find a valid doxdatadir")
-        sys.exit(1)
-    else:
-        logging.info("Found doxdatadir at " + doxdatadir)
-    return doxdatadir
-
 
 def menu_items(htmldir, modulename):
     """Menu items for standard Doxygen files
@@ -276,7 +298,21 @@ def menu_items(htmldir, modulename):
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
             entries))
 
-def postprocess(htmldir, mapping):
+def parse_dox_html(stream):
+    """Parse html produced by Doxygen, extract the header fields we add through
+    header.html and return a dict ready for the Jinja template"""
+    dct = {}
+    while True:
+        line = stream.readline().strip()
+        if line == '----': # Must match header.html
+            dct['content'] = stream.read()
+            return dct
+        else:
+            key, value = line.split(': ', 1)
+            dct[key] = value
+
+
+def postprocess_internal(htmldir, tmpl, mapping):
     """Substitute text in HTML files
 
     Performs text substitutions on each line in each .html file in a directory.
@@ -284,18 +320,20 @@ def postprocess(htmldir, mapping):
     htmldir -- the directory containing the .html files
     mapping -- a dict of mappings
     """
-    for f in os.listdir(htmldir):
-        if f.endswith('.html'):
-            path = os.path.join(htmldir,f)
+    for name in os.listdir(htmldir):
+        if name.endswith('.html'):
+            path = os.path.join(htmldir, name)
             newpath = path + '.new'
-            try:
-                with codecs.open(newpath, 'w', 'utf-8') as outf:
-                    tmpl = load_template(path)
-                    outf.write(tmpl.render(mapping))
-                os.rename(newpath, path)
-            except Exception:
-                logging.error('postprocessing {} failed'.format(path))
-                raise
+            with codecs.open(path, 'r', 'utf-8', errors='ignore') as f:
+                mapping['dox'] = parse_dox_html(f)
+            with codecs.open(newpath, 'w', 'utf-8') as outf:
+                try:
+                    html = tmpl.render(mapping)
+                except Exception:
+                    logging.error('postprocessing {} failed'.format(path))
+                    raise
+                outf.write(html)
+            os.rename(newpath, path)
 
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
@@ -342,18 +380,6 @@ def write_mapping_to_php(mapping, outputfile, varname='map'):
             f.write("'" + entry['classname'] + "' => '" + entry['filename'] + "'")
         f.write(') ?>')
 
-def find_all_tagfiles(args):
-    tagfiles = search_for_tagfiles(
-            suggestion = args.qtdoc_dir,
-            doclink = args.qtdoc_link,
-            flattenlinks = args.qtdoc_flatten_links,
-            searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
-    tagfiles += search_for_tagfiles(
-            suggestion = args.kdedoc_dir,
-            doclink = args.kdedoc_link,
-            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
-    return tagfiles
-
 def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram):
     """Create `modulename`-dependencies.md in `tmp_dir`"""
     template_path = os.path.join(doxdatadir, 'dependencies.md.tmpl')
@@ -367,127 +393,112 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
-def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
-        tagfiles=[], man_pages=False, qhp=False, searchengine=False,
-        api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
-        title='KDE API Documentation', template_mapping=[],
-        doxyfile_entries={},resourcedir=None, dependency_diagram=None,
-        keep_temp_dirs=False):
+def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
     def find_src_subdir(d):
-        pth = os.path.join(srcdir, d)
+        pth = os.path.join(ctx.srcdir, d)
         if os.path.isdir(pth):
             return [pth]
         else:
             return []
 
     # Paths and basic project info
-    html_subdir = 'html'
 
     # FIXME: preprocessing?
     # What about providing the build directory? We could get the version
     # as well, then.
 
-    htmldir = os.path.join(outputdir,html_subdir)
-    moduletagfile = os.path.join(htmldir, modulename + '.tags')
+    if os.path.exists(ctx.htmldir):
+        # If we have files left there from a previous run but which are no
+        # longer generated (for example because a C++ class has been removed)
+        # then postprocess will fail because the left-over file has already been
+        # processed. To avoid that, we delete the html dir.
+        shutil.rmtree(ctx.htmldir)
 
-    if not os.path.exists(outputdir):
-        os.makedirs(outputdir)
-    if not os.path.exists(htmldir):
-        os.makedirs(htmldir)
-
-    if resourcedir is None:
-        copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
-        resourcedir = '.'
-
-    input_list = [srcdir]
+    input_list = [ctx.srcdir]
     image_path_list = []
 
-    tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
-    try:
-        if dependency_diagram:
-            input_list.append(generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram))
-            image_path_list.append(dependency_diagram)
+    if ctx.dependency_diagram:
+        input_list.append(generate_dependencies_page(tmp_dir, ctx.doxdatadir, ctx.modulename, ctx.dependency_diagram))
+        image_path_list.append(ctx.dependency_diagram)
 
-        doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
-        with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
+    doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
+    with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
 
-            # Global defaults
-            with codecs.open(os.path.join(doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+        # Global defaults
+        with codecs.open(os.path.join(ctx.doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+            for line in f:
+                doxyfile.write(line)
+
+        writer = DoxyfileWriter(doxyfile)
+        writer.write_entry('PROJECT_NAME', ctx.fancyname)
+        # FIXME: can we get the project version from CMake?
+
+        # Input locations
+        image_path_list.extend(find_src_subdir('docs/pics'))
+        writer.write_entries(
+                INPUT=input_list,
+                DOTFILE_DIRS=find_src_subdir('docs/dot'),
+                EXAMPLE_PATH=find_src_subdir('docs/examples'),
+                IMAGE_PATH=image_path_list)
+
+        # Other input settings
+        writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in ctx.tagfiles])
+
+        # Output locations
+        writer.write_entries(
+                OUTPUT_DIRECTORY=ctx.outputdir,
+                GENERATE_TAGFILE=ctx.tagfile,
+                HTML_OUTPUT=HTML_SUBDIR,
+                WARN_LOGFILE=os.path.join(ctx.outputdir, WARN_LOGFILE))
+
+        # Other output settings
+        writer.write_entries(
+                HTML_HEADER=ctx.doxdatadir + '/header.html',
+                HTML_FOOTER=ctx.doxdatadir + '/footer.html'
+                )
+
+        # Always write these, even if QHP is disabled, in case Doxygen.local
+        # overrides it
+        writer.write_entries(
+                QHP_VIRTUAL_FOLDER=ctx.modulename,
+                QHG_LOCATION=ctx.qhelpgenerator)
+
+        writer.write_entries(
+                GENERATE_MAN=ctx.man_pages,
+                GENERATE_QHP=ctx.qhp,
+                SEARCHENGINE=ctx.searchengine)
+
+        if doxyfile_entries:
+            writer.write_entries(**doxyfile_entries)
+
+        # Module-specific overrides
+        localdoxyfile = os.path.join(ctx.srcdir, 'docs/Doxyfile.local')
+        if os.path.isfile(localdoxyfile):
+            with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                 for line in f:
                     doxyfile.write(line)
 
-            writer = DoxyfileWriter(doxyfile)
-            writer.write_entry('PROJECT_NAME', fancyname)
-            # FIXME: can we get the project version from CMake?
+    logging.info('Running Doxygen')
+    subprocess.call([ctx.doxygen, doxyfile_path])
 
-            # Input locations
-            image_path_list.extend(find_src_subdir('docs/pics'))
-            writer.write_entries(
-                    INPUT=input_list,
-                    DOTFILE_DIRS=find_src_subdir('docs/dot'),
-                    EXAMPLE_PATH=find_src_subdir('docs/examples'),
-                    IMAGE_PATH=image_path_list)
 
-            # Other input settings
-            writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in tagfiles])
-
-            # Output locations
-            writer.write_entries(
-                    OUTPUT_DIRECTORY=outputdir,
-                    GENERATE_TAGFILE=moduletagfile,
-                    HTML_OUTPUT=html_subdir,
-                    WARN_LOGFILE=os.path.join(outputdir, 'doxygen-warnings.log'))
-
-            # Other output settings
-            writer.write_entries(
-                    HTML_HEADER=doxdatadir + '/header.html',
-                    HTML_FOOTER=doxdatadir + '/footer.html'
-                    )
-
-            # Always write these, even if QHP is disabled, in case Doxygen.local
-            # overrides it
-            writer.write_entries(
-                    QHP_VIRTUAL_FOLDER=modulename,
-                    QHG_LOCATION=qhelpgenerator)
-
-            writer.write_entries(
-                    GENERATE_MAN=man_pages,
-                    GENERATE_QHP=qhp,
-                    SEARCHENGINE=searchengine)
-
-            writer.write_entries(**doxyfile_entries)
-
-            # Module-specific overrides
-            localdoxyfile = os.path.join(srcdir, 'docs/Doxyfile.local')
-            if os.path.isfile(localdoxyfile):
-                with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
-                    for line in f:
-                        doxyfile.write(line)
-
-        logging.info('Running Doxygen')
-        subprocess.call([doxygen, doxyfile_path])
-    finally:
-        if not keep_temp_dirs:
-            shutil.rmtree(tmp_dir)
-
-    classmap = build_classmap(moduletagfile)
-    write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
-
+def postprocess(ctx, classmap, template_mapping=None):
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     mapping = {
-            'resources': resourcedir,
-            'title': title,
+            'doxygencss': 'doxygen.css',
+            'resources': ctx.resourcedir,
+            'title': ctx.title,
             'copyright': copyright,
-            'api_searchbox': api_searchbox,
-            'doxygen_menu': {'entries': menu_items(htmldir, modulename)},
+            'api_searchbox': ctx.api_searchbox,
+            'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
             'class_map': {'classes': classmap},
             'kapidox_version': utils.get_kapidox_version(),
         }
-    mapping.update(template_mapping)
+    if template_mapping:
+        mapping.update(template_mapping)
     logging.info('Postprocessing')
-    postprocess(htmldir, mapping)
 
-    if keep_temp_dirs:
-        logging.info('Kept temp dir at {}'.format(tmp_dir))
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
+    postprocess_internal(ctx.htmldir, tmpl, mapping)

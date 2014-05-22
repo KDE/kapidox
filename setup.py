@@ -22,7 +22,8 @@ setup(
             'kapidox': [
                 'data/*.*',
                 'data/htmlresource/*.*',
-                'data/htmlresource/icons/*.*'
+                'data/htmlresource/icons/*.*',
+                'data/templates/*.*',
             ]
         },
         scripts = [

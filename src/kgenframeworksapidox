@@ -40,6 +40,7 @@ import tempfile
 import jinja2
 import yaml
 
+from kapidox import argparserutils
 from kapidox import utils
 from kapidox.generator import *
 try:
@@ -87,9 +88,7 @@ def expand_platform_all(dct, available_platforms):
 
 def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
         api_searchbox=False):
-    """Pass a HTML file through the templating filters"""
 
-    inputfile = os.path.join(doxdatadir, 'frameworks.html')
     with open(os.path.join(doxdatadir, 'frameworks.yaml')) as f:
         tierinfo = yaml.load(f)
 
@@ -149,7 +148,7 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
             'tierinfo': tierinfo,
             'available_platforms': sorted(available_platforms),
         }
-    tmpl = load_template(inputfile)
+    tmpl = create_jinja_environment(doxdatadir).get_template('frameworks.html')
     with open(outputfile, 'w') as outf:
         outf.write(tmpl.render(mapping))
 
@@ -204,24 +203,71 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     return True
 
 
-def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
-    generate_apidocs(
-            modulename = fwinfo['modulename'],
-            fancyname = fwinfo['fancyname'],
-            srcdir = fwinfo['srcdir'],
-            outputdir = fwinfo['outputdir'],
-            doxdatadir = doxdatadir,
-            tagfiles = tagfiles,
-            dependency_diagram = fwinfo['dependency_diagram'],
-            man_pages = args.man_pages,
-            qhp = args.qhp,
-            searchengine = args.searchengine,
-            api_searchbox = args.api_searchbox,
-            doxygen = args.doxygen,
-            qhelpgenerator = args.qhelpgenerator,
-            title = args.title,
-            resourcedir = '../..',
-            template_mapping = {
+def create_fw_info(frameworksdir, modulename):
+    fwdir = os.path.join(frameworksdir, modulename)
+    if not os.path.isdir(fwdir):
+        return None
+
+    yaml_file = os.path.join(fwdir, 'metainfo.yaml')
+    if not os.path.isfile(yaml_file):
+        logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
+        return None
+
+    fancyname = utils.parse_fancyname(fwdir)
+    if not fancyname:
+        logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
+        return None
+
+    outputdir = modulename
+
+    # FIXME: option in yaml file to disable docs
+    metainfo = yaml.load(open(yaml_file))
+    tier = metainfo["tier"]
+    if tier is None:
+        logging.warning('Could not find tier for {}'.format(framework))
+        return None
+    elif tier < 1 or tier > 4:
+        logging.warning('Invalid tier {} for {}'.format(tier, framework))
+        return None
+
+    metainfo.update({
+        'modulename': modulename,
+        'fancyname': fancyname,
+        'srcdir': fwdir,
+        'outputdir': outputdir,
+        'dependency_diagram': None,
+        })
+    return metainfo
+
+
+def create_fw_context(args, fwinfo, tagfiles):
+    return Context(args,
+            # Names
+            modulename=fwinfo['modulename'],
+            fancyname=fwinfo['fancyname'],
+            # KApidox files
+            resourcedir='../..',
+            # Input
+            srcdir=fwinfo['srcdir'],
+            tagfiles=tagfiles,
+            dependency_diagram=fwinfo['dependency_diagram'],
+            # Output
+            outputdir=fwinfo['outputdir'],
+            )
+
+def gen_fw_apidocs(ctx, tmp_base_dir):
+    create_dirs(ctx)
+    # tmp_dir is deleted when tmp_base_dir is
+    tmp_dir = tempfile.mkdtemp(prefix=ctx.modulename + '-', dir=tmp_base_dir)
+    generate_apidocs(ctx, tmp_dir,
+            doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
+            )
+
+def finish_fw_apidocs(ctx, group_menu):
+    classmap = build_classmap(ctx.tagfile)
+    write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
+    postprocess(ctx, classmap,
+            template_mapping={
                 'breadcrumbs': {
                     'entries': [
                         {
@@ -236,9 +282,6 @@ def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
                     },
                 'group_menu': group_menu
                 },
-            doxyfile_entries = {
-                'WARN_IF_UNDOCUMENTED': True
-                }
             )
 
 
@@ -251,115 +294,63 @@ def create_fw_tagfile_tuple(fwinfo):
     return (tagfile, '../../' + fwinfo['outputdir'] + '/html/')
 
 
-def main():
-    utils.setup_logging()
-
-    parser = argparse.ArgumentParser(description='Generate API documentation ' +
-            'for the KDE Frameworks')
-    parser.add_argument('frameworksdir',
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate API documentation for the KDE Frameworks')
+    group = argparserutils.add_sources_group(parser)
+    group.add_argument('frameworksdir',
             help='Location of the frameworks modules.')
-    parser.add_argument('--title', default='KDE API Documentation',
-            help='String to use for page titles.')
-    parser.add_argument('--man-pages', action='store_true',
-            help='Generate man page documentation.')
-    parser.add_argument('--qhp', action='store_true',
-            help='Generate Qt Compressed Help documentation.')
-    parser.add_argument('--depdiagram-dot-dir',
+    group.add_argument('--depdiagram-dot-dir',
             help='Generate dependency diagrams, using the .dot files from DIR.',
             metavar="DIR")
-    parser.add_argument('--searchengine', action='store_true',
-            help="Enable Doxygen's search engine feature.")
-    parser.add_argument('--api-searchbox', action='store_true',
-            help="Enable the API searchbox (only useful for api.kde.org).")
-    parser.add_argument('--doxdatadir',
-            help='Location of the HTML header files and support graphics.')
-    parser.add_argument('--qtdoc-dir',
-            help='Location of (local) Qt documentation; this is searched ' +
-                 'for tag files to create links to Qt classes.')
-    parser.add_argument('--qtdoc-link',
-            help='Override Qt documentation location for the links in the ' +
-                 'html files.  May be a path or URL.')
-    parser.add_argument('--qtdoc-flatten-links', action='store_true',
-            help='Whether to assume all Qt documentation html files ' +
-                 'are immediately under QTDOC_LINK (useful if you set ' +
-                 'QTDOC_LINK to the online Qt documentation).  Ignored ' +
-                 'if QTDOC_LINK is not set.')
-    parser.add_argument('--doxygen', default='doxygen',
-            help='(Path to) the doxygen executable.')
-    parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
-            help='(Path to) the qhelpgenerator executable.')
-    parser.add_argument('--keep-temp-dirs', action='store_true',
-            help='Do not delete temporary dirs, useful for debugging.')
+    argparserutils.add_output_group(parser)
+    argparserutils.add_qt_doc_group(parser)
+    argparserutils.add_paths_group(parser)
+    argparserutils.add_misc_group(parser)
     args = parser.parse_args()
+    argparserutils.check_common_args(args)
 
     if args.depdiagram_dot_dir and not DEPDIAGRAM_AVAILABLE:
         logging.error('You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
         exit(1)
 
-    doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
+    if not os.path.isdir(args.frameworksdir):
+        logging.error(args.frameworksdir + " is not a directory")
+        exit(2)
+
+    return args
+
+
+def main():
+    utils.setup_logging()
+    args = parse_args()
+
     tagfiles = search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
             searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
 
-    if not os.path.isdir(args.frameworksdir):
-        logging.error(args.frameworksdir + " is not a directory")
-        exit(2)
-
-    framework_list = os.listdir(args.frameworksdir)
     tiers = {1:[],2:[],3:[],4:[]}
-    for modulename in framework_list:
-        fwdir = os.path.join(args.frameworksdir, modulename)
-        if not os.path.isdir(fwdir):
-            continue
-        yaml_file = os.path.join(fwdir, 'metainfo.yaml')
-
-        if not os.path.isfile(yaml_file):
-            logging.warning('{} does not contain a framework (metainfo.yaml missing)'.format(fwdir))
-            continue
-
-        fancyname = utils.parse_fancyname(fwdir)
-        if not fancyname:
-            logging.warning('Could not find fancy name for {}, skipping it'.format(fwdir))
-            continue
-
-        outputdir = modulename
-
-        # FIXME: option in yaml file to disable docs
-        metainfo = yaml.load(open(yaml_file))
-        tier = metainfo["tier"]
-        if tier is None:
-            logging.warning('Could not find tier for {}'.format(framework))
-        elif tier < 1 or tier > 4:
-            logging.warning('Invalid tier {} for {}'.format(tier, framework))
-        else:
-            metainfo.update({
-                'modulename': modulename,
-                'fancyname': fancyname,
-                'srcdir': fwdir,
-                'outputdir': outputdir,
-                'dependency_diagram': None,
-                })
-            tiers[tier].append(metainfo)
+    for modulename in os.listdir(args.frameworksdir):
+        fwinfo = create_fw_info(args.frameworksdir, modulename)
+        if fwinfo:
+            tiers[fwinfo["tier"]].append(fwinfo)
 
     for t in range(1,5):
         tiers[t] = sorted(tiers[t], key=lambda f: f['fancyname'].lower())
 
-    copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),'.')
+    copy_dir_contents(os.path.join(args.doxdatadir,'htmlresource'),'.')
 
     group_menu = generate_group_menu(tiers)
 
-    process_toplevel_html_file('index.html', doxdatadir,
+    process_toplevel_html_file('index.html', args.doxdatadir,
             title=args.title, tiers=tiers, api_searchbox=args.api_searchbox)
 
+    tmp_dir = tempfile.mkdtemp(prefix='kgenframeworksapidox-')
     try:
         if args.depdiagram_dot_dir:
-            tmp_dir = tempfile.mkdtemp(prefix='kapidox-deps-')
             dot_files = find_dot_files(args.depdiagram_dot_dir)
             assert(dot_files)
-        else:
-            tmp_dir = None
 
         for t in range(1,5):
             for fwinfo in tiers[t]:
@@ -369,8 +360,11 @@ def main():
                     ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files, tmp_dir)
                     if ok:
                         fwinfo['dependency_diagram'] = png_path
-                gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
+                ctx = create_fw_context(args, fwinfo, tagfiles)
+                gen_fw_apidocs(ctx, tmp_dir)
                 tagfiles.append(create_fw_tagfile_tuple(fwinfo))
+                if t < 3:
+                    finish_fw_apidocs(ctx, group_menu)
 
             if t >= 3:
                 # Rebuild for interdependencies
@@ -378,14 +372,15 @@ def main():
                 for fwinfo in tiers[t]:
                     logging.info('# Rebuilding {} for interdependencies'.format(fwinfo['fancyname']))
                     shutil.rmtree(fwinfo['outputdir'])
-                    gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
+                    ctx = create_fw_context(args, fwinfo, tagfiles)
+                    gen_fw_apidocs(ctx, tmp_dir)
+                    finish_fw_apidocs(ctx, group_menu)
         logging.info('# Done')
     finally:
-        if tmp_dir:
-            if args.keep_temp_dirs:
-                logging.info('Kept temp dir at {}'.format(tmp_dir))
-            else:
-                shutil.rmtree(tmp_dir)
+        if args.keep_temp_dirs:
+            logging.info('Kept temp dir at {}'.format(tmp_dir))
+        else:
+            shutil.rmtree(tmp_dir)
 
 
 if __name__ == "__main__":

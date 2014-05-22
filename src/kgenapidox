@@ -32,73 +32,81 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import argparse
 import logging
 import os
+import shutil
+import tempfile
 
+from kapidox import argparserutils
 from kapidox import utils
 from kapidox.generator import *
 
-def main():
-    utils.setup_logging()
+DEFAULT_OUTPUT_DIR = 'apidocs'
 
+
+def find_all_tagfiles(args, modulename):
+    module_tag_name = modulename + '.tags'
+    tagfiles = search_for_tagfiles(
+            suggestion = args.qtdoc_dir,
+            doclink = args.qtdoc_link,
+            flattenlinks = args.qtdoc_flatten_links,
+            searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
+    tagfiles += search_for_tagfiles(
+            suggestion = args.kdedoc_dir,
+            doclink = args.kdedoc_link,
+            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
+    # Return all tags but ours, to ensure multiple runs produce the same output
+    return [x for x in tagfiles if os.path.basename(x[0]) != module_tag_name]
+
+
+def parse_args():
     parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
-    parser.add_argument('moduledir',
+
+    group = argparserutils.add_sources_group(parser)
+    group.add_argument('moduledir',
+            nargs='?',
+            default=os.getcwd(),
             help='Location of the module to build API documentation for; it ' +
-                 'should contain a README.md file and a src/ subdirectory.')
-    parser.add_argument('--title', default='KDE API Documentation',
-            help='String to use for page titles.')
-    parser.add_argument('--man-pages', action='store_true',
-            help='Generate man page documentation.')
-    parser.add_argument('--qhp', action='store_true',
-            help='Generate Qt Compressed Help documentation.')
-    parser.add_argument('--searchengine', action='store_true',
-            help="Enable Doxygen's search engine feature.")
-    parser.add_argument('--api-searchbox', action='store_true',
-            help="Enable the API searchbox (only useful for api.kde.org).")
-    parser.add_argument('--no-modulename', action='store_false',
-            dest='use_modulename',
-            help='Call the apidocs folder "apidocs" instead of ' +
-                 '"<modulename>-apidocs".')
-    parser.add_argument('--doxdatadir',
-            help='Location of the HTML header files and support graphics.')
-    parser.add_argument('--kdedoc-dir',
+                 'should contain a README.md file and a src/ subdirectory.' +
+                 'Defaults to the current folder.')
+    group.add_argument('--dependency-diagram-dir',
+            help='Location of framework diagram dirs; a "Dependencies" page ' +
+                 'will be included in the framework documentation if provided.')
+
+    group = argparserutils.add_output_group(parser)
+    group.add_argument('-o', '--output',
+            default=DEFAULT_OUTPUT_DIR,
+            help='Location where the documentation will be generated. ' +
+                 'Defaults to {}.'.format(DEFAULT_OUTPUT_DIR))
+
+    argparserutils.add_qt_doc_group(parser)
+
+    group = parser.add_argument_group('KDE documentation')
+    group.add_argument('--kdedoc-dir',
             help='Location of (local) KDE documentation; this is searched ' +
                  'for tag files to create links to KDE classes.')
-    parser.add_argument('--kdedoc-link',
+    group.add_argument('--kdedoc-link',
             help='Override KDE documentation location for the links in the ' +
                  'html files.  May be a path or URL.')
-    parser.add_argument('--qtdoc-dir',
-            help='Location of (local) Qt documentation; this is searched ' +
-                 'for tag files to create links to Qt classes.')
-    parser.add_argument('--dependency-diagram-dir',
-            help='Location of framework diagram dirs; they will be included ' +
-                 'the framework landing page if provided.')
-    parser.add_argument('--qtdoc-link',
-            help='Override Qt documentation location for the links in the ' +
-                 'html files.  May be a path or URL.')
-    parser.add_argument('--qtdoc-flatten-links', action='store_true',
-            help='Whether to assume all Qt documentation html files ' +
-                 'are immediately under QTDOC_LINK (useful if you set ' +
-                 'QTDOC_LINK to the online Qt documentation).  Ignored ' +
-                 'if QTDOC_LINK is not set.')
-    parser.add_argument('--doxygen', default='doxygen',
-            help='(Path to) the doxygen executable.')
-    parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
-            help='(Path to) the qhelpgenerator executable.')
-    parser.add_argument('--keep-temp-dirs', action='store_true',
-            help='Do not delete temporary dirs, useful for debugging.')
-    args = parser.parse_args()
 
-    doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
-    tagfiles = find_all_tagfiles(args)
+    argparserutils.add_paths_group(parser)
+    argparserutils.add_misc_group(parser)
+
+    args = parser.parse_args()
+    argparserutils.check_common_args(args)
 
     if not os.path.isdir(args.moduledir):
         logging.error(args.moduledir + ' is not a directory')
         exit(2)
 
+    return args
+
+
+def main():
+    utils.setup_logging()
+    args = parse_args()
+
     modulename = os.path.basename(os.path.abspath(os.path.realpath(args.moduledir)))
-    if args.use_modulename:
-        outputdir = modulename + '-apidocs'
-    else:
-        outputdir = 'apidocs'
+
+    tagfiles = find_all_tagfiles(args, modulename)
 
     if args.dependency_diagram_dir:
         if not os.path.isdir(args.dependency_diagram_dir):
@@ -112,24 +120,34 @@ def main():
     else:
         dependency_diagram = None
 
-    generate_apidocs(
-            modulename = modulename,
-            srcdir = args.moduledir,
-            outputdir = outputdir,
-            doxdatadir = doxdatadir,
-            dependency_diagram = dependency_diagram,
-            tagfiles = tagfiles,
-            man_pages = args.man_pages,
-            qhp = args.qhp,
-            searchengine = args.searchengine,
-            api_searchbox = args.api_searchbox,
-            doxygen = args.doxygen,
-            qhelpgenerator = args.qhelpgenerator,
-            title = args.title,
-            fancyname = utils.parse_fancyname(args.moduledir),
-            keep_temp_dirs = args.keep_temp_dirs
+    context = Context(args,
+            # Names
+            modulename=modulename,
+            fancyname=utils.parse_fancyname(args.moduledir),
+            # Input
+            srcdir=args.moduledir,
+            tagfiles=tagfiles,
+            dependency_diagram=dependency_diagram,
+            # Output
+            outputdir=args.output,
             )
+    create_dirs(context)
+    tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
+    try:
+        generate_apidocs(context, tmp_dir)
+    finally:
+        if args.keep_temp_dirs:
+            logging.info('Kept temp dir at {}'.format(tmp_dir))
+        else:
+            shutil.rmtree(tmp_dir)
+    classmap = build_classmap(context.tagfile)
+    postprocess(context, classmap)
+
     logging.info('Done')
+    warn_log_path = os.path.join(args.output, WARN_LOGFILE)
+    index_path = os.path.join(args.output, 'html/index.html')
+    logging.info('Doxygen warnings are listed in {}'.format(warn_log_path))
+    logging.info('API documentation has been generated in {}'.format(index_path))
 
 if __name__ == "__main__":
     main()
