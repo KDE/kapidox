@@ -23,7 +23,7 @@ usage() {
     fi
 
     cat << EOF
-Usage: $PROGNAME [OPTION ...] <framework-base-dir>
+Usage: $PROGNAME [OPTION ...] <framework-base-dir> [<test>...]
   ...program description...
 Options:
   -v                  display command output
@@ -34,6 +34,16 @@ EOF
     exit 1
 }
 
+is_in_list() {
+    local wanted="$1"
+    shift
+    for item in $* ; do
+        if [ "$wanted" = "$item" ] ; then
+            return 0
+        fi
+    done
+    return 1
+}
 
 fails=""
 run_test() {
@@ -41,6 +51,13 @@ run_test() {
     local dir=$2
     local cmd="$3"
     local log="$sandbox_dir/$name.log"
+
+    if [ -n "$tests" ] ; then
+        if ! is_in_list $name $tests ; then
+            return
+        fi
+    fi
+
     cd $dir
     local exitcode
     if [ "$verbose" = true ] ; then
@@ -84,6 +101,7 @@ show_results() {
 src_fw_base_dir=""
 verbose=false
 keep_tmp_dir=false
+tests=""
 while [ $# -gt 0 ] ; do
     case "$1" in
     -h|--help)
@@ -102,7 +120,7 @@ while [ $# -gt 0 ] ; do
         if [ -z "$src_fw_base_dir" ] ; then
             src_fw_base_dir="$1"
         else
-            usage "Too many arguments"
+            tests="$tests $1"
         fi
         ;;
     esac
