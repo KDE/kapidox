@@ -27,6 +27,7 @@ Usage: $PROGNAME [OPTION ...] <framework-base-dir>
   ...program description...
 Options:
   -v                  display command output
+  --keep              keep temporary dir
   -h, --help          display this usage message and exit
 EOF
 
@@ -68,13 +69,18 @@ show_results() {
         exit 1
     else
         echo "Success"
-        rm -rf $sandbox_dir
+        if [ "$keep_tmp_dir" = "true" ] ; then
+            echo "$sandbox_dir kept"
+        else
+            rm -rf $sandbox_dir
+        fi
     fi
 }
 
 
 src_fw_base_dir=""
 verbose=false
+keep_tmp_dir=false
 while [ $# -gt 0 ] ; do
     case "$1" in
     -h|--help)
@@ -82,6 +88,9 @@ while [ $# -gt 0 ] ; do
         ;;
     -v)
         verbose=true
+        ;;
+    --keep)
+        keep_tmp_dir=true
         ;;
     -*)
         usage "Unknown option '$1'"
@@ -111,8 +120,6 @@ for fw in $TEST_FRAMEWORKS ; do
 done
 mkdir $sandbox_dir/fwapidox
 
-echo "sandbox_dir: $sandbox_dir"
-echo
 run_test kgenapidox $fw_base_dir/kcoreaddons $SRC_DIR/kgenapidox
 run_test kgenframeworksapidox $sandbox_dir/fwapidox "$SRC_DIR/kgenframeworksapidox $fw_base_dir"
 show_results
