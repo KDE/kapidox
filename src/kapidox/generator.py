@@ -50,8 +50,6 @@ from .doxyfilewriter import DoxyfileWriter
 
 __all__ = (
     "Context",
-    "create_arg_parser",
-    "check_common_args",
     "copy_dir_contents",
     "generate_apidocs",
     "load_template",
@@ -115,47 +113,6 @@ class Context(object):
         for key in self.__slots__:
             if not hasattr(self, key):
                 setattr(self, key, kwargs.get(key))
-
-
-def create_arg_parser(**kwargs):
-    parser = argparse.ArgumentParser(**kwargs)
-    parser.add_argument('--title', default='KDE API Documentation',
-            help='String to use for page titles.')
-    parser.add_argument('--man-pages', action='store_true',
-            help='Generate man page documentation.')
-    parser.add_argument('--qhp', action='store_true',
-            help='Generate Qt Compressed Help documentation.')
-    parser.add_argument('--searchengine', action='store_true',
-            help="Enable Doxygen's search engine feature.")
-    parser.add_argument('--api-searchbox', action='store_true',
-            help="Enable the API searchbox (only useful for api.kde.org).")
-    parser.add_argument('--doxdatadir',
-            help='Location of the HTML header files and support graphics.')
-    parser.add_argument('--qtdoc-dir',
-            help='Location of (local) Qt documentation; this is searched ' +
-                 'for tag files to create links to Qt classes.')
-    parser.add_argument('--qtdoc-link',
-            help='Override Qt documentation location for the links in the ' +
-                 'html files.  May be a path or URL.')
-    parser.add_argument('--qtdoc-flatten-links', action='store_true',
-            help='Whether to assume all Qt documentation html files ' +
-                 'are immediately under QTDOC_LINK (useful if you set ' +
-                 'QTDOC_LINK to the online Qt documentation).  Ignored ' +
-                 'if QTDOC_LINK is not set.')
-    parser.add_argument('--doxygen', default='doxygen',
-            help='(Path to) the doxygen executable.')
-    parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
-            help='(Path to) the qhelpgenerator executable.')
-    parser.add_argument('--keep-temp-dirs', action='store_true',
-            help='Do not delete temporary dirs, useful for debugging.')
-    return parser
-
-
-def check_common_args(args):
-    args.doxdatadir = find_doxdatadir(args.doxdatadir)
-    if args.doxdatadir is None:
-        logging.error("Could not find a valid doxdatadir")
-        sys.exit(1)
 
 
 def create_dirs(ctx):
@@ -304,29 +261,6 @@ def copy_dir_contents(directory, dest):
             if os.path.isdir(dest_f):
                 shutil.rmtree(dest_f)
             shutil.copytree(f, dest_f, ignore=ignore)
-
-
-def find_doxdatadir(suggestion):
-    """Finds the common documentation data directory
-
-    Exits if not found.
-    """
-    def check_datadir_entries(directory):
-        for e in ['header.html', 'footer.html', 'htmlresource']:
-            if not os.path.exists(os.path.join(directory,e)):
-                return False
-        return True
-
-    if suggestion is not None:
-        if check_datadir_entries(suggestion):
-            return suggestion
-
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    data_dir = os.path.join(script_dir, 'data')
-
-    if check_datadir_entries(data_dir):
-        return data_dir
-    return None
 
 
 def menu_items(htmldir, modulename):

@@ -29,6 +29,7 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import logging
 import os
 import shutil
@@ -39,6 +40,7 @@ import tempfile
 import jinja2
 import yaml
 
+from kapidox import argparserutils
 from kapidox import utils
 from kapidox.generator import *
 try:
@@ -295,14 +297,19 @@ def create_fw_tagfile_tuple(fwinfo):
 
 
 def parse_args():
-    parser = create_arg_parser(description='Generate API documentation for the KDE Frameworks')
-    parser.add_argument('frameworksdir',
+    parser = argparse.ArgumentParser(description='Generate API documentation for the KDE Frameworks')
+    group = argparserutils.add_sources_group(parser)
+    group.add_argument('frameworksdir',
             help='Location of the frameworks modules.')
-    parser.add_argument('--depdiagram-dot-dir',
+    group.add_argument('--depdiagram-dot-dir',
             help='Generate dependency diagrams, using the .dot files from DIR.',
             metavar="DIR")
+    argparserutils.add_output_group(parser)
+    argparserutils.add_qt_doc_group(parser)
+    argparserutils.add_paths_group(parser)
+    argparserutils.add_misc_group(parser)
     args = parser.parse_args()
-    check_common_args(args)
+    argparserutils.check_common_args(args)
 
     if args.depdiagram_dot_dir and not DEPDIAGRAM_AVAILABLE:
         logging.error('You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')

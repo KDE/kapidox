@@ -29,11 +29,13 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import logging
 import os
 import shutil
 import tempfile
 
+from kapidox import argparserutils
 from kapidox import utils
 from kapidox.generator import *
 
@@ -56,28 +58,40 @@ def find_all_tagfiles(args, modulename):
 
 
 def parse_args():
-    parser = create_arg_parser(description='Generate API documentation in the KDE style')
-    parser.add_argument('-o', '--output',
-            default=DEFAULT_OUTPUT_DIR,
-            help='Location where the documentation will be generated. ' +
-                 'Defaults to {}.'.format(DEFAULT_OUTPUT_DIR))
-    parser.add_argument('moduledir',
+    parser = argparse.ArgumentParser(description='Generate API documentation in the KDE style')
+
+    group = argparserutils.add_sources_group(parser)
+    group.add_argument('moduledir',
             nargs='?',
             default=os.getcwd(),
             help='Location of the module to build API documentation for; it ' +
                  'should contain a README.md file and a src/ subdirectory.' +
                  'Defaults to the current folder.')
-    parser.add_argument('--kdedoc-dir',
+    group.add_argument('--dependency-diagram-dir',
+            help='Location of framework diagram dirs; a "Dependencies" page ' +
+                 'will be included in the framework documentation if provided.')
+
+    group = argparserutils.add_output_group(parser)
+    group.add_argument('-o', '--output',
+            default=DEFAULT_OUTPUT_DIR,
+            help='Location where the documentation will be generated. ' +
+                 'Defaults to {}.'.format(DEFAULT_OUTPUT_DIR))
+
+    argparserutils.add_qt_doc_group(parser)
+
+    group = parser.add_argument_group('KDE documentation')
+    group.add_argument('--kdedoc-dir',
             help='Location of (local) KDE documentation; this is searched ' +
                  'for tag files to create links to KDE classes.')
-    parser.add_argument('--kdedoc-link',
+    group.add_argument('--kdedoc-link',
             help='Override KDE documentation location for the links in the ' +
                  'html files.  May be a path or URL.')
-    parser.add_argument('--dependency-diagram-dir',
-            help='Location of framework diagram dirs; they will be included ' +
-                 'the framework landing page if provided.')
+
+    argparserutils.add_paths_group(parser)
+    argparserutils.add_misc_group(parser)
+
     args = parser.parse_args()
-    check_common_args(args)
+    argparserutils.check_common_args(args)
 
     if not os.path.isdir(args.moduledir):
         logging.error(args.moduledir + ' is not a directory')
