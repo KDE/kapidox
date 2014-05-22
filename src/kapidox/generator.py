@@ -28,8 +28,8 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import codecs
-import collections
 import datetime
 import os
 import logging
@@ -51,6 +51,7 @@ from .doxyfilewriter import DoxyfileWriter
 
 __all__ = (
     "Context",
+    "create_arg_parser",
     "copy_dir_contents",
     "find_doxdatadir_or_exit",
     "generate_apidocs",
@@ -100,6 +101,40 @@ class Context(object):
     def __init__(self, **kwargs):
         for key in self.__slots__:
             setattr(self, key, kwargs.get(key))
+
+
+def create_arg_parser(**kwargs):
+    parser = argparse.ArgumentParser(**kwargs)
+    parser.add_argument('--title', default='KDE API Documentation',
+            help='String to use for page titles.')
+    parser.add_argument('--man-pages', action='store_true',
+            help='Generate man page documentation.')
+    parser.add_argument('--qhp', action='store_true',
+            help='Generate Qt Compressed Help documentation.')
+    parser.add_argument('--searchengine', action='store_true',
+            help="Enable Doxygen's search engine feature.")
+    parser.add_argument('--api-searchbox', action='store_true',
+            help="Enable the API searchbox (only useful for api.kde.org).")
+    parser.add_argument('--doxdatadir',
+            help='Location of the HTML header files and support graphics.')
+    parser.add_argument('--qtdoc-dir',
+            help='Location of (local) Qt documentation; this is searched ' +
+                 'for tag files to create links to Qt classes.')
+    parser.add_argument('--qtdoc-link',
+            help='Override Qt documentation location for the links in the ' +
+                 'html files.  May be a path or URL.')
+    parser.add_argument('--qtdoc-flatten-links', action='store_true',
+            help='Whether to assume all Qt documentation html files ' +
+                 'are immediately under QTDOC_LINK (useful if you set ' +
+                 'QTDOC_LINK to the online Qt documentation).  Ignored ' +
+                 'if QTDOC_LINK is not set.')
+    parser.add_argument('--doxygen', default='doxygen',
+            help='(Path to) the doxygen executable.')
+    parser.add_argument('--qhelpgenerator', default='qhelpgenerator',
+            help='(Path to) the qhelpgenerator executable.')
+    parser.add_argument('--keep-temp-dirs', action='store_true',
+            help='Do not delete temporary dirs, useful for debugging.')
+    return parser
 
 
 def create_dirs(ctx):
