@@ -49,8 +49,11 @@ run_test() {
         exitcode=${PIPESTATUS[0]}
     else
         echo -n "$name: "
-        $cmd > $log 2>&1
-        exitcode=$?
+        if $cmd > $log 2>&1 ; then
+            exitcode=0
+        else
+            exitcode=$?
+        fi
     fi
     if [ $exitcode -eq 0 ] ; then
         echo "OK"
