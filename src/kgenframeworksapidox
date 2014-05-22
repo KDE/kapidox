@@ -204,8 +204,8 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     return True
 
 
-def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
-    ctx = Context(
+def create_fw_context(args, fwinfo, doxdatadir, tagfiles):
+    return Context(
             # Names
             modulename=fwinfo['modulename'],
             fancyname=fwinfo['fancyname'],
@@ -227,10 +227,14 @@ def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
             doxygen=args.doxygen,
             qhelpgenerator=args.qhelpgenerator,
             )
+
+def gen_fw_apidocs(ctx):
     create_dirs(ctx)
     generate_apidocs(ctx,
             doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
             )
+
+def finish_fw_apidocs(ctx, group_menu):
     classmap = build_classmap(ctx.tagfile)
     write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
     postprocess(ctx, classmap,
@@ -379,8 +383,11 @@ def main():
                     ok = generate_diagram(png_path, fwinfo['fancyname'], t, dot_files, tmp_dir)
                     if ok:
                         fwinfo['dependency_diagram'] = png_path
-                gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
+                ctx = create_fw_context(args, fwinfo, doxdatadir, tagfiles)
+                gen_fw_apidocs(ctx)
                 tagfiles.append(create_fw_tagfile_tuple(fwinfo))
+                if t < 3:
+                    finish_fw_apidocs(ctx, group_menu)
 
             if t >= 3:
                 # Rebuild for interdependencies
@@ -388,7 +395,9 @@ def main():
                 for fwinfo in tiers[t]:
                     logging.info('# Rebuilding {} for interdependencies'.format(fwinfo['fancyname']))
                     shutil.rmtree(fwinfo['outputdir'])
-                    gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu)
+                    ctx = create_fw_context(args, fwinfo, doxdatadir, tagfiles)
+                    gen_fw_apidocs(ctx)
+                    finish_fw_apidocs(ctx, group_menu)
         logging.info('# Done')
     finally:
         if tmp_dir:

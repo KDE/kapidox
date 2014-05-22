@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TEST_FRAMEWORKS="kcoreaddons kauth kwidgetsaddons"
+TEST_FRAMEWORKS="kcoreaddons kauth kwidgetsaddons kiconthemes"
 
 PROGNAME=$(basename $0)
 
