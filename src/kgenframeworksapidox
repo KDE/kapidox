@@ -241,11 +241,10 @@ def create_fw_info(frameworksdir, modulename):
 
 
 def create_fw_context(args, fwinfo, doxdatadir, tagfiles):
-    return Context(
+    return Context(args,
             # Names
             modulename=fwinfo['modulename'],
             fancyname=fwinfo['fancyname'],
-            title=args.title,
             # Input
             doxdatadir=doxdatadir,
             resourcedir='../..',
@@ -254,14 +253,6 @@ def create_fw_context(args, fwinfo, doxdatadir, tagfiles):
             dependency_diagram=fwinfo['dependency_diagram'],
             # Output
             outputdir=fwinfo['outputdir'],
-            # Output options
-            man_pages=args.man_pages,
-            qhp=args.qhp,
-            searchengine=args.searchengine,
-            api_searchbox=args.api_searchbox,
-            # Binaries
-            doxygen=args.doxygen,
-            qhelpgenerator=args.qhelpgenerator,
             )
 
 def gen_fw_apidocs(ctx, tmp_base_dir):

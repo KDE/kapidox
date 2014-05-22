@@ -97,9 +97,20 @@ class Context(object):
         'qhelpgenerator',
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, args, **kwargs):
+        self.title = args.title
+        # Output options
+        self.man_pages = args.man_pages
+        self.qhp = args.qhp
+        self.searchengine = args.searchengine
+        self.api_searchbox = args.api_searchbox
+        # Binaries
+        self.doxygen = args.doxygen
+        self.qhelpgenerator = args.qhelpgenerator
+
         for key in self.__slots__:
-            setattr(self, key, kwargs.get(key))
+            if not hasattr(self, key):
+                setattr(self, key, kwargs.get(key))
 
 
 def create_arg_parser(**kwargs):

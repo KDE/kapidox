@@ -106,11 +106,10 @@ def main():
     else:
         dependency_diagram = None
 
-    context = Context(
+    context = Context(args,
             # Names
             modulename=modulename,
             fancyname=utils.parse_fancyname(args.moduledir),
-            title=args.title,
             # Input
             srcdir=args.moduledir,
             doxdatadir=doxdatadir,
@@ -118,14 +117,6 @@ def main():
             dependency_diagram=dependency_diagram,
             # Output
             outputdir=args.output,
-            # Output options
-            man_pages=args.man_pages,
-            qhp=args.qhp,
-            searchengine=args.searchengine,
-            api_searchbox=args.api_searchbox,
-            # Binaries
-            doxygen=args.doxygen,
-            qhelpgenerator=args.qhelpgenerator,
             )
     create_dirs(context)
     tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
