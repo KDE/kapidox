@@ -1,0 +1,103 @@
+#!/bin/sh
+set -e
+
+TEST_FRAMEWORKS="kcoreaddons kauth kwidgetsaddons"
+
+PROGNAME=$(basename $0)
+
+oldpwd=$PWD
+cd $(dirname $0)
+SRC_DIR=$PWD/../src
+cd $oldpwd
+
+
+die() {
+    echo "$PROGNAME: ERROR: $*" | fold -s -w "${COLUMNS:-80}" >&2
+    exit 1
+}
+
+
+usage() {
+    if [ "$*" != "" ] ; then
+        echo "ERROR: $*"
+    fi
+
+    cat << EOF
+Usage: $PROGNAME [OPTION ...] <framework-base-dir>
+  ...program description...
+Options:
+  -h, --help          display this usage message and exit
+EOF
+
+    exit 1
+}
+
+
+fails=""
+run_test() {
+    local name=$1
+    local dir=$2
+    local cmd="$3"
+    local log="$sandbox_dir/$name.log"
+    cd $dir
+    echo -n "$name: "
+    if $cmd > $log 2>&1 ; then
+        echo "OK"
+    else
+        echo "FAIL, see $log"
+        fails="$fails $name"
+    fi
+}
+
+
+show_results() {
+    if [ -n "$fails" ] ; then
+        echo "Failures: $fails"
+        echo "$sandbox_dir has been kept for inspection"
+        exit 1
+    else
+        echo "Success"
+        rm -rf $sandbox_dir
+    fi
+}
+
+
+src_fw_base_dir=""
+while [ $# -gt 0 ] ; do
+    case "$1" in
+    -h|--help)
+        usage
+        ;;
+    -*)
+        usage "Unknown option '$1'"
+        ;;
+    *)
+        if [ -z "$src_fw_base_dir" ] ; then
+            src_fw_base_dir="$1"
+        else
+            usage "Too many arguments"
+        fi
+        ;;
+    esac
+    shift
+done
+
+if [ -z "$src_fw_base_dir" ] ; then
+    usage "Not enough arguments"
+fi
+
+sandbox_dir=$(mktemp --directory --tmpdir kapidox-test-XXXXX)
+fw_base_dir=$sandbox_dir/frameworks
+mkdir $fw_base_dir
+
+cd $fw_base_dir
+for fw in $TEST_FRAMEWORKS ; do
+    ln -s $src_fw_base_dir/$fw
+done
+mkdir $sandbox_dir/fwapidox
+
+echo "sandbox_dir: $sandbox_dir"
+echo
+run_test kgenapidox $fw_base_dir/kcoreaddons $SRC_DIR/kgenapidox
+run_test kgenframeworksapidox $sandbox_dir/fwapidox "$SRC_DIR/kgenframeworksapidox $fw_base_dir"
+show_results
