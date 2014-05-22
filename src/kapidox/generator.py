@@ -51,8 +51,8 @@ from .doxyfilewriter import DoxyfileWriter
 __all__ = (
     "Context",
     "create_arg_parser",
+    "check_common_args",
     "copy_dir_contents",
-    "find_doxdatadir_or_exit",
     "generate_apidocs",
     "load_template",
     "search_for_tagfiles",
@@ -77,11 +77,12 @@ class Context(object):
         'modulename',
         'fancyname',
         'title',
+        # KApidox files
+        'doxdatadir',
+        'resourcedir',
         # Input
         'srcdir',
-        'doxdatadir',
         'tagfiles',
-        'resourcedir',
         'dependency_diagram',
         # Output
         'outputdir',
@@ -98,7 +99,10 @@ class Context(object):
     )
 
     def __init__(self, args, **kwargs):
+        # Names
         self.title = args.title
+        # KApidox files
+        self.doxdatadir = args.doxdatadir
         # Output options
         self.man_pages = args.man_pages
         self.qhp = args.qhp
@@ -147,6 +151,13 @@ def create_arg_parser(**kwargs):
     return parser
 
 
+def check_common_args(args):
+    args.doxdatadir = find_doxdatadir(args.doxdatadir)
+    if args.doxdatadir is None:
+        logging.error("Could not find a valid doxdatadir")
+        sys.exit(1)
+
+
 def create_dirs(ctx):
     ctx.htmldir = os.path.join(ctx.outputdir, HTML_SUBDIR)
     ctx.tagfile = os.path.join(ctx.htmldir, ctx.modulename + '.tags')
@@ -184,42 +195,6 @@ def smartjoin(pathorurl1,*args):
     else:
         return os.path.join(pathorurl1,*args)
 
-def find_datadir(searchpaths, testentries, suggestion=None, complain=True):
-    """Find data files
-
-    Looks at suggestion and the elements of searchpaths to see if any of them
-    is a directory that contains the entries listed in testentries.
-
-    searchpaths -- directories to test
-    testfiles   -- files to check for in the directory
-    suggestion  -- the first place to look
-    complain    -- print a warning if suggestion is not correct
-
-    Returns a path to a directory containing everything in testentries, or None
-    """
-
-    def check_datadir_entries(directory):
-        """Check for the existence of entries in a directory"""
-        for e in testentries:
-            if not os.path.exists(os.path.join(directory,e)):
-                return False
-        return True
-
-    if not suggestion is None:
-        if not os.path.isdir(suggestion):
-            logging.warning(suggestion + " is not a directory")
-        elif not check_datadir_entries(suggestion):
-            logging.warning(suggestion + " does not contain the expected files")
-        else:
-            return suggestion
-
-
-    for d in searchpaths:
-        d = os.path.realpath(d)
-        if os.path.isdir(d) and check_datadir_entries(d):
-            return d
-
-    return None
 
 def find_tagfiles(docdir, doclink=None, flattenlinks=False, _depth=0):
     """Find Doxygen-generated tag files in a directory
@@ -330,23 +305,28 @@ def copy_dir_contents(directory, dest):
                 shutil.rmtree(dest_f)
             shutil.copytree(f, dest_f, ignore=ignore)
 
-def find_doxdatadir_or_exit(suggestion):
+
+def find_doxdatadir(suggestion):
     """Finds the common documentation data directory
 
     Exits if not found.
     """
-    # FIXME: use setuptools and pkg_resources?
-    scriptdir = os.path.dirname(os.path.realpath(__file__))
-    doxdatadir = find_datadir(
-            searchpaths=[os.path.join(scriptdir,'data')],
-            testentries=['header.html','footer.html','htmlresource'],
-            suggestion=suggestion)
-    if doxdatadir is None:
-        logging.error("Could not find a valid doxdatadir")
-        sys.exit(1)
-    else:
-        logging.info("Found doxdatadir at " + doxdatadir)
-    return doxdatadir
+    def check_datadir_entries(directory):
+        for e in ['header.html', 'footer.html', 'htmlresource']:
+            if not os.path.exists(os.path.join(directory,e)):
+                return False
+        return True
+
+    if suggestion is not None:
+        if check_datadir_entries(suggestion):
+            return suggestion
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    data_dir = os.path.join(script_dir, 'data')
+
+    if check_datadir_entries(data_dir):
+        return data_dir
+    return None
 
 
 def menu_items(htmldir, modulename):

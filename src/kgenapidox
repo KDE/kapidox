@@ -77,6 +77,7 @@ def parse_args():
             help='Location of framework diagram dirs; they will be included ' +
                  'the framework landing page if provided.')
     args = parser.parse_args()
+    check_common_args(args)
 
     if not os.path.isdir(args.moduledir):
         logging.error(args.moduledir + ' is not a directory')
@@ -89,7 +90,6 @@ def main():
     utils.setup_logging()
     args = parse_args()
 
-    doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
     modulename = os.path.basename(os.path.abspath(os.path.realpath(args.moduledir)))
 
     tagfiles = find_all_tagfiles(args, modulename)
@@ -112,7 +112,6 @@ def main():
             fancyname=utils.parse_fancyname(args.moduledir),
             # Input
             srcdir=args.moduledir,
-            doxdatadir=doxdatadir,
             tagfiles=tagfiles,
             dependency_diagram=dependency_diagram,
             # Output
