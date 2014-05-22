@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 TEST_FRAMEWORKS="kcoreaddons kauth kwidgetsaddons"
@@ -26,6 +26,7 @@ usage() {
 Usage: $PROGNAME [OPTION ...] <framework-base-dir>
   ...program description...
 Options:
+  -v                  display command output
   -h, --help          display this usage message and exit
 EOF
 
@@ -40,8 +41,17 @@ run_test() {
     local cmd="$3"
     local log="$sandbox_dir/$name.log"
     cd $dir
-    echo -n "$name: "
-    if $cmd > $log 2>&1 ; then
+    local exitcode
+    if [ "$verbose" = true ] ; then
+        echo "$name: $cmd"
+        $cmd 2>&1 | tee $log
+        exitcode=${PIPESTATUS[0]}
+    else
+        echo -n "$name: "
+        $cmd > $log 2>&1
+        exitcode=$?
+    fi
+    if [ $exitcode -eq 0 ] ; then
         echo "OK"
     else
         echo "FAIL, see $log"
@@ -51,6 +61,7 @@ run_test() {
 
 
 show_results() {
+    echo "------------------"
     if [ -n "$fails" ] ; then
         echo "Failures: $fails"
         echo "$sandbox_dir has been kept for inspection"
@@ -63,10 +74,14 @@ show_results() {
 
 
 src_fw_base_dir=""
+verbose=false
 while [ $# -gt 0 ] ; do
     case "$1" in
     -h|--help)
         usage
+        ;;
+    -v)
+        verbose=true
         ;;
     -*)
         usage "Unknown option '$1'"
