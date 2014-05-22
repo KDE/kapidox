@@ -409,6 +409,13 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     # What about providing the build directory? We could get the version
     # as well, then.
 
+    if os.path.exists(ctx.htmldir):
+        # If we have files left there from a previous run but which are no
+        # longer generated (for example because a C++ class has been removed)
+        # then postprocess will fail because the left-over file has already been
+        # processed. To avoid that, we delete the html dir.
+        shutil.rmtree(ctx.htmldir)
+
     input_list = [ctx.srcdir]
     image_path_list = []
 
