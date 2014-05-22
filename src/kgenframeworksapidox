@@ -302,9 +302,7 @@ def create_fw_tagfile_tuple(fwinfo):
     return (tagfile, '../../' + fwinfo['outputdir'] + '/html/')
 
 
-def main():
-    utils.setup_logging()
-
+def parse_args():
     parser = argparse.ArgumentParser(description='Generate API documentation ' +
             'for the KDE Frameworks')
     parser.add_argument('frameworksdir',
@@ -347,16 +345,23 @@ def main():
         logging.error('You need to install the Graphviz Python bindings to generate dependency diagrams.\nSee <http://www.graphviz.org/Download.php>.')
         exit(1)
 
+    if not os.path.isdir(args.frameworksdir):
+        logging.error(args.frameworksdir + " is not a directory")
+        exit(2)
+
+    return args
+
+
+def main():
+    utils.setup_logging()
+    args = parse_args()
+
     doxdatadir = find_doxdatadir_or_exit(args.doxdatadir)
     tagfiles = search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
             searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
-
-    if not os.path.isdir(args.frameworksdir):
-        logging.error(args.frameworksdir + " is not a directory")
-        exit(2)
 
     tiers = {1:[],2:[],3:[],4:[]}
     for modulename in os.listdir(args.frameworksdir):
