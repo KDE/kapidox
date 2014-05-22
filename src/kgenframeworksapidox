@@ -205,23 +205,36 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
 
 
 def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
-    generate_apidocs(
-            modulename = fwinfo['modulename'],
-            fancyname = fwinfo['fancyname'],
-            srcdir = fwinfo['srcdir'],
-            outputdir = fwinfo['outputdir'],
-            doxdatadir = doxdatadir,
-            tagfiles = tagfiles,
-            dependency_diagram = fwinfo['dependency_diagram'],
-            man_pages = args.man_pages,
-            qhp = args.qhp,
-            searchengine = args.searchengine,
-            api_searchbox = args.api_searchbox,
-            doxygen = args.doxygen,
-            qhelpgenerator = args.qhelpgenerator,
-            title = args.title,
-            resourcedir = '../..',
-            template_mapping = {
+    ctx = Context(
+            # Names
+            modulename=fwinfo['modulename'],
+            fancyname=fwinfo['fancyname'],
+            title=args.title,
+            # Input
+            doxdatadir=doxdatadir,
+            resourcedir='../..',
+            srcdir=fwinfo['srcdir'],
+            tagfiles=tagfiles,
+            dependency_diagram=fwinfo['dependency_diagram'],
+            # Output
+            outputdir=fwinfo['outputdir'],
+            # Output options
+            man_pages=args.man_pages,
+            qhp=args.qhp,
+            searchengine=args.searchengine,
+            api_searchbox=args.api_searchbox,
+            # Binaries
+            doxygen=args.doxygen,
+            qhelpgenerator=args.qhelpgenerator,
+            )
+    create_dirs(ctx)
+    generate_apidocs(ctx,
+            doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
+            )
+    classmap = build_classmap(ctx.tagfile)
+    write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
+    postprocess(ctx, classmap,
+            template_mapping={
                 'breadcrumbs': {
                     'entries': [
                         {
@@ -236,9 +249,6 @@ def gen_fw_apidocs(args, fwinfo, doxdatadir, tagfiles, group_menu):
                     },
                 'group_menu': group_menu
                 },
-            doxyfile_entries = {
-                'WARN_IF_UNDOCUMENTED': True
-                }
             )
 
 

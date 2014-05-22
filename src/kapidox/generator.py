@@ -29,10 +29,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import codecs
+import collections
 import datetime
 import os
 import logging
-import re
 import shutil
 import subprocess
 import sys
@@ -50,15 +50,71 @@ from kapidox import utils
 from .doxyfilewriter import DoxyfileWriter
 
 __all__ = (
+    "Context",
     "copy_dir_contents",
     "find_doxdatadir_or_exit",
     "generate_apidocs",
     "load_template",
     "search_for_tagfiles",
     "WARN_LOGFILE",
+    "build_classmap",
+    "postprocess",
+    "create_dirs",
+    "write_mapping_to_php",
     )
 
 WARN_LOGFILE = 'doxygen-warnings.log'
+
+HTML_SUBDIR = 'html'
+
+
+class Context(object):
+    """
+    Holds parameters used by the various functions of the generator
+    """
+    __slots__ = (
+        # Names
+        'modulename',
+        'fancyname',
+        'title',
+        # Input
+        'srcdir',
+        'doxdatadir',
+        'tagfiles',
+        'resourcedir',
+        'dependency_diagram',
+        # Output
+        'outputdir',
+        'htmldir',
+        'tagfile',
+        # Output options
+        'man_pages',
+        'qhp',
+        'searchengine',
+        'api_searchbox',
+        # Binaries
+        'doxygen',
+        'qhelpgenerator',
+    )
+
+    def __init__(self, **kwargs):
+        for key in self.__slots__:
+            setattr(self, key, kwargs.get(key))
+
+
+def create_dirs(ctx):
+    ctx.htmldir = os.path.join(ctx.outputdir, HTML_SUBDIR)
+    ctx.tagfile = os.path.join(ctx.htmldir, ctx.modulename + '.tags')
+
+    if not os.path.exists(ctx.outputdir):
+        os.makedirs(ctx.outputdir)
+    if not os.path.exists(ctx.htmldir):
+        os.makedirs(ctx.htmldir)
+
+    if ctx.resourcedir is None:
+        copy_dir_contents(os.path.join(ctx.doxdatadir, 'htmlresource'), ctx.htmldir)
+        ctx.resourcedir = '.'
+
 
 def load_template(path):
     # Set errors to 'ignore' because we don't want weird characters in Doxygen
@@ -278,7 +334,7 @@ def menu_items(htmldir, modulename):
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
             entries))
 
-def postprocess(htmldir, mapping):
+def postprocess_internal(htmldir, mapping):
     """Substitute text in HTML files
 
     Performs text substitutions on each line in each .html file in a directory.
@@ -357,59 +413,41 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
-def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
-        tagfiles=[], man_pages=False, qhp=False, searchengine=False,
-        api_searchbox=False, doxygen='doxygen', qhelpgenerator='qhelpgenerator',
-        title='KDE API Documentation', template_mapping=[],
-        doxyfile_entries={},resourcedir=None, dependency_diagram=None,
-        keep_temp_dirs=False):
+def generate_apidocs(ctx, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
     def find_src_subdir(d):
-        pth = os.path.join(srcdir, d)
+        pth = os.path.join(ctx.srcdir, d)
         if os.path.isdir(pth):
             return [pth]
         else:
             return []
 
     # Paths and basic project info
-    html_subdir = 'html'
 
     # FIXME: preprocessing?
     # What about providing the build directory? We could get the version
     # as well, then.
 
-    htmldir = os.path.join(outputdir,html_subdir)
-    moduletagfile = os.path.join(htmldir, modulename + '.tags')
-
-    if not os.path.exists(outputdir):
-        os.makedirs(outputdir)
-    if not os.path.exists(htmldir):
-        os.makedirs(htmldir)
-
-    if resourcedir is None:
-        copy_dir_contents(os.path.join(doxdatadir,'htmlresource'),htmldir)
-        resourcedir = '.'
-
-    input_list = [srcdir]
+    input_list = [ctx.srcdir]
     image_path_list = []
 
     tmp_dir = tempfile.mkdtemp(prefix='kgenapidox-')
     try:
-        if dependency_diagram:
-            input_list.append(generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram))
-            image_path_list.append(dependency_diagram)
+        if ctx.dependency_diagram:
+            input_list.append(generate_dependencies_page(tmp_dir, ctx.doxdatadir, ctx.modulename, ctx.dependency_diagram))
+            image_path_list.append(ctx.dependency_diagram)
 
         doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
         with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
 
             # Global defaults
-            with codecs.open(os.path.join(doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
+            with codecs.open(os.path.join(ctx.doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
                 for line in f:
                     doxyfile.write(line)
 
             writer = DoxyfileWriter(doxyfile)
-            writer.write_entry('PROJECT_NAME', fancyname)
+            writer.write_entry('PROJECT_NAME', ctx.fancyname)
             # FIXME: can we get the project version from CMake?
 
             # Input locations
@@ -421,63 +459,63 @@ def generate_apidocs(modulename, fancyname, srcdir, outputdir, doxdatadir,
                     IMAGE_PATH=image_path_list)
 
             # Other input settings
-            writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in tagfiles])
+            writer.write_entry('TAGFILES', [f + '=' + loc for f, loc in ctx.tagfiles])
 
             # Output locations
             writer.write_entries(
-                    OUTPUT_DIRECTORY=outputdir,
-                    GENERATE_TAGFILE=moduletagfile,
-                    HTML_OUTPUT=html_subdir,
-                    WARN_LOGFILE=os.path.join(outputdir, WARN_LOGFILE))
+                    OUTPUT_DIRECTORY=ctx.outputdir,
+                    GENERATE_TAGFILE=ctx.tagfile,
+                    HTML_OUTPUT=HTML_SUBDIR,
+                    WARN_LOGFILE=os.path.join(ctx.outputdir, WARN_LOGFILE))
 
             # Other output settings
             writer.write_entries(
-                    HTML_HEADER=doxdatadir + '/header.html',
-                    HTML_FOOTER=doxdatadir + '/footer.html'
+                    HTML_HEADER=ctx.doxdatadir + '/header.html',
+                    HTML_FOOTER=ctx.doxdatadir + '/footer.html'
                     )
 
             # Always write these, even if QHP is disabled, in case Doxygen.local
             # overrides it
             writer.write_entries(
-                    QHP_VIRTUAL_FOLDER=modulename,
-                    QHG_LOCATION=qhelpgenerator)
+                    QHP_VIRTUAL_FOLDER=ctx.modulename,
+                    QHG_LOCATION=ctx.qhelpgenerator)
 
             writer.write_entries(
-                    GENERATE_MAN=man_pages,
-                    GENERATE_QHP=qhp,
-                    SEARCHENGINE=searchengine)
+                    GENERATE_MAN=ctx.man_pages,
+                    GENERATE_QHP=ctx.qhp,
+                    SEARCHENGINE=ctx.searchengine)
 
-            writer.write_entries(**doxyfile_entries)
+            if doxyfile_entries:
+                writer.write_entries(**doxyfile_entries)
 
             # Module-specific overrides
-            localdoxyfile = os.path.join(srcdir, 'docs/Doxyfile.local')
+            localdoxyfile = os.path.join(ctx.srcdir, 'docs/Doxyfile.local')
             if os.path.isfile(localdoxyfile):
                 with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                     for line in f:
                         doxyfile.write(line)
 
         logging.info('Running Doxygen')
-        subprocess.call([doxygen, doxyfile_path])
+        subprocess.call([ctx.doxygen, doxyfile_path])
     finally:
-        if not keep_temp_dirs:
+        if keep_temp_dirs:
+            logging.info('Kept temp dir at {}'.format(tmp_dir))
+        else:
             shutil.rmtree(tmp_dir)
 
-    classmap = build_classmap(moduletagfile)
-    write_mapping_to_php(classmap, os.path.join(outputdir, 'classmap.inc'))
 
+def postprocess(ctx, classmap, template_mapping=None):
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     mapping = {
-            'resources': resourcedir,
-            'title': title,
+            'resources': ctx.resourcedir,
+            'title': ctx.title,
             'copyright': copyright,
-            'api_searchbox': api_searchbox,
-            'doxygen_menu': {'entries': menu_items(htmldir, modulename)},
+            'api_searchbox': ctx.api_searchbox,
+            'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
             'class_map': {'classes': classmap},
             'kapidox_version': utils.get_kapidox_version(),
         }
-    mapping.update(template_mapping)
+    if template_mapping:
+        mapping.update(template_mapping)
     logging.info('Postprocessing')
-    postprocess(htmldir, mapping)
-
-    if keep_temp_dirs:
-        logging.info('Kept temp dir at {}'.format(tmp_dir))
+    postprocess_internal(ctx.htmldir, mapping)

@@ -130,23 +130,32 @@ def main():
     else:
         dependency_diagram = None
 
-    generate_apidocs(
-            modulename = modulename,
-            srcdir = args.moduledir,
-            outputdir = args.output,
-            doxdatadir = doxdatadir,
-            dependency_diagram = dependency_diagram,
-            tagfiles = tagfiles,
-            man_pages = args.man_pages,
-            qhp = args.qhp,
-            searchengine = args.searchengine,
-            api_searchbox = args.api_searchbox,
-            doxygen = args.doxygen,
-            qhelpgenerator = args.qhelpgenerator,
-            title = args.title,
-            fancyname = utils.parse_fancyname(args.moduledir),
-            keep_temp_dirs = args.keep_temp_dirs
+    context = Context(
+            # Names
+            modulename=modulename,
+            fancyname=utils.parse_fancyname(args.moduledir),
+            title=args.title,
+            # Input
+            srcdir=args.moduledir,
+            doxdatadir=doxdatadir,
+            tagfiles=tagfiles,
+            dependency_diagram=dependency_diagram,
+            # Output
+            outputdir=args.output,
+            # Output options
+            man_pages=args.man_pages,
+            qhp=args.qhp,
+            searchengine=args.searchengine,
+            api_searchbox=args.api_searchbox,
+            # Binaries
+            doxygen=args.doxygen,
+            qhelpgenerator=args.qhelpgenerator,
             )
+    create_dirs(context)
+    generate_apidocs(context, keep_temp_dirs=args.keep_temp_dirs)
+    classmap = build_classmap(context.tagfile)
+    postprocess(context, classmap)
+
     logging.info('Done')
     warn_log_path = os.path.join(args.output, WARN_LOGFILE)
     index_path = os.path.join(args.output, 'html/index.html')
