@@ -300,6 +300,26 @@ def menu_items(htmldir, modulename):
             lambda e: os.path.isfile(os.path.join(htmldir, e['href'])),
             entries))
 
+
+def read_all(stream):
+    """Read all content of a stream, returns it as a string.
+
+    This should not be necessary: a plain stream.read() should be enough, but
+    there is a bug in Python < 2.7.7: if one opens a file with codecs.open(),
+    then read a line with readline(), then call read(), not all the content is
+    returned.
+    See http://bugs.python.org/issue8260
+    """
+    chunks = []
+    while True:
+        chunk = stream.read()
+        if chunk:
+            chunks.append(chunk)
+        else:
+            break
+    return ''.join(chunks)
+
+
 def parse_dox_html(stream):
     """Parse html produced by Doxygen, extract the header fields we add through
     header.html and return a dict ready for the Jinja template"""
@@ -307,7 +327,7 @@ def parse_dox_html(stream):
     while True:
         line = stream.readline().strip()
         if line == '----': # Must match header.html
-            dct['content'] = stream.read()
+            dct['content'] = read_all(stream)
             return dct
         else:
             key, value = line.split(': ', 1)
