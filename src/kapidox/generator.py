@@ -252,7 +252,6 @@ def copy_dir_contents(directory, dest):
     """
     ignored = ['CMakeLists.txt']
     ignore = shutil.ignore_patterns(*ignored)
-    logging.info("Copying contents of " + directory)
     for fn in os.listdir(directory):
         f = os.path.join(directory,fn)
         if os.path.isfile(f):
