@@ -160,7 +160,7 @@ def smartjoin(pathorurl1,*args):
         return os.path.join(pathorurl1,*args)
 
 
-def find_tagfiles(docdir, doclink=None, flattenlinks=False, _depth=0):
+def find_tagfiles(docdir, doclink=None, flattenlinks=False, _depth=0, exclude=None):
     """Find Doxygen-generated tag files in a directory
 
     The tag files must have the extention .tags, and must be in the listed
@@ -195,16 +195,19 @@ def find_tagfiles(docdir, doclink=None, flattenlinks=False, _depth=0):
 
     entries = os.listdir(docdir)
     for e in entries:
+        if e == exclude:
+            continue
         path = os.path.join(docdir,e)
         if os.path.isfile(path) and e.endswith('.tags'):
             tagfiles.append((path,doclink))
         elif (_depth == 0 or (_depth == 1 and e == 'html')) and os.path.isdir(path):
             tagfiles += find_tagfiles(path, nestedlink(e),
-                          flattenlinks=flattenlinks, _depth=_depth+1)
+                          flattenlinks=flattenlinks, _depth=_depth+1,
+                          exclude=exclude)
 
     return tagfiles
 
-def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searchpaths=[]):
+def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searchpaths=[], exclude=None):
     """Find Doxygen-generated tag files
 
     See the find_tagfiles documentation for how the search is carried out in
@@ -230,14 +233,14 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
         if not os.path.isdir(suggestion):
             logging.warning(suggestion + " is not a directory")
         else:
-            tagfiles = find_tagfiles(suggestion, doclink, flattenlinks)
+            tagfiles = find_tagfiles(suggestion, doclink, flattenlinks, exclude)
             if len(tagfiles) == 0:
                 logging.warning(suggestion + " does not contain any tag files")
             else:
                 return tagfiles
 
     for d in searchpaths:
-        tagfiles = find_tagfiles(d, doclink, flattenlinks)
+        tagfiles = find_tagfiles(d, doclink, flattenlinks, exclude)
         if len(tagfiles) > 0:
             logging.info("Documentation tag files found at " + d)
             return tagfiles

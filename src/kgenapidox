@@ -44,17 +44,20 @@ DEFAULT_OUTPUT_DIR = 'apidocs'
 
 def find_all_tagfiles(args, modulename):
     module_tag_name = modulename + '.tags'
+
     tagfiles = search_for_tagfiles(
             suggestion = args.qtdoc_dir,
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
             searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
+
     tagfiles += search_for_tagfiles(
             suggestion = args.kdedoc_dir,
             doclink = args.kdedoc_link,
-            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'])
-    # Return all tags but ours, to ensure multiple runs produce the same output
-    return [x for x in tagfiles if os.path.basename(x[0]) != module_tag_name]
+            searchpaths = ['.', '/usr/share/doc/kf5', '/usr/share/doc/kde'],
+            exclude = module_tag_name)
+
+    return tagfiles
 
 
 def parse_args():
