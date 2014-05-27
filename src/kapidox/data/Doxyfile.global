@@ -149,7 +149,6 @@ IGNORE_PREFIX          = K
 GENERATE_LATEX         = NO
 
 GENERATE_QHP           = NO
-QHP_NAMESPACE          = org.kde.www
 
 GENERATE_MAN           = NO
 # Generate dummy files for combined pages

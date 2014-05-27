@@ -511,6 +511,7 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
         # overrides it
         writer.write_entries(
                 QHP_VIRTUAL_FOLDER=ctx.modulename,
+                QHP_NAMESPACE="org.kde." + ctx.modulename,
                 QHG_LOCATION=ctx.qhelpgenerator)
 
         writer.write_entries(
