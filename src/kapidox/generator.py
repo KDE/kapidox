@@ -303,37 +303,68 @@ def menu_items(htmldir, modulename):
             entries))
 
 
-def read_all(stream):
-    """Read all content of a stream, returns it as a string.
-
-    This should not be necessary: a plain stream.read() should be enough, but
-    there is a bug in Python < 2.7.7: if one opens a file with codecs.open(),
-    then read a line with readline(), then call read(), not all the content is
-    returned.
-    See http://bugs.python.org/issue8260
-    """
-    chunks = []
-    while True:
-        chunk = stream.read()
-        if chunk:
-            chunks.append(chunk)
-        else:
-            break
-    return ''.join(chunks)
-
-
 def parse_dox_html(stream):
-    """Parse html produced by Doxygen, extract the header fields we add through
-    header.html and return a dict ready for the Jinja template"""
+    """Parse the HTML files produced by Doxygen, extract the key/value block we
+    add through header.html and return a dict ready for the Jinja template.
+
+    The HTML files produced by Doxygen with our custom header and footer files
+    look like this:
+
+        <!--
+        key1: value1
+        key2: value2
+        ...
+        -->
+        <html>
+        <head>
+        ...
+        </head>
+        <body>
+        ...
+        </body>
+        </html>
+
+
+    The parser fills the dict from the top key/value block, and add the content
+    of the body to the dict using the "content" key.
+
+    We do not use an XML parser because the HTML file might not be well-formed,
+    for example if the documentation contains raw HTML.
+
+    The key/value block is kept in a comment so that it does not appear in Qt
+    Compressed Help output, which is not postprocessed by ourself.
+    """
     dct = {}
-    while True:
-        line = stream.readline().strip()
-        if line == '----': # Must match header.html
-            dct['content'] = read_all(stream)
-            return dct
+    body = []
+
+    def parse_key_value_block(line):
+        if line == "<!--":
+            return parse_key_value_block
+        if line == "-->":
+            return skip_head
+        key, value = line.split(': ', 1)
+        dct[key] = value
+        return parse_key_value_block
+
+    def skip_head(line):
+        if line == "<body>":
+            return extract_body
         else:
-            key, value = line.split(': ', 1)
-            dct[key] = value
+            return skip_head
+
+    def extract_body(line):
+        if line == "</body>":
+            return None
+        body.append(line)
+        return extract_body
+
+    parser = parse_key_value_block
+    while parser is not None:
+        line = stream.readline().rstrip()
+        parser = parser(line)
+
+    dct['content'] = '\n'.join(body)
+    return dct
 
 
 def postprocess_internal(htmldir, tmpl, mapping):
