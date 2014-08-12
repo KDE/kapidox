@@ -75,6 +75,7 @@ class Context(object):
         'modulename',
         'fancyname',
         'title',
+        'fwinfo',
         # KApidox files
         'doxdatadir',
         'resourcedir',
@@ -539,6 +540,7 @@ def postprocess(ctx, classmap, template_mapping=None):
             'doxygencss': 'doxygen.css',
             'resources': ctx.resourcedir,
             'title': ctx.title,
+            'fwinfo': ctx.fwinfo,
             'copyright': copyright,
             'api_searchbox': ctx.api_searchbox,
             'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},

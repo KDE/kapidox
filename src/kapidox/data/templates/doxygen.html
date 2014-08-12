@@ -21,6 +21,10 @@
 {% endblock %}
 
 {% block sidebar %}
+{% if fwinfo %}
+  {% include "fwinfo.html" %}
+{% endif %}
+
 <div class="menu_box">
   <a name="cp-menu" />
   <div class="menutitle">

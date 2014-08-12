@@ -230,6 +230,13 @@ def create_fw_info(frameworksdir, modulename):
         logging.warning('Invalid tier {} for {}'.format(tier, framework))
         return None
 
+    # Some frameworks have special CMake library names
+    if 'cmakename' not in metainfo:
+        if fancyname.startswith('K'):
+            metainfo['cmakename'] = fancyname[1:]
+        else:
+            metainfo['cmakename'] = fancyname
+
     metainfo.update({
         'modulename': modulename,
         'fancyname': fancyname,
@@ -245,6 +252,7 @@ def create_fw_context(args, fwinfo, tagfiles):
             # Names
             modulename=fwinfo['modulename'],
             fancyname=fwinfo['fancyname'],
+            fwinfo=fwinfo,
             # KApidox files
             resourcedir='../..',
             # Input
