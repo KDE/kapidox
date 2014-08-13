@@ -203,7 +203,7 @@ def generate_diagram(png_path, fancyname, tier, dot_files, tmp_dir):
     return True
 
 
-def create_fw_info(frameworksdir, modulename):
+def create_fw_info(frameworksdir, modulename, maintainers):
     fwdir = os.path.join(frameworksdir, modulename)
     if not os.path.isdir(fwdir):
         return None
@@ -231,6 +231,7 @@ def create_fw_info(frameworksdir, modulename):
         return None
 
     metainfo.update({
+        'maintainer': maintainers.get(metainfo['maintainer'], None),
         'modulename': modulename,
         'fancyname': fancyname,
         'srcdir': fwdir,
@@ -330,10 +331,11 @@ def main():
             doclink = args.qtdoc_link,
             flattenlinks = args.qtdoc_flatten_links,
             searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt'])
+    maintainers = download_kde_identities()
 
     tiers = {1:[],2:[],3:[],4:[]}
     for modulename in os.listdir(args.frameworksdir):
-        fwinfo = create_fw_info(args.frameworksdir, modulename)
+        fwinfo = create_fw_info(args.frameworksdir, modulename, maintainers)
         if fwinfo:
             tiers[fwinfo["tier"]].append(fwinfo)
 

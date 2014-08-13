@@ -11,10 +11,8 @@
     <dt>Maintainer</dt>
     {% if not fwinfo.maintainer %}
       <dd><a href="mailto:kde-devel@kde.org">The KDE Community</a></dd>
-    {% elif "@" in fwinfo.maintainer %}
-      <dd>{{ fwinfo.maintainer }}</dd>
     {% else %}
-      <dd>{{ fwinfo.maintainer }}@kde.org</dd>
+      <dd><a href="mailto:{{ fwinfo.maintainer.email }}">{{ fwinfo.maintainer.name }} &lt;{{ fwinfo.maintainer.email }}&gt;</a></dd>
     {% endif %}
 
     <dt>Dependencies</dt>
@@ -39,8 +37,8 @@
       </dd>
 
     <dt>Community</dt>
-      <dd>IRC channel: #kde-devel on Freenode</dd>
-      <dd><a href="https://mail.kde.org/mailman/listinfo/kde-frameworks-devel">Mailing list</a></dd>
+      <dd>IRC channel: {{ fwinfo.irc|default("#kde-devel") }} on Freenode</dd>
+      <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist|default("kde-frameworks-devel") }}">Mailing list</a></dd>
 
 {% if fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>

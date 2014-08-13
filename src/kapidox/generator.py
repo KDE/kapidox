@@ -42,6 +42,10 @@ try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
+try:
+    from httplib import HTTPConnection
+except ImportError:
+    from http.client import HTTPConnection
 
 import jinja2
 
@@ -53,6 +57,7 @@ __all__ = (
     "copy_dir_contents",
     "generate_apidocs",
     "search_for_tagfiles",
+    "download_kde_identities",
     "WARN_LOGFILE",
     "build_classmap",
     "postprocess",
@@ -247,6 +252,28 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
             return tagfiles
 
     return []
+
+def download_kde_identities():
+    """Download the "accounts" file on the KDE SVN repository in order to get
+       the KDE identities with their name and e-mail address
+    """
+    logging.info("Downloading KDE identities")
+    conn = HTTPConnection("websvn.kde.org")
+    conn.request("GET", "/*checkout*/trunk/kde-common/accounts")
+    r = conn.getresponse()
+
+    if r.status != 200:
+        logging.error("Unable to download identities: " + r.reason)
+	return {}
+
+    maintainers = {}
+
+    for line in r.read().decode('utf8').split('\n'):
+        parts = line.split()
+        if len(parts) >= 3:
+            maintainers[parts[0]] = {'name': ' '.join(parts[1:-1]), 'email': parts[-1]}
+
+    return maintainers
 
 def copy_dir_contents(directory, dest):
     """Copy the contents of a directory
