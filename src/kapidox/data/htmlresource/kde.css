@@ -187,6 +187,7 @@ div.header, div#top {
 /* The Doxygen content feels "out of place" if it has a margin different from the rest of the page */
 div.contents {
     margin-left: 0;
+    margin-right: 0;
 }
 
 /* Provides the thin vertical grey line on the left of the menu */
@@ -200,6 +201,12 @@ div.contents {
 #right {
     float: right;
     width: 73%;
+}
+
+/* Additional info at the top of classes */
+.additional_info {
+    float: right;
+    text-align: right;
 }
 
 /*

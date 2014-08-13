@@ -6,6 +6,12 @@
 
 <h2><a name="content"></a>{{ dox.projectname }}</h2>
 
+{% if classname %}
+<p class="additional_info">
+  <a href="http://lxr.kde.org/ident?v=kf5-qt5&amp;_i={{ classname }}">View on LXR</a>
+</p>
+{% endif %}
+
 {{ dox.content }}
 
 <div class="copyrights">

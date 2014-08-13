@@ -380,8 +380,15 @@ def postprocess_internal(htmldir, tmpl, mapping):
         if name.endswith('.html'):
             path = os.path.join(htmldir, name)
             newpath = path + '.new'
+
+            if name != 'classes.html' and name.startswith('class'):
+                mapping['classname'] = name[5:-5].split('_1_1')[-1]
+            else:
+                mapping['classname'] = None
+
             with codecs.open(path, 'r', 'utf-8', errors='ignore') as f:
                 mapping['dox'] = parse_dox_html(f)
+
             with codecs.open(newpath, 'w', 'utf-8') as outf:
                 try:
                     html = tmpl.render(mapping)
