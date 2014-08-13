@@ -22,7 +22,7 @@
       <dd><a href="http://qt-project.org/">Qt 5</a></dd>
       <dd><a href="http://api.kde.org/frameworks-api/frameworks5-apidocs/#fw-tier{{ fwinfo.tier - 1 }}">Other frameworks</a></dd>
       {% else %}
-      <dd><a href="http://qt-project.org/">Only Qt 5</a></dd>
+      <dd><a href="http://qt-project.org/">Qt 5</a>, no other framework required</dd>
       {% endif %}
 
     <dt>Supported platforms</dt>
@@ -43,13 +43,15 @@
       <dd><a href="https://mail.kde.org/mailman/listinfo/kde-frameworks-devel">Mailing list</a></dd>
       <dd><a href="https://projects.kde.org/projects/frameworks/{{ fwinfo.fancyname|lower }}/repository">Git repository</a></dd>
 
-{% if fwinfo.libraries|default([0])|count != 0 %}
+{% if fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
-      <dd><pre class="fragment">find_package(KF5{{ fwinfo.cmakename }})
-target_link_libraries(yourapp KF5::{{ fwinfo.libraries|default([fwinfo.cmakename])|join(' KF5::') }})</pre></dd>
+      <dd><pre class="fragment">find_package({{ fwinfo.cmakename }})
+target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{% endfor %})</pre></dd>
 
+{% endif %}
+{% if fwinfo.libraries|selectattr("qmake")|list|count != 0 %}
     <dt>Use with QMake</dt>
-      <dd><pre class="fragment">QT += {{ fwinfo.libraries|default([fwinfo.fancyname])|join(' ') }}</pre></dd>
+      <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %}</pre></dd>
 {% endif %}
 
     <dt>Clone URL</dt>
