@@ -47,10 +47,15 @@ input, textarea, select {
 }
 
 dt a {
-    margin-top: 0.5em;
     font-weight: bold;
 }
 
+dt {
+    margin-top: 0.8em;
+}
+dt:first-child {
+    margin-top: 0;
+}
 dd {
     margin-left: 1em;
     color: #323232;

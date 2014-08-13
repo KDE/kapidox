@@ -41,7 +41,6 @@
     <dt>Community</dt>
       <dd>IRC channel: #kde-devel on Freenode</dd>
       <dd><a href="https://mail.kde.org/mailman/listinfo/kde-frameworks-devel">Mailing list</a></dd>
-      <dd><a href="https://projects.kde.org/projects/frameworks/{{ fwinfo.fancyname|lower }}/repository">Git repository</a></dd>
 
 {% if fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
@@ -55,6 +54,6 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
 {% endif %}
 
     <dt>Clone URL</dt>
-      <dd><pre class="fragment">git clone git://anongit.kde.org/{{ fwinfo.fancyname|lower }}.git</pre></dd>
+      <dd><pre class="fragment">git clone <a href="https://projects.kde.org/projects/frameworks/{{ fwinfo.fancyname|lower }}/repository">git://anongit.kde.org/{{ fwinfo.fancyname|lower }}.git</a></pre></dd>
   </dl>
 </div>
