@@ -31,6 +31,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import argparse
 import logging
+import codecs
 import os
 import shutil
 import subprocess
@@ -149,7 +150,7 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
             'available_platforms': sorted(available_platforms),
         }
     tmpl = create_jinja_environment(doxdatadir).get_template('frameworks.html')
-    with open(outputfile, 'w') as outf:
+    with codecs.open(outputfile, 'w', 'utf-8') as outf:
         outf.write(tmpl.render(mapping))
 
 

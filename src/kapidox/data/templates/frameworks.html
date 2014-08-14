@@ -43,7 +43,7 @@
         </div>
         <span class="framework-description">{{fw.description}}</span>
       </td>
-      <td class="framework-detail-column framework-maintainer-column">{{ fw.maintainer }}</td>
+      <td class="framework-detail-column framework-maintainer-column">{% set fwinfo = fw %}{% include "fwmaintainer.html" %}</td>
       <td class="framework-detail-column framework-type-column">{{ fw.type }}</td>
       </td>
     </tr>

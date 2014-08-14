@@ -9,11 +9,7 @@
 
   <dl>
     <dt>Maintainer</dt>
-    {% if not fwinfo.maintainer %}
-      <dd><a href="mailto:kde-devel@kde.org">The KDE Community</a></dd>
-    {% else %}
-      <dd><a href="mailto:{{ fwinfo.maintainer.email }}">{{ fwinfo.maintainer.name }} &lt;{{ fwinfo.maintainer.email }}&gt;</a></dd>
-    {% endif %}
+      <dd>{% include "fwmaintainer.html" %}</dd>
 
     <dt>Dependencies</dt>
       {% if fwinfo.tier >= 2 %}
