@@ -6,7 +6,14 @@ intro:
       desktop applications (such as KNewStuff, for fetching downloadable add-on
       content in an application, or the powerful KIO multi-protocol file access
       framework).
-    - The frameworks are divided into four tiers.
+    - The KDE Frameworks can be used in CMake-based and QMake-based projects,
+      and most of them are portable to at least Windows, Mac and Linux. The
+      documentation of each framework has code snippets that show how to include
+      the framework in a QMake or CMake project.
+    - The frameworks are divided into four tiers, based on the kind of
+      dependencies that they have. For instance, Tier 1 frameworks depend on Qt
+      and possibly some third-party libraries, but not on other frameworks. This
+      makes them easy to integrate into existing applications.
 
 tiers:
     1: Tier 1 frameworks depend only on Qt (and possibly a small number of other

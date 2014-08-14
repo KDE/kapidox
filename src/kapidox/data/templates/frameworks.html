@@ -74,12 +74,13 @@
               </div>
             </div>
             <div class="contents">
+              <h2>The KDE Frameworks</h2>
               <div class="textblock">
                 {% for para in tierinfo.intro %}
                   <p>{{ para }}</p>
                 {% endfor %}
               </div>
-              <h2>Frameworks</h2>
+              <h2>List of Frameworks by Tier</h2>
               {% for tier, frameworks in framework_lst|groupby('tier') %}
                 <h3><a name="fw-tier{{ tier }}"></a>Tier {{tier}}</h3>
                 <p>{{ tierinfo.tiers[tier] }}</p>
