@@ -36,6 +36,8 @@ import logging
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 
 from fnmatch import fnmatch
 try:
@@ -43,9 +45,9 @@ try:
 except ImportError:
     from urlparse import urljoin
 try:
-    from httplib import HTTPConnection
+    from urllib.request import urlretrieve
 except ImportError:
-    from http.client import HTTPConnection
+    from urllib import urlretrieve
 
 import jinja2
 
@@ -253,25 +255,107 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
 
     return []
 
+def cache_dir():
+    """Find/create a semi-long-term cache directory.
+
+    We do not use tempdir, except as a fallback, because temporary directories
+    are intended for files that only last for the program's execution.
+    """
+    cachedir = None
+    if sys.platform == 'darwin':
+        try:
+            from AppKit import NSSearchPathForDirectoriesInDomains
+            # http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
+            # NSApplicationSupportDirectory = 14
+            # NSUserDomainMask = 1
+            # True for expanding the tilde into a fully qualified path
+            cachedir = os.path.join(
+                    NSSearchPathForDirectoriesInDomains(14, 1, True)[0],
+                    'KApiDox')
+        except:
+            pass
+    elif os.name == "posix":
+        if 'HOME' in os.environ and os.path.exists(os.environ['HOME']):
+            cachedir = os.path.join(os.environ['HOME'], '.cache', 'kapidox')
+    elif os.name == "nt":
+        if 'APPDATA' in os.environ and os.path.exists(os.environ['APPDATA']):
+            cachedir = os.path.join(os.environ['APPDATA'], 'KApiDox')
+    if cachedir is None:
+        cachedir = os.path.join(tempfile.gettempdir(), 'kapidox')
+    if not os.path.isdir(cachedir):
+        os.makedirs(cachedir)
+    return cachedir
+
+def svn_export(remote, local, overwrite = False):
+    """Wraps svn export.
+
+    Raises an exception on failure.
+    """
+    try:
+        import svn.core, svn.client
+        logging.debug("Using Python libsvn bindings to fetch %s", remote)
+        ctx = svn.client.create_context()
+        ctx.auth_baton = svn.core.svn_auth_open([])
+
+        latest = svn.core.svn_opt_revision_t()
+        latest.type = svn.core.svn_opt_revision_head
+
+        svn.client.export(remote, local, latest, True, ctx)
+    except ImportError:
+        logging.debug("Using external svn client to fetch %s", remote)
+        cmd = ['svn', 'export', '--quiet']
+        if overwrite:
+            cmd.append('--force')
+        cmd += [remote, local]
+        try:
+            subprocess.check_call(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise StandardException(e.output)
+        except FileNotFoundError as e:
+            logging.debug("External svn client not found")
+            return False
+    # subversion will set the timestamp to match the server
+    os.utime(local, None)
+    return True
+
 def download_kde_identities():
     """Download the "accounts" file on the KDE SVN repository in order to get
        the KDE identities with their name and e-mail address
     """
-    logging.info("Downloading KDE identities")
-    conn = HTTPConnection("websvn.kde.org")
-    conn.request("GET", "/*checkout*/trunk/kde-common/accounts")
-    r = conn.getresponse()
-
-    if r.status != 200:
-        logging.error("Unable to download identities: " + r.reason)
-	return {}
+    cache_file = os.path.join(cache_dir(), 'kde-accounts')
+    needs_download = True
+    if os.path.exists(cache_file):
+        logging.debug("Found cached identities file at %s", cache_file)
+        # not quite a day, so that generation on api.kde.org gets a fresh
+        # copy every time the daily cron job runs it
+        yesterday = time.time() - (23.5 * 3600)
+        if os.path.getmtime(cache_file) > yesterday:
+            needs_download = False
+        else:
+            logging.debug("Cached file too old; updating")
+    if needs_download:
+        logging.info("Downloading KDE identities")
+        try:
+            if not svn_export('svn://anonsvn.kde.org/home/kde/trunk/kde-common/accounts',
+                              cache_file,
+                              overwrite=True):
+                logging.debug("Falling back to using websvn to fetch identities file")
+                urlretrieve('http://websvn.kde.org/*checkout*/trunk/kde-common/accounts',
+                            cache_file)
+        except Exception as e:
+            if os.path.exists(cache_file):
+                logging.error('Failed to update KDE identities: %s', e)
+            else:
+                logging.error('Failed to fetch KDE identities: %s', e)
+                return None
 
     maintainers = {}
 
-    for line in r.read().decode('utf8').split('\n'):
-        parts = line.split()
-        if len(parts) >= 3:
-            maintainers[parts[0]] = {'name': ' '.join(parts[1:-1]), 'email': parts[-1]}
+    with codecs.open(cache_file, 'r', encoding='utf8') as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) >= 3:
+                maintainers[parts[0]] = {'name': ' '.join(parts[1:-1]), 'email': parts[-1]}
 
     return maintainers
 
