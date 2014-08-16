@@ -266,6 +266,11 @@ div.fragment {
     padding: 0.7em 0 0 0;
 }
 
+.menu_box p {
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
 .menu_box li {
     list-style-type: none;
     margin-left: 0.1em;
