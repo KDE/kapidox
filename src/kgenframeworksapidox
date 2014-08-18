@@ -280,6 +280,10 @@ def finish_fw_apidocs(ctx, group_menu):
                         {
                             'href': '../../index.html',
                             'text': 'Frameworks'
+                        },
+                        {
+                            'href': 'index.html',
+                            'text': ctx.fancyname
                         }
                         ]
                     },
