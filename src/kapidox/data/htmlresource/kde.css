@@ -207,6 +207,29 @@ div.contents {
 .additional_info {
     float: right;
     text-align: right;
+    list-style-type: none;
+    border: 1px solid #0057ae;
+    padding: 0px 20px;
+}
+.additional_info li {
+    padding: 3px 0px;
+}
+
+/* Comments */
+#comments {
+    border-top: 4px double #0057ae;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+.juvia-comment .juvia-metadata {
+    border: 1px solid #A8B8D9;
+    color: #253555;
+    font-weight: bold;
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
+    background: url('karchive/html/nav_f.png') repeat-x #E2E8F2 !important;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
 }
 
 /*
