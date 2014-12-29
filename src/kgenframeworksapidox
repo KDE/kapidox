@@ -107,6 +107,9 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
                 logging.warning('{} framework lacks platform definitions'.format(fw['fancyname']))
                 fw['platforms'] = [dict(name=PLATFORM_UNKNOWN)]
 
+            # In case the metadata is bad, we don't want to die so clean it up first
+            fw['platforms'] = [x for x in fw['platforms'] if 'name' in x]
+
             platform_lst = [x['name'] for x in fw['platforms'] if x['name'] not in (PLATFORM_ALL, PLATFORM_UNKNOWN)]
             available_platforms.update(set(platform_lst))
 
