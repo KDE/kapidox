@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
         name='kapidox',
-        version='5.10.0',
+        version='5.11.0',
         description='KDE API documentation generation tools',
         maintainer = 'Aurélien Gâteau',
         maintainer_email = 'agateau@kde.org',
