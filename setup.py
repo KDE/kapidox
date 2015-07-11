@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from distutils.core import setup
+import os
 
 setup(
         name='kapidox',
         version='5.13.0',
         description='KDE API documentation generation tools',
-        maintainer = 'Aurélien Gâteau',
-        maintainer_email = 'agateau@kde.org',
+        maintainer = 'Alex Merry',
+        maintainer_email = 'alex.merry@kde.org',
         url='https://projects.kde.org/projects/frameworks/kapidox',
         packages = [
             'kapidox',
@@ -33,6 +34,11 @@ setup(
             'src/depdiagram-generate',
             'src/depdiagram-generate-all',
         ],
+        data_files= [
+            (os.path.join('share', 'man', 'man1'), ['docs/kgenapidox.1',
+                'docs/kgenframeworksapidox.1', 'docs/depdiagram-prepare.1',
+                'docs/depdiagram-generate.1',
+                'docs/depdiagram-generate-all.1'])],
         classifiers = [
             'Environment :: Console',
             'Intended Audience :: Developers',
