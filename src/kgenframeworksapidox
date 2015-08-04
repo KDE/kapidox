@@ -231,8 +231,14 @@ def create_fw_info(frameworksdir, modulename, maintainers):
         logging.warning('Invalid tier {} for {}'.format(tier, framework))
         return None
 
+    if isinstance(metainfo['maintainer'],list):
+        fw_maintainers = map(lambda x: maintainers.get(x, None),
+                             metainfo['maintainer'])
+    else:
+        fw_maintainers = [maintainers.get(metainfo['maintainer'], None)]
+
     metainfo.update({
-        'maintainer': maintainers.get(metainfo['maintainer'], None),
+        'maintainers': filter(lambda x: x is not None, fw_maintainers),
         'modulename': modulename,
         'fancyname': fancyname,
         'srcdir': fwdir,

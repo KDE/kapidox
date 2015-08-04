@@ -9,7 +9,7 @@
   <p>{{ fwinfo.description }}</p>
 
   <dl>
-    <dt>Maintainer</dt>
+    <dt>Maintainer{% if fwinfo.maintainers|count != 0 %}s{% endif %}</dt>
       <dd>{% include "fwmaintainer.html" %}</dd>
 
     <dt>Dependencies</dt>
