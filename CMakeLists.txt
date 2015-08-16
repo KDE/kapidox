@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(PythonInterp REQUIRED)
 
+file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} BINARY_DIR)
 add_custom_target(build ALL
-    COMMAND ${PYTHON_EXECUTABLE} setup.py build --build-base ${CMAKE_BINARY_DIR}
+    COMMAND ${PYTHON_EXECUTABLE} setup.py build --build-base ${BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
@@ -18,10 +19,12 @@ add_custom_target(build ALL
 install(CODE
     "set(_root_arg)
      if (NOT \$ENV{DESTDIR} STREQUAL \"\")
-         set(_root_arg --root \$ENV{DESTDIR})
+         file(TO_NATIVE_PATH \$ENV{DESTDIR} DESTDIR)
+         set(_root_arg --root \"\${DESTDIR}\")
      endif()
+    file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} INSTALL_PREFIX)
      execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix ${CMAKE_INSTALL_PREFIX} \${_root_arg}
+        COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix \"\${INSTALL_PREFIX}\" \${_root_arg}
         WORKING_DIRECTORY \"${CMAKE_SOURCE_DIR}\"
         )"
     )
