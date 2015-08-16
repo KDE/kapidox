@@ -507,6 +507,7 @@ def postprocess_internal(htmldir, tmpl, mapping):
                     logging.error('postprocessing {} failed'.format(path))
                     raise
                 outf.write(html)
+            os.remove(path)
             os.rename(newpath, path)
 
 def build_classmap(tagfile):
