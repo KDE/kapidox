@@ -115,5 +115,5 @@ about them in [depdiagrams](depdiagrams.html).
 - Home page: <https://projects.kde.org/projects/frameworks/kapidox>
 - Mailing list: <https://mail.kde.org/mailman/listinfo/kde-frameworks-devel>
 - IRC channel: #kde-devel on Freenode
-- Git repository: <https://projects.kde.org/projects/frameworks/kapidox/repository>
+- Git repository: <https://quickgit.kde.org/?p=kapidox.git>
 - KDE API documentation: <http://api.kde.org/>
