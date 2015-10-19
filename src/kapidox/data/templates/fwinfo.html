@@ -49,6 +49,6 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
 {% endif %}
 
     <dt>Clone URL</dt>
-      <dd><pre class="fragment">git clone <a href="https://projects.kde.org/projects/frameworks/{{ fwinfo.fancyname|lower }}/repository">git://anongit.kde.org/{{ fwinfo.fancyname|lower }}.git</a></pre></dd>
+      <dd><pre class="fragment">git clone <a href="https://quickgit.kde.org/?p={{ fwinfo.fancyname|lower }}.git">git://anongit.kde.org/{{ fwinfo.fancyname|lower }}.git</a></pre></dd>
   </dl>
 </div>
