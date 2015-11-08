@@ -45,7 +45,7 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
 {% endif %}
 {% if fwinfo.libraries|selectattr("qmake")|list|count != 0 %}
     <dt>Use with QMake</dt>
-      <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %}</pre></dd>
+      <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
 {% endif %}
 
     <dt>Clone URL</dt>
