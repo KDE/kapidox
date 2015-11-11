@@ -102,13 +102,12 @@ def process_toplevel_html_file(outputfile, doxdatadir, tiers, title,
             # Extend framework info
             fw['href'] = fw['outputdir'] + '/html/index.html'
 
-            # Fix broken frameworks lacking platform definitions
-            if fw['platforms'] is None:
-                logging.warning('{} framework lacks platform definitions'.format(fw['fancyname']))
+            try:
+                platform_lst = [x['name'] for x in fw['platforms'] if x['name'] not in (PLATFORM_ALL, PLATFORM_UNKNOWN)]
+                available_platforms.update(set(platform_lst))
+            except (KeyError, TypeError):
+                logging.warning('{} framework lacks valid platform definitions'.format(fw['fancyname']))
                 fw['platforms'] = [dict(name=PLATFORM_UNKNOWN)]
-
-            platform_lst = [x['name'] for x in fw['platforms'] if x['name'] not in (PLATFORM_ALL, PLATFORM_UNKNOWN)]
-            available_platforms.update(set(platform_lst))
 
             lst.append(fw)
 
@@ -222,16 +221,27 @@ def create_fw_info(frameworksdir, modulename, maintainers):
     outputdir = modulename
 
     # FIXME: option in yaml file to disable docs
-    metainfo = yaml.load(open(yaml_file))
-    tier = metainfo["tier"]
-    if tier is None:
-        logging.warning('Could not find tier for {}'.format(framework))
-        return None
-    elif tier < 1 or tier > 4:
-        logging.warning('Invalid tier {} for {}'.format(tier, framework))
+    try:
+        metainfo = yaml.load(open(yaml_file))
+    except:
+        logging.warning('Could not load metainfo.yaml for {}, skipping it'.format(modulename))
         return None
 
-    if isinstance(metainfo['maintainer'],list):
+    if metainfo is None:
+        logging.warning('Empty metainfo.yaml for {}, skipping it'.format(modulename))
+        return None
+
+    tier = metainfo.get("tier")
+    if tier is None:
+        logging.warning('Could not find tier for {}, skipping it'.format(modulename))
+        return None
+    elif tier < 1 or tier > 4:
+        logging.warning('Invalid tier {} for {}, skipping it'.format(tier, modulename))
+        return None
+
+    if 'maintainer' not in metainfo:
+        fw_maintainers = []
+    elif isinstance(metainfo['maintainer'],list):
         fw_maintainers = map(lambda x: maintainers.get(x, None),
                              metainfo['maintainer'])
     else:

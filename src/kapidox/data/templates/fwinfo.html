@@ -37,7 +37,7 @@
       <dd>IRC channel: {{ fwinfo.irc|default("#kde-devel") }} on Freenode</dd>
       <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist|default("kde-frameworks-devel") }}">Mailing list</a></dd>
 
-{% if fwinfo.libraries|count != 0 %}
+{% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
       <dd><pre class="fragment">find_package({{ fwinfo.cmakename }})
 target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{% endfor %})</pre></dd>
