@@ -1,6 +1,9 @@
 table.frameworks {
     width: 100%;
 }
+table.frameworks td, table.frameworks th{
+    border: solid 1px #0057ae;
+}
 
 table.frameworks h3 {
     margin: 0;
@@ -9,6 +12,10 @@ table.frameworks h3 {
 
 table.frameworks td {
     padding: 0.5em;
+}
+
+table.frameworks th {
+    background: #0057ae;
 }
 
 .framework-main-column {

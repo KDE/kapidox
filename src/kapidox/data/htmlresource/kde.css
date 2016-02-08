@@ -1,6 +1,10 @@
 /*
 ** HTML elements
 */
+body{
+    background:  url("http://cdn.kde.org/img/bg.png") repeat;
+}
+
 body, table, div, p, dl {
     font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
     font-size: 13px;
@@ -72,23 +76,20 @@ form {
 #header {
     width: 100%;
     color: #535353;
-    background: #eeeeee;
 }
 
 #header_top {
     margin: 0 auto;
     padding: 0;
-    width: 95%;
+    width: 100%;
     vertical-align: middle;
     color: #ffffff;
-    background: url(top.jpg) repeat-x bottom;
     background-color: #0057ae;
 }
 
 #header_top div {
     margin: 0 auto;
     padding: 0;
-    background: url(top-left.jpg) no-repeat bottom left;
 }
 
 #header_top div div {
@@ -97,7 +98,6 @@ form {
     vertical-align: middle;
     font-size: 1.7em;
     font-weight: bold;
-    background: url(top-right.jpg) no-repeat bottom right;
 }
 
 #header_top div div img {
@@ -111,7 +111,6 @@ form {
     width: 95%;
     vertical-align: middle;
     text-align: right;
-    background: #eeeeee;
 }
 
 #location {
@@ -194,8 +193,6 @@ div.contents {
 #body_wrapper {
     margin: 0 auto;
     width: 95%;
-    border: #dddddd solid;
-    border-width: 0 0 0 1px;
 }
 
 #right {
@@ -247,8 +244,9 @@ span.lineno a {
 
 /* Use div.fragment, not pre.fragment. pre.fragment is used for @verbatim blocks, which must keep their border */
 div.fragment {
-    background-color: transparent;
+    background-color: #fefefe;
     border: none;
+    border-radius: 5px;
 }
 
 /*
@@ -273,7 +271,7 @@ div.fragment {
 
 .menu_box li {
     list-style-type: none;
-    margin-left: 0.1em;
+    margin-left: /*0.1em*/ -1.5em;
 }
 
 .menu_box ul ul {
@@ -288,12 +286,7 @@ div.fragment {
     margin: 0.6em 0 1.2em 0;
     padding:0;
     color: #ffffff;
-    background: url(block_title_mid.png) repeat-y right;
     background-color: #0057ae;
-}
-
-.menutitle div {
-    background: url(block_title_top.png) no-repeat top right;
 }
 
 .menutitle div h2 {
@@ -303,7 +296,6 @@ div.fragment {
     font-size: 120%;
     font-weight: normal;
     color: #ffffff;
-    background: url(block_title_bottom.png) no-repeat bottom right;
 }
 
 .clearer {
@@ -324,7 +316,11 @@ div.fragment {
 }
 
 #footer {
-    background: #eeeeee;
+    color: #eeeeee;
+    background: #0057ae;
+    width: 100%;
+    margin:auto;
+    margin-top: 20px;
 }
 
 #footer_text {
@@ -334,5 +330,46 @@ div.fragment {
 }
 
 #footer a:link, #footer a:visited {
-    color: #4d88c3;
+    color: #fff;
+    font-weight: bold;
+}
+
+
+/**
+ * Fragments
+ */
+.fragment .line {
+    line-height: 1.4;
+}
+
+/**
+ * classes
+ */
+.memproto, dl.reflist dt {
+    background: #0057ae;
+    border-radius: 0;
+    border: 1px solid #0057ae;
+}
+
+.memname {
+    color: #eeeeee;
+    text-shadow: none;
+}
+
+.memproto a.elRef{
+    color: #aaaabb;
+    font-weight: bold;
+}
+.memproto a.el {
+    color: #ccccee;
+    font-weight: bold;
+}
+
+.memproto .paramname {
+    color: #f7800a;
+}
+
+.memproto span.mlabel {
+    background: #bbbbff;
+    color: #005766;
 }
