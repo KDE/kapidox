@@ -248,7 +248,7 @@ def create_fw_info(frameworksdir, modulename, maintainers):
         fw_maintainers = [maintainers.get(metainfo['maintainer'], None)]
 
     metainfo.update({
-        'maintainers': filter(lambda x: x is not None, fw_maintainers),
+        'maintainers': list(filter(lambda x: x is not None, fw_maintainers)),
         'modulename': modulename,
         'fancyname': fancyname,
         'srcdir': fwdir,
