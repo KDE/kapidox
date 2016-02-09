@@ -39,6 +39,8 @@ h4 {
 
 a:link {
     color: #0057ae;
+    text-decoration: none;
+
 }
 
 a:visited {
