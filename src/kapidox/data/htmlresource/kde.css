@@ -1,8 +1,9 @@
 /*
 ** HTML elements
 */
-body{
+body {
     background:  url("http://cdn.kde.org/img/bg.png") repeat;
+    margin: 0px;
 }
 
 body, table, div, p, dl {
