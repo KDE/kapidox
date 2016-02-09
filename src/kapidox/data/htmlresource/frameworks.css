@@ -1,5 +1,6 @@
 table.frameworks {
     width: 100%;
+    border-collapse: collapse;
 }
 table.frameworks td, table.frameworks th{
     border: solid 1px #0057ae;
@@ -16,6 +17,9 @@ table.frameworks td {
 
 table.frameworks th {
     background: #0057ae;
+    color:white;
+    font-size: 1.1em;
+    line-height: 1.7em;
 }
 
 .framework-main-column {
