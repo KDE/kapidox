@@ -43,6 +43,10 @@ a:link {
 
 }
 
+a:hover {
+    text-decoration: underline;
+}
+
 a:visited {
     color: #644A9B;
 }
@@ -120,7 +124,6 @@ form {
     padding: 0 0 0 1.5em;
     line-height: normal;
     font-size: 1.1em;
-    font-weight:bold;
     float: left;
 }
 
