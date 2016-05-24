@@ -48,4 +48,6 @@ group_info:
           description: Tier 3 frameworks are generally more powerful, comprehensive packages, and consequently have more complex dependencies.
         - name: Tier 4
           description: Tier 4 frameworks can be mostly ignored by application programmers; this tier consists of plugins acting behind the scenes to provide additional functionality or platform integration to existing frameworks (including Qt).
+        - name: Porting Aids
+          description: Porting Aids frameworks provide code and utilities to ease the transition from kdelibs 4 to KDE Frameworks 5. Code should aim to port away from this framework, new projects should avoid using these libraries.
 
