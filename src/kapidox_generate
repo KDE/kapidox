@@ -165,6 +165,11 @@ def sort_metainfo(metalist, all_maintainers):
         # else the product is directly the library
         if 'group_info' in metainfo:
 
+            # copy logo to the right product folder
+            logo_url = get_logo_url(metainfo['group_info'], metainfo['group'])
+            logo_dest = serialize_name(metainfo['group'])+'/'+ logo_url.split('/')[-1]
+            shutil.copyfile(logo_url, logo_dest)
+
             product = {
                 'name': serialize_name(metainfo['group']),
                 'fancyname': metainfo['group_info'].get('fancyname', string.capwords(metainfo['group'])),
@@ -172,7 +177,7 @@ def sort_metainfo(metalist, all_maintainers):
                 'long_description': metainfo['group_info'].get('long_description', []),
                 'maintainers': set_maintainers(metainfo['group_info'], 'maintainer', all_maintainers),
                 'platforms': metainfo['group_info'].get('platforms'),
-                'logo_url': get_logo_url(metainfo['group_info'], metainfo['group']),
+                'logo_url': logo_dest,
                 'href': serialize_name(metainfo['group']) + '/index.html',
                 'outputdir': serialize_name(metainfo['group']),
                 'libraries': []
@@ -190,13 +195,17 @@ def sort_metainfo(metalist, all_maintainers):
             product['subgroups'] = subgroups;
             products.append(product)
         elif 'group' not in metainfo:
+            logo_url = get_logo_url(metainfo, metainfo['fancyname'])
+            logo_dest = serialize_name(metainfo['name'])+'/'+ logo_url.split('/')[-1]
+            shutil.copyfile(logo_url, logo_dest)
+
             products.append({
                 'name': serialize_name(metainfo['name']),
                 'fancyname': metainfo['fancyname'],
                 'description': metainfo.get('description'),
                 'maintainers': set_maintainers(metainfo, 'maintainer', all_maintainers),
                 'platform': metainfo.get('platform'),
-                'logo_url': get_logo_url(metainfo, metainfo['fancyname']),
+                'logo_url': logo_dest,
                 'href': metainfo['name']+'/html/index.html',
                 'outputdir': metainfo['name']
             })
