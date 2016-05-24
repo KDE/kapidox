@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{title}} - Frameworks{% endblock %}
+{% block title %}Frameworks{% endblock %}
+
+{% block head %}
+  <script type="text/javascript" src="{{resources}}/notetip.js"></script>
+  <script type="text/javascript" src="{{resources}}/frameworks.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script>
+  $(document).ready(main);
+  </script>
+{% endblock %}
+
+{% block content %}
+            <h2><a name="content"></a>{{title}}</h2>
+
+            <div class="header">
+              <div class="headertitle">
+                <div class="title">
+                  KDE API Reference
+                </div>
+              </div>
+            </div>
+            <div class="contents">
+              <h2>The KDE products</h2>
+              <div class="textblock">
+                {% for para in intro %}
+                  <p>{{ para }}</p>
+                {% endfor %}
+              </div>
+              <h2>List of our products</h2>
+                <table class="products">
+              {% for product in product_list | sort(attribute='name')%}
+                <tr class="product">
+                  <td class="product-logo">
+                    <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}" width="80px" />
+                  </td>
+                  <td class="product-descr">
+                    <ul class="list-unstyled">
+                      <li class=product-name><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></li>
+                      <li>{{ product.description }}</li>
+                      <li class="prod-maintainers">{% include "maintainers.html" %}</li>
+                    {% if product.platforms %}
+                      <li class="prod-platforms">{{ product.platforms | join(' | ') }}</li>
+                    {% endif %}
+                       <!--<li>?? avaliable versions vX.X | vY.Y</li> -->
+                    </ul>
+                  </td>
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+
+{% endblock content %}
+
+{% block sidebar %}
+
+        <div class="menu_box">
+          <div class="menutitle">
+            <div>
+              <h2>KDE Products for developers</h2>
+            </div>
+          </div>
+          <ul>
+            <li>Description of what you can find here</li>
+            <li> &nbsp; </li>
+            <li>If you are looking for documentation about KDE software or how to use Plasma, please refer to our <a href="https://userbase.kde.org">userbase website</a>.</li>
+          </ul>
+        </div>
+
+        <div class="menu_box">
+
+{#          <div class="menutitle">
+            <div>
+              <h2>Filters</h2>
+            </div>
+          </div>
+          <div>
+            <ul>
+              <li>
+                <label>
+                  <input id="platform-filter" type="checkbox">Filter by platform
+                </label>
+                <ul id="platform-filter-group" style="display: none">
+                  <li>Only show frameworks which supports all of:</li>
+                  {% for platform in available_platforms %}
+                    <li>
+                      <label>
+                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+#}
+{#
+              <li>
+                <label>
+                  <input id="showMaintainers" type="checkbox">Show maintainers
+                </label>
+              </li>
+#}
+{#            </ul>
+          </div>
+        </div>
+#}
+{% endblock %} {# sidebar #}

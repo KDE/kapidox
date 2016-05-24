@@ -28,7 +28,6 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-import argparse
 import codecs
 import datetime
 import os
@@ -571,8 +570,10 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
 def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
-    def find_src_subdir(d):
-        pth = os.path.join(ctx.srcdir, d)
+    def find_src_subdir(d, deeper_subd=None):
+        pth = os.path.join(ctx.fwinfo['path'], d)
+        if deeper_subd is not None:
+            pth = os.path.join(pth, deeper_subd)
         if os.path.isdir(pth):
             return [pth]
         else:
@@ -584,7 +585,10 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     # What about providing the build directory? We could get the version
     # as well, then.
 
-    input_list = [ctx.srcdir]
+    input_list = [ctx.fwinfo['path']+"/README.md"]
+    for srcdir in ctx.fwinfo['srcdirs']:
+        input_list.extend(find_src_subdir(srcdir))
+    input_list.extend(find_src_subdir(ctx.fwinfo['docdir']))
     image_path_list = []
 
     if ctx.dependency_diagram:
@@ -593,7 +597,6 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 
     doxyfile_path = os.path.join(tmp_dir, 'Doxyfile')
     with codecs.open(doxyfile_path, 'w', 'utf-8') as doxyfile:
-
         # Global defaults
         with codecs.open(os.path.join(ctx.doxdatadir,'Doxyfile.global'), 'r', 'utf-8') as f:
             for line in f:
@@ -601,14 +604,14 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 
         writer = DoxyfileWriter(doxyfile)
         writer.write_entry('PROJECT_NAME', ctx.fancyname)
-        # FIXME: can we get the project version from CMake?
+        # FIXME: can we get the project version from CMake? No from GIT TAGS!
 
         # Input locations
-        image_path_list.extend(find_src_subdir('docs/pics'))
+        image_path_list.extend(find_src_subdir(ctx.fwinfo['docdir'], 'pics'))
         writer.write_entries(
                 INPUT=input_list,
-                DOTFILE_DIRS=find_src_subdir('docs/dot'),
-                EXAMPLE_PATH=find_src_subdir('docs/examples'),
+                DOTFILE_DIRS=find_src_subdir(ctx.fwinfo['docdir'], 'dot'),
+                EXAMPLE_PATH=find_src_subdir(ctx.fwinfo['exampledir']),
                 IMAGE_PATH=image_path_list)
 
         # Other input settings
@@ -643,11 +646,12 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
             writer.write_entries(**doxyfile_entries)
 
         # Module-specific overrides
-        localdoxyfile = os.path.join(ctx.srcdir, 'docs/Doxyfile.local')
-        if os.path.isfile(localdoxyfile):
-            with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
-                for line in f:
-                    doxyfile.write(line)
+        if find_src_subdir(ctx.fwinfo['docdir']):
+            localdoxyfile = os.path.join(find_src_subdir(ctx.fwinfo['docdir'])[0], 'Doxyfile.local')
+            if os.path.isfile(localdoxyfile):
+                with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
+                    for line in f:
+                        doxyfile.write(line)
 
     logging.info('Running Doxygen')
     subprocess.call([ctx.doxygen, doxyfile_path])

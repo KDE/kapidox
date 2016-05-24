@@ -57,6 +57,51 @@ input, textarea, select {
     border: 1px solid;
 }
 
+.products {
+    border-collapse:separate;
+    border-spacing: 0 10px;
+}
+.product {
+    background: #fefefe;
+    margin-bottom: 40px;
+}
+
+.product-logo {
+    padding: 20px;
+}
+
+.product-descr {
+    padding: 15px;
+    max-width: 500px
+}
+
+.product-name {
+    font-weight: bold;
+}
+
+ul.list-unstyled {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul.list-unstyled li {
+    margin-top: 0.4em;
+}
+
+ul.list-unstyled li:first-child {
+    margin-top:0;
+}
+
+.prod-platforms:before {
+    content: "Platforms: ";
+    font-weight: bold;
+}
+
+.prod-maintainers:before {
+    content: "Maintainers: ";
+    font-weight: bold;
+}
+
 dt a {
     font-weight: bold;
 }

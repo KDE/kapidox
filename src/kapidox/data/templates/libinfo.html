@@ -1,0 +1,55 @@
+<div class="menu_box">
+  <div class="menutitle">
+    <div>
+      <h2>About</h2>
+    </div>
+  </div>
+  <p style="text-align: center"><a style="font-weight: bold;" href="http://inqlude.org/libraries/{{ fwinfo.fancyname|lower }}.html">Download on <span style="color: black;">#In<span style="color: #80C342;">q</span>lude</span></a></p>
+
+  <p>{{ fwinfo.description }}</p>
+
+  <dl>
+    <dt>Maintainer{% if fwinfo.maintainers|count != 0 %}s{% endif %}</dt>
+      <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
+
+{#    <dt>Dependencies</dt>
+      {% if fwinfo.tier >= 2 %}
+      <dd><a href="http://qt-project.org/">Qt 5</a></dd>
+      <dd><a href="http://api.kde.org/frameworks-api/frameworks5-apidocs/#fw-tier{{ fwinfo.tier - 1 }}">Other frameworks</a></dd>
+      {% else %}
+      <dd><a href="http://qt-project.org/">Qt 5</a>, no other framework required</dd>
+      {% endif %}
+#}
+
+    <dt>Supported platforms</dt>
+      <dd>
+        {% for platform in fwinfo.platforms %}
+          {% if platform.name == "All" %}
+            Linux, MacOS X, Windows
+          {% elif platform.name == "UNKNOWN" %}
+            All the platforms supported by Qt
+          {% else %}
+            {{ platform.name }}{% if not loop.last %}, {% endif %}
+          {% endif %}
+        {% endfor %}
+      </dd>
+
+    <dt>Community</dt>
+      <dd>IRC channel: {{ fwinfo.irc|default("#kde-devel") }} on Freenode</dd>
+      <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist|default("kde-frameworks-devel") }}">Mailing list</a></dd>
+
+{% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
+    <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
+      <dd><pre class="fragment">find_package({{ fwinfo.cmakename }})
+target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{% endfor %})</pre></dd>
+
+{% endif %}
+{% if fwinfo.libraries|selectattr("qmake")|list|count != 0 %}
+    <dt>Use with QMake</dt>
+      <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
+{% endif %}
+
+    <dt>Clone URL</dt>
+      <dd><pre class="fragment">git clone <a href="https://quickgit.kde.org/?p={{ fwinfo.modulename }}.git">git://anongit.kde.org/{{ fwinfo.modulename }}.git</a></pre></dd>
+  </dl>
+</div>
