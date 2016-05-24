@@ -164,12 +164,8 @@ def sort_metainfo(metalist, all_maintainers):
         # if there is a group, the product is the group
         # else the product is directly the library
         if 'group_info' in metainfo:
-
-            # copy logo to the right product folder
-            logo_url = get_logo_url(metainfo['group_info'], metainfo['group'])
-            logo_dest = serialize_name(metainfo['group'])+'/'+ logo_url.split('/')[-1]
-            shutil.copyfile(logo_url, logo_dest)
-
+            logo_url_src = get_logo_url(metainfo['group_info'], metainfo['group'])
+            outputdir = serialize_name(metainfo['group'])
             product = {
                 'name': serialize_name(metainfo['group']),
                 'fancyname': metainfo['group_info'].get('fancyname', string.capwords(metainfo['group'])),
@@ -177,9 +173,10 @@ def sort_metainfo(metalist, all_maintainers):
                 'long_description': metainfo['group_info'].get('long_description', []),
                 'maintainers': set_maintainers(metainfo['group_info'], 'maintainer', all_maintainers),
                 'platforms': metainfo['group_info'].get('platforms'),
-                'logo_url': logo_dest,
-                'href': serialize_name(metainfo['group']) + '/index.html',
-                'outputdir': serialize_name(metainfo['group']),
+                'logo_url_src': logo_url_src,
+                'logo_url': outputdir + '/' + os.path.basename(logo_url_src),
+                'href': outputdir + '/index.html',
+                'outputdir': outputdir,
                 'libraries': []
             }
             subgroups = []
@@ -195,17 +192,15 @@ def sort_metainfo(metalist, all_maintainers):
             product['subgroups'] = subgroups;
             products.append(product)
         elif 'group' not in metainfo:
-            logo_url = get_logo_url(metainfo, metainfo['fancyname'])
-            logo_dest = serialize_name(metainfo['name'])+'/'+ logo_url.split('/')[-1]
-            shutil.copyfile(logo_url, logo_dest)
-
+            logo_url_src = get_logo_url(metainfo, metainfo['fancyname'])
             products.append({
                 'name': serialize_name(metainfo['name']),
                 'fancyname': metainfo['fancyname'],
                 'description': metainfo.get('description'),
                 'maintainers': set_maintainers(metainfo, 'maintainer', all_maintainers),
                 'platform': metainfo.get('platform'),
-                'logo_url': logo_dest,
+                'logo_url_src': logo_url_src,
+                'logo_url': metainfo['name'] + '/' + os.path.basename(logo_url_src),
                 'href': metainfo['name']+'/html/index.html',
                 'outputdir': metainfo['name']
             })
@@ -278,6 +273,11 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title,
     tmpl = generator.create_jinja_environment(doxdatadir).get_template('frontpage.html')
     with codecs.open(outputfile, 'w', 'utf-8') as outf:
         outf.write(tmpl.render(mapping))
+        for product in products:
+            logodir = os.path.dirname(product['logo_url'])
+            if not os.path.isdir(logodir):
+                os.mkdir(logodir)
+            shutil.copy(product['logo_url_src'], product['logo_url'])
 
 def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title,
                                 api_searchbox=False):
