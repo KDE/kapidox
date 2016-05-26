@@ -89,7 +89,7 @@
                 {% endif %}
                 {{ write_library_list(group.libraries | selectattr('subgroup', 'none') )}}
               {% endif %}
-              {% for subgroup in group.subgroups |sort(attribute='name') %}
+              {% for subgroup in group.subgroups |sort(attribute='order') %}
                 <h3><a name="sg-{{ subgroup.name }}"></a>{{ subgroup.fancyname }}</h3>
                 <p> {{ subgroup.description }}</p>
                 {{ write_library_list(subgroup.libraries) }}
@@ -119,7 +119,7 @@
                     <li><a href="#content">All</a></li>
                     {% endif %}
                   {% endif %}
-                  {% for subgroup in group.subgroups | sort(attribute='name') %}
+                  {% for subgroup in group.subgroups | sort(attribute='order') %}
                     <li><a href="#sg-{{ subgroup.name }}">{{ subgroup.fancyname }}</a></li>
                   {% endfor %}
                 </ul>

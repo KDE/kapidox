@@ -187,6 +187,7 @@ def sort_metainfo(metalist, all_maintainers):
                             'fancyname': sg['name'],
                             'name': serialize_name(sg['name']),
                             'description': sg.get('description'),
+                            'order': sg.get('order', 99),  #if no order leave to end
                             'libraries': []
                         })
             product['subgroups'] = subgroups;
