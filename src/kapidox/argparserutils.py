@@ -26,9 +26,40 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import logging
 import os
 import sys
+
+
+def parse_args(depdiagram_available):
+    parser = argparse.ArgumentParser(
+        description='Generate API documentation for the KDE Frameworks'
+        )
+    group = add_sources_group(parser)
+    group.add_argument('frameworksdir',
+            help='Location of the frameworks modules.')
+    group.add_argument('--depdiagram-dot-dir',
+            help='Generate dependency diagrams, using the .dot files from DIR.',
+            metavar="DIR")
+    add_output_group(parser)
+    add_qt_doc_group(parser)
+    add_paths_group(parser)
+    add_misc_group(parser)
+    args = parser.parse_args()
+    check_common_args(args)
+
+    if args.depdiagram_dot_dir and not depdiagram_available:
+        logging.error('You need to install the Graphviz Python bindings to '
+                      'generate dependency diagrams.\n'
+                      'See <http://www.graphviz.org/Download.php>.')
+        exit(1)
+
+    if not os.path.isdir(args.frameworksdir):
+        logging.error(args.frameworksdir + " is not a directory")
+        exit(2)
+
+    return args
 
 
 def add_sources_group(parser):

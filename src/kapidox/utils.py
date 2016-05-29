@@ -26,10 +26,15 @@
 # Python 2/3 compatibility (NB: we require at least 2.7)
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+
+from fnmatch import fnmatch
 import logging
 import os
 import re
+import subprocess
+import shutil
 import sys
+import tempfile
 
 """
 This module contains code which is shared between depdiagram-prepare and other
@@ -43,6 +48,13 @@ on builds.kde.org, which may not have all the required dependencies.
 def setup_logging():
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
     logging.basicConfig(format=FORMAT, datefmt='%H:%M:%S', level=logging.DEBUG)
+
+
+def serialize_name(name):
+    if name is not None:
+        return '_'.join(name.lower().split(' '))
+    else:
+        return None
 
 
 def parse_fancyname(fw_dir):
@@ -60,8 +72,100 @@ def parse_fancyname(fw_dir):
             match = project_re.search(line)
             if match:
                 return match.group(1)
-    logging.error("Failed to find framework name: Could not find a 'project()' command in {}.".format(cmakelists_path))
+    logging.error("Failed to find framework name: Could not find a "
+                  "'project()' command in {}.".format(cmakelists_path))
     return None
+
+
+def cache_dir():
+    """Find/create a semi-long-term cache directory.
+
+    We do not use tempdir, except as a fallback, because temporary directories
+    are intended for files that only last for the program's execution.
+    """
+    cachedir = None
+    if sys.platform == 'darwin':
+        try:
+            from AppKit import NSSearchPathForDirectoriesInDomains
+            # http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
+            # NSApplicationSupportDirectory = 14
+            # NSUserDomainMask = 1
+            # True for expanding the tilde into a fully qualified path
+            cachedir = os.path.join(
+                    NSSearchPathForDirectoriesInDomains(14, 1, True)[0],
+                    'KApiDox')
+        except:
+            pass
+    elif os.name == "posix":
+        if 'HOME' in os.environ and os.path.exists(os.environ['HOME']):
+            cachedir = os.path.join(os.environ['HOME'], '.cache', 'kapidox')
+    elif os.name == "nt":
+        if 'APPDATA' in os.environ and os.path.exists(os.environ['APPDATA']):
+            cachedir = os.path.join(os.environ['APPDATA'], 'KApiDox')
+    if cachedir is None:
+        cachedir = os.path.join(tempfile.gettempdir(), 'kapidox')
+    if not os.path.isdir(cachedir):
+        os.makedirs(cachedir)
+    return cachedir
+
+
+def svn_export(remote, local, overwrite=False):
+    """Wraps svn export.
+
+    Raises an exception on failure.
+    """
+    try:
+        import svn.core
+        import svn.client
+        logging.debug("Using Python libsvn bindings to fetch %s", remote)
+        ctx = svn.client.create_context()
+        ctx.auth_baton = svn.core.svn_auth_open([])
+
+        latest = svn.core.svn_opt_revision_t()
+        latest.type = svn.core.svn_opt_revision_head
+
+        svn.client.export(remote, local, latest, True, ctx)
+    except ImportError:
+        logging.debug("Using external svn client to fetch %s", remote)
+        cmd = ['svn', 'export', '--quiet']
+        if overwrite:
+            cmd.append('--force')
+        cmd += [remote, local]
+        try:
+            subprocess.check_call(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise StandardException(e.output)
+        except FileNotFoundError as e:
+            logging.debug("External svn client not found")
+            return False
+    # subversion will set the timestamp to match the server
+    os.utime(local, None)
+    return True
+
+
+def copy_dir_contents(directory, dest):
+    """Copy the contents of a directory
+
+    directory -- the directory to copy the contents of
+    dest      -- the directory to copy them into
+    """
+    ignored = ['CMakeLists.txt']
+    ignore = shutil.ignore_patterns(*ignored)
+    for fn in os.listdir(directory):
+        f = os.path.join(directory, fn)
+        if os.path.isfile(f):
+            docopy = True
+            for i in ignored:
+                if fnmatch(fn, i):
+                    docopy = False
+                    break
+            if docopy:
+                shutil.copy(f, dest)
+        elif os.path.isdir(f):
+            dest_f = os.path.join(dest, fn)
+            if os.path.isdir(dest_f):
+                shutil.rmtree(dest_f)
+            shutil.copytree(f, dest_f, ignore=ignore)
 
 
 _KAPIDOX_VERSION = None
