@@ -51,8 +51,8 @@
   </table>
 {% endmacro %}
 
-{% block page_title %}{{title}} - Frameworks{% endblock %}
-{% block title %}Frameworks{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block title %} &ndash; {{ group.fancyname }}{% endblock %}
 
 {% block head %}
   <script type="text/javascript" src="{{resources}}/notetip.js"></script>
@@ -69,7 +69,7 @@
             <div class="header">
               <div class="headertitle">
                 <div class="title">
-                  KDE Frameworks API Reference
+                  KDE API Reference
                 </div>
               </div>
             </div>

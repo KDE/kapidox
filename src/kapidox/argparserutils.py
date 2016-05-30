@@ -34,11 +34,11 @@ import sys
 
 def parse_args(depdiagram_available):
     parser = argparse.ArgumentParser(
-        description='Generate API documentation for the KDE Frameworks'
+        description='Generate API documentation for the KDE Products'
         )
     group = add_sources_group(parser)
     group.add_argument('frameworksdir',
-            help='Location of the frameworks modules.')
+            help='Location of the sources.')
     group.add_argument('--depdiagram-dot-dir',
             help='Generate dependency diagrams, using the .dot files from DIR.',
             metavar="DIR")
