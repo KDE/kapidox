@@ -36,9 +36,14 @@ libraries:  # optional
     cmake: KF5::BluezQt
 cmakename: KF5BluezQt  # optional
 
+irc: kde  # optional, overwrite group field, if both not defined, default to kde-devel
+mailinglist: mylib-dev  # optional, overwrite group field, if both not defined, default to kde-devel
+
 group_info: # optional, only once per group, the name is defined by the 'group' key above.
   fancyname: The KDE Frameworks
   maintainer: dfaure
+  irc: kde-devel
+  mailinglist: kde-core-devel
   platforms:
     - Linux
     - Windows (partial)

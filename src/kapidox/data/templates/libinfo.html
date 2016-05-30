@@ -4,8 +4,9 @@
       <h2>About</h2>
     </div>
   </div>
+  {% if fwinfo.inqlude %}
   <p style="text-align: center"><a style="font-weight: bold;" href="http://inqlude.org/libraries/{{ fwinfo.fancyname|lower }}.html">Download on <span style="color: black;">#In<span style="color: #80C342;">q</span>lude</span></a></p>
-
+  {% endif %}
   <p>{{ fwinfo.description }}</p>
 
   <dl>
@@ -35,8 +36,8 @@
       </dd>
 
     <dt>Community</dt>
-      <dd>IRC channel: {{ fwinfo.irc | default("#kde-devel") }} on Freenode</dd>
-      <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist|default("kde-frameworks-devel") }}">Mailing list</a></dd>
+      <dd>IRC channel: #{{ fwinfo.irc }} on Freenode</dd>
+      <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">Mailing list</a></dd>
 
 {% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>

@@ -30,6 +30,12 @@ from __future__ import (division, absolute_import, print_function,
 import logging
 import os
 import string
+import sys
+if sys.version_info.major < 3:
+    from urllib2 import Request, urlopen, HTTPError
+else:
+    from urllib.request import Request, urlopen
+    from urllib.error import HTTPError
 
 import yaml
 
@@ -60,7 +66,7 @@ def expand_platform_all(dct, available_platforms):
         del dct[PLATFORM_UNKNOWN]
     if add_all_platforms:
         for platform in available_platforms:
-            if not platform in dct:
+            if platform not in dct:
                 dct[platform] = note
 
 
@@ -179,6 +185,17 @@ def sort_metainfo(metalist, all_maintainers):
             else:
                 product = product_list[0]
             lib['product'] = product
+            if lib['mailinglist'] is None:
+                if product['mailinglist'] is not None:
+                    lib['mailinglist'] = product['mailinglist']
+                else:
+                    lib['mailinglist'] = 'kde-devel'
+            if lib['irc'] is None:
+                if product['irc'] is not None:
+                    lib['irc'] = product['irc']
+                else:
+                    lib['irc'] = 'kde-devel'
+
             product['libraries'].append(lib)
             if lib['parent'].get('subgroup') is None:
                 lib['subgroup'] = None
@@ -225,8 +242,11 @@ def extract_lib(metainfo, platforms, all_maintainers):
         'portingAid': metainfo.get('portingAid', False),
         'deprecated': metainfo.get('deprecated', False),
         'libraries': metainfo.get('libraries', []),
-        'cmakename': metainfo.get('cmakename', '')
+        'cmakename': metainfo.get('cmakename', ''),
+        'irc': metainfo.get('irc'),
+        'mailinglist': metainfo.get('mailinglist'),
         }
+
     return lib
 
 
@@ -268,6 +288,8 @@ def extract_product(metainfo, platforms, all_maintainers):
             'href': outputdir + '/index.html',
             'libraries': [],  # We'll set this later
             'subgroups': [],  # We'll set this later
+            'irc': metainfo['group_info'].get('irc'),
+            'mailinglist': metainfo['group_info'].get('mailinglist'),
             }
 
         if 'subgroups' in metainfo['group_info']:

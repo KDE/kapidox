@@ -18,6 +18,7 @@ public_source_dirs:
 group_info:
     fancyname: The KDE Frameworks
     maintainer: dfaure
+    mailinglist: kde-core-devel
     platforms:
       - Linux
       - Windows (partial)
