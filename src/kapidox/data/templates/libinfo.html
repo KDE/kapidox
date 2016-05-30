@@ -29,13 +29,13 @@
           {% elif platform.name == "UNKNOWN" %}
             All the platforms supported by Qt
           {% else %}
-            {{ platform.name }}{% if not loop.last %}, {% endif %}
+            {{ platform }}{% if not loop.last %}, {% endif %}
           {% endif %}
         {% endfor %}
       </dd>
 
     <dt>Community</dt>
-      <dd>IRC channel: {{ fwinfo.irc|default("#kde-devel") }} on Freenode</dd>
+      <dd>IRC channel: {{ fwinfo.irc | default("#kde-devel") }} on Freenode</dd>
       <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist|default("kde-frameworks-devel") }}">Mailing list</a></dd>
 
 {% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
@@ -50,6 +50,6 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
 {% endif %}
 
     <dt>Clone URL</dt>
-      <dd><pre class="fragment">git clone <a href="https://quickgit.kde.org/?p={{ fwinfo.modulename }}.git">git://anongit.kde.org/{{ fwinfo.modulename }}.git</a></pre></dd>
+      <dd><pre class="fragment">git clone <a href="https://quickgit.kde.org/?p={{ fwinfo.name }}.git">git://anongit.kde.org/{{ fwinfo.name }}.git</a></pre></dd>
   </dl>
 </div>
