@@ -1,5 +1,0 @@
-    {% for maintainer in fwinfo.maintainers %}
-      <a href="mailto:{{ maintainer.email }}">{{ maintainer.name }} &lt;{{ maintainer.email }}&gt;</a>{% if not loop.last %},<br/>{% endif %}
-    {% else %}
-      <a href="mailto:kde-devel@kde.org">The KDE Community</a>
-    {% endfor %}

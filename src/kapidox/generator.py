@@ -729,7 +729,7 @@ def finish_fw_apidocs(ctx, group_menu):
         mapping.update(template_mapping)
     logging.info('Postprocessing')
 
-    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen2.html')
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
     postprocess_internal(ctx.htmldir, tmpl, mapping)
 
 
