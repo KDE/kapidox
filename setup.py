@@ -28,8 +28,7 @@ setup(
             ]
         },
         scripts = [
-            'src/kgenapidox',
-            'src/kgenframeworksapidox',
+            'src/kapidox_generate',
             'src/depdiagram-prepare',
             'src/depdiagram-generate',
             'src/depdiagram-generate-all',
