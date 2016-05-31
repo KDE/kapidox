@@ -189,7 +189,6 @@ def sort_metainfo(metalist, all_maintainers):
     for lib in libraries:
         if lib['parent'].get('group') is not None:
             product_list = [x for x in products if x['name'].lower() == lib['parent']['group'].lower()]
-            print(product_list)
             if not product_list:
                 continue  # The group_info was not defined
             else:

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TEST_FRAMEWORKS="kcoreaddons kitemmodels kauth kcompletion kwidgetsaddons kiconthemes"
+TEST_FRAMEWORKS="kapidox kcoreaddons kitemmodels kauth kcompletion kwidgetsaddons kiconthemes"
 
 PROGNAME=$(basename $0)
 
@@ -141,8 +141,8 @@ for fw in $TEST_FRAMEWORKS ; do
 done
 mkdir $sandbox_dir/fwapidox
 
-run_test kgenapidox-kcompletion $fw_base_dir/kcompletion $SRC_DIR/kgenapidox
-run_test kgenapidox-kcoreaddons $fw_base_dir/kcoreaddons $SRC_DIR/kgenapidox
-run_test kgenapidox-kitemmodels $fw_base_dir/kitemmodels $SRC_DIR/kgenapidox
-run_test kgenframeworksapidox $sandbox_dir/fwapidox "$SRC_DIR/kgenframeworksapidox $fw_base_dir"
+ls $fw_base_dir
+run_test kapidox_generate-kcompletion $fw_base_dir/kcompletion "$SRC_DIR/kapidox_generate $fw_base_dir/kcompletion"
+ls $fw_base_dir
+run_test kapidox_generate-fw $sandbox_dir/fwapidox "$SRC_DIR/kapidox_generate $fw_base_dir"
 show_results
