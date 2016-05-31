@@ -149,6 +149,15 @@ def sort_metainfo(metalist, all_maintainers):
     libraries = []
     available_platforms = set(['Windows', 'MacOSX', 'Linux'])
 
+    all_groups = []
+    defined_groups = []
+    for metainfo in metalist:
+        if 'group' in metainfo:
+            all_groups.append(metainfo['group'])
+        if 'group_info' in metainfo:
+            defined_groups.append(metainfo['group'])
+    undefined_groups = [x for x in list(set(all_groups)) if x not in defined_groups]
+
     for metainfo in metalist:
 
         try:
@@ -171,7 +180,7 @@ def sort_metainfo(metalist, all_maintainers):
         lib = extract_lib(metainfo, platforms, all_maintainers)
         libraries.append(lib)
 
-        product = extract_product(metainfo, platforms, all_maintainers)
+        product = extract_product(metainfo, platforms, all_maintainers, undefined_groups)
         if product is not None:
             products.append(product)
 
@@ -180,8 +189,9 @@ def sort_metainfo(metalist, all_maintainers):
     for lib in libraries:
         if lib['parent'].get('group') is not None:
             product_list = [x for x in products if x['name'].lower() == lib['parent']['group'].lower()]
+            print(product_list)
             if not product_list:
-                continue
+                continue  # The group_info was not defined
             else:
                 product = product_list[0]
             lib['product'] = product
@@ -205,7 +215,7 @@ def sort_metainfo(metalist, all_maintainers):
                     logging.warning("Subgroup {} of library {} not documentated, setting subgroup to None"
                                     .format(lib['parent']['subgroup'], lib['name']))
                     lib['subgroup'] = None
-                    lib['parent'] = None
+                    lib['parent'] = product
                 else:
                     subgroup = subgroup_list[0]
                     lib['subgroup'] = subgroup
@@ -250,7 +260,7 @@ def extract_lib(metainfo, platforms, all_maintainers):
     return lib
 
 
-def extract_product(metainfo, platforms, all_maintainers):
+def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
     def get_logo_url(dct, name):
         # take care of the logo
         if 'logo' in dct:
@@ -303,6 +313,27 @@ def extract_product(metainfo, platforms, all_maintainers):
                             'libraries': []
                             })
         set_logo(product)
+        return product
+    elif 'group' in metainfo and metainfo['group'] in undefined_groups:
+        outputdir = kdx.utils.serialize_name(metainfo['group'])
+        product = {
+            'name': kdx.utils.serialize_name(metainfo['group']),
+            'fancyname': string.capwords(metainfo['group']),
+            'description': '',
+            'long_description': [],
+            'maintainers': set_maintainers(dict(),
+                                           'maintainer',
+                                           all_maintainers),
+            'platforms': None,
+            'logo_url_src': None,
+            'logo_url': None,  # We'll set this later
+            'outputdir': outputdir,
+            'href': outputdir + '/index.html',
+            'libraries': [],  # We'll set this later
+            'subgroups': [],  # We'll set this later
+            'irc': None,
+            'mailinglist': None,
+            }
         return product
     elif 'group' not in metainfo:
         outputdir = metainfo['name']
