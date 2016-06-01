@@ -1,4 +1,4 @@
-# Description of the metainfo.yml syntax
+# Description of the metainfo.yml syntax {#metainfo_syntax}
 The name is the folder name.
 The fancyname is the project name used in CMake.
 

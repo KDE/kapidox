@@ -3,7 +3,7 @@ Dependency diagrams {#depdiagrams}
 
 ## Introduction
 
-In most case, you just want to call `kgenframeworksapidox` with the
+In most case, you just want to call `kapidox` with the
 "--dependency-diagrams" option. However, if you want finer-grained control over
 diagram generation or want to work on its code, read on.
 
@@ -73,12 +73,3 @@ frameworks at once:
 This command creates two pngs for each framework: "$framework.png" and
 "$framework-simplified.png" (same diagram, ran through `tred`). It also creates a
 diagram for all of the frameworks, named "kf5.png".
-
-
-## Integration with kgenapidox
-
-Once you have generated dependency diagrams, you can run kgenapidox with the
-"--dependency-diagram-dir" option pointing to the dir containing the diagrams.
-When this option is set, kgenapidox creates a "Dependencies" page, accessible
-from the documentation sidebar. This page includes the framework diagram.
-

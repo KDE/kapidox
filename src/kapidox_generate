@@ -52,7 +52,6 @@ except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
 
-
 def find_dot_files(dot_dir):
     """Returns a list of path to files ending with .dot in subdirs of `dot_dir`."""
     lst = []
