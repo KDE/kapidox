@@ -150,7 +150,7 @@ def main():
             logging.info('# Generating doc for {}'.format(lib['fancyname']))
             if args.depdiagram_dot_dir:
                 png_path = os.path.join(tmp_dir, lib['name']) + '.png'
-                ok = kdx.generator.generate_diagram(png_path, lib['name'],
+                ok = kdx.generator.generate_diagram(png_path, lib['fancyname'],
                                       dot_files, tmp_dir)
                 if ok:
                     lib['dependency_diagram'] = png_path
