@@ -17,7 +17,7 @@
       <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
       <th class="framework-detail-column framework-type-column">Type</th>
     </tr>
-  {% for lib in libs | sort(attribute='name')%}
+  {% for lib in libs | sort(attribute='fancyname')%}
     <tr class="framework-row" id="lib-{{ lib.name }}" data-platforms="{{ lib.platforms|join(',') }}">
       <td class="framework-main-column">
         <img class="not-available-indicator" src="{{resources}}/icons/bad.png"/>
