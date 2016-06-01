@@ -30,16 +30,16 @@ from __future__ import (division, absolute_import, print_function,
 import logging
 import os
 import string
-import sys
-if sys.version_info.major < 3:
+
+try:
     from urllib2 import Request, urlopen, HTTPError
-else:
+except:
     from urllib.request import Request, urlopen
     from urllib.error import HTTPError
 
 import yaml
 
-import kapidox as kdx
+from kapidox import utils
 
 __all__ = (
     "create_metainfo",
@@ -51,9 +51,22 @@ PLATFORM_ALL = "All"
 PLATFORM_UNKNOWN = "UNKNOWN"
 
 
+## @package kapidox.preprocessing
+#
+# Preprocess the needed information.
+#
+# The module allow to walk through folders, read metainfo files and create
+# products, subgroups and libraries representing the projects.
+#
+
 def expand_platform_all(dct, available_platforms):
-    """If one of the keys of dct is PLATFORM_ALL (or PLATFORM_UNKNOWN),
-    remove it and add entries for all available platforms to dct"""
+    """If one of the keys of dct is `PLATFORM_ALL` (or `PLATFORM_UNKNOWN`),
+    remove it and add entries for all available platforms to dct
+
+    Args:
+        dct: (dictionary) dictionary to expand
+        available_platforms: (list of string) name of platforms
+    """
 
     add_all_platforms = False
     if PLATFORM_ALL in dct:
@@ -71,6 +84,15 @@ def expand_platform_all(dct, available_platforms):
 
 
 def create_metainfo(path):
+    """Look for a `metadata.yaml` file and create a dictionary out it.
+
+    Args:
+        path: (string) the current path to search;
+    Returns:
+        A dictionary containing all the parsed information, or `None` if it
+    did not fullfill some conditions.
+    """
+
     if not os.path.isdir(path):
         return None
 
@@ -96,7 +118,7 @@ def create_metainfo(path):
         return None
 
     name = os.path.basename(path)
-    fancyname = kdx.utils.parse_fancyname(path)
+    fancyname = utils.parse_fancyname(path)
     if not fancyname:
         logging.warning('Could not find fancy name for {}, skipping it'
                         .format(path))
@@ -116,15 +138,11 @@ def create_metainfo(path):
 def parse_tree(rootdir):
     """Recursively call create_metainfo() in subdirs of rootdir
 
-    Parameters
-    ----------
-    rootdir : string
-        Top level directory containing the libraries
+    Args:
+        rootdir: (string)  Top level directory containing the libraries
 
-    Return
-    ------
-    metalist : list of dictionaries
-        list of metainfo dictionary (see :any:`create_metainfo`)
+    Returns:
+        (list of dictionaries) a list of metainfo dictionary (see :any:`create_metainfo`)
 
     """
     metalist = []
@@ -230,7 +248,7 @@ def extract_lib(metainfo, platforms, all_maintainers):
     outputdir = metainfo.get('name')
     if 'group' in metainfo:
         outputdir = metainfo.get('group') + '/' + outputdir
-    outputdir = kdx.utils.serialize_name(outputdir)
+    outputdir = utils.serialize_name(outputdir)
 
     lib = {
         'name': metainfo['name'],
@@ -238,8 +256,8 @@ def extract_lib(metainfo, platforms, all_maintainers):
         'description': metainfo.get('description'),
         'maintainers': set_maintainers(metainfo, 'maintainer', all_maintainers),
         'platforms': platforms,
-        'parent': {'group': kdx.utils.serialize_name(metainfo.get('group')),
-                   'subgroup': kdx.utils.serialize_name(metainfo.get('subgroup'))},
+        'parent': {'group': utils.serialize_name(metainfo.get('group')),
+                   'subgroup': utils.serialize_name(metainfo.get('subgroup'))},
         'href': '../'+outputdir.lower() + '/html/index.html',
         'outputdir': outputdir.lower(),
         'path':  metainfo['path'],
@@ -280,9 +298,9 @@ def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
     # if there is a group, the product is the group
     # else the product is directly the library
     if 'group_info' in metainfo:
-        outputdir = kdx.utils.serialize_name(metainfo['group'])
+        outputdir = utils.serialize_name(metainfo['group'])
         product = {
-            'name': kdx.utils.serialize_name(metainfo['group']),
+            'name': utils.serialize_name(metainfo['group']),
             'fancyname': metainfo['group_info'].get('fancyname', string.capwords(metainfo['group'])),
             'description': metainfo['group_info'].get('description'),
             'long_description': metainfo['group_info'].get('long_description', []),
@@ -306,7 +324,7 @@ def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
                 if 'name' in sg:
                     product['subgroups'].append({
                             'fancyname': sg['name'],
-                            'name': kdx.utils.serialize_name(sg['name']),
+                            'name': utils.serialize_name(sg['name']),
                             'description': sg.get('description'),
                             'order': sg.get('order', 99),  # If no order, go to end
                             'libraries': []
@@ -314,9 +332,9 @@ def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
         set_logo(product)
         return product
     elif 'group' in metainfo and metainfo['group'] in undefined_groups:
-        outputdir = kdx.utils.serialize_name(metainfo['group'])
+        outputdir = utils.serialize_name(metainfo['group'])
         product = {
-            'name': kdx.utils.serialize_name(metainfo['group']),
+            'name': utils.serialize_name(metainfo['group']),
             'fancyname': string.capwords(metainfo['group']),
             'description': '',
             'long_description': [],
@@ -338,7 +356,7 @@ def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
         outputdir = metainfo['name']
 
         product = {
-            'name': kdx.utils.serialize_name(metainfo['name']),
+            'name': utils.serialize_name(metainfo['name']),
             'fancyname': metainfo['fancyname'],
             'description': metainfo.get('description'),
             'maintainers': set_maintainers(metainfo,
@@ -358,24 +376,22 @@ def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
 def set_maintainers(dictionary, key, maintainers):
     """ Expend the name of the maintainers.
 
-    Use
-    ---
-    metainfo = { 'key1': 'something', 'maintainers': ['arthur', 'toto']}
-    myteam = [{'arthur': {'name': 'Arthur Pendragon',
-                          'email': 'arthur@example.com'},
-               'toto': {'name': 'Toto',
-                        'email: 'toto123@example.com'}
-                }]
-    set_maintainers(metainfo, "maintainers", my_team)
+    Args:
+        dictonary: (dict) Dictionary from which the name to expend will be
+    read.
+        key: (string) Key of the dictionary where the name to expend is saved.
+        maintainers: (list of dict) Look-up table where the names and emails of
+    the maintainers are stored.
 
-    Parameters
-    ----------
-    dictonary : dict
-        Dictionary from which the name to expend must be read.
-    key : string
-        Key of the dictionary where the name to expend is saved.
-    maintainers : list of dict
-        Look-up table where the names and emails of the maintainers are stored.
+    Examples:
+
+        metainfo = { 'key1': 'something', 'maintainers': ['arthur', 'toto']}
+        myteam = [{'arthur': {'name': 'Arthur Pendragon',
+                              'email': 'arthur@example.com'},
+                   'toto': {'name': 'Toto',
+                            'email: 'toto123@example.com'}
+                    }]
+        set_maintainers(metainfo, "maintainers", my_team)
     """
 
     if key not in dictionary:
