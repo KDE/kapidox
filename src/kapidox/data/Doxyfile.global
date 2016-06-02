@@ -177,6 +177,7 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          Q_DECL_FINAL="final" \
                          Q_DECL_NULLPTR="0" \
                          Q_DECL_OVERRIDE="override" \
+                         Q_DECL_HIDDEN=""\
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references
