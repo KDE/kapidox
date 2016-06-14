@@ -142,7 +142,7 @@ def parse_tree(rootdir):
         rootdir: (string)  Top level directory containing the libraries
 
     Returns:
-        (list of dictionaries) a list of metainfo dictionary (see :any:`create_metainfo`)
+        A list of metainfo dictionary (see create_metainfo())
 
     """
     metalist = []
@@ -377,8 +377,7 @@ def set_maintainers(dictionary, key, maintainers):
     """ Expend the name of the maintainers.
 
     Args:
-        dictonary: (dict) Dictionary from which the name to expend will be
-    read.
+        dictonary: (dict) Dictionary from which the name to expend will be read.
         key: (string) Key of the dictionary where the name to expend is saved.
         maintainers: (list of dict) Look-up table where the names and emails of
     the maintainers are stored.

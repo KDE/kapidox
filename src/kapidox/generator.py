@@ -130,7 +130,7 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title,
 
     products.sort(key=lambda x: x['name'].lower())
     mapping = {
-            'resources': '.',
+            'resources': './resources',
             'api_searchbox': api_searchbox,
             # steal the doxygen css from one of the frameworks
             # this means that all the doxygen-provided images etc. will be found
@@ -156,7 +156,7 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
 
     for group in groups:
         mapping = {
-            'resources': '..',
+            'resources': '../resources',
             'api_searchbox': api_searchbox,
             # steal the doxygen css from one of the frameworks
             # this means that all the doxygen-provided images etc. will be found
@@ -670,7 +670,8 @@ def create_fw_context(args, lib, tagfiles):
                    fancyname=lib['fancyname'],
                    fwinfo=lib,
                    # KApidox files
-                   resourcedir='../..' if lib['parent'] is None else '../../..',
+                   resourcedir=('../../resources' if lib['parent'] is None
+                                else '../../../resources'),
                    # Input
                    #srcdir=lib['srcdir'],
                    tagfiles=tagfiles,
