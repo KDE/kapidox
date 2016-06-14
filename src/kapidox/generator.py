@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 #
+# Copyright 2016  Olivier Churlaud <olivier@churlaud.com>
 # Copyright 2014  Alex Merry <alex.merry@kdemail.net>
 # Copyright 2014  Aurélien Gâteau <agateau@kde.org>
 # Copyright 2014  Alex Turbov <i.zaufi@gmail.com>
