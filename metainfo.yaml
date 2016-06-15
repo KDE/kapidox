@@ -25,6 +25,7 @@ group_info:
       - Linux
       - Windows (partial)
       - MacOSX (partial)
+      - Android (partial)
     description: Providing everything from simple utility classes to integrated solutions for common requirements of desktop applications
     logo: konqi_frameworks.png
     long_description:
