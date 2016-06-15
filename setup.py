@@ -34,8 +34,7 @@ setup(
             'src/depdiagram-generate-all',
         ],
         data_files= [
-            (os.path.join('share', 'man', 'man1'), ['docs/kgenapidox.1',
-                'docs/kgenframeworksapidox.1', 'docs/depdiagram-prepare.1',
+            (os.path.join('share', 'man', 'man1'), ['docs/depdiagram-prepare.1',
                 'docs/depdiagram-generate.1',
                 'docs/depdiagram-generate-all.1'])],
         classifiers = [
