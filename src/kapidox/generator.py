@@ -508,14 +508,17 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
 def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
-    def find_src_subdir(d, deeper_subd=None):
-        pth = os.path.join(ctx.fwinfo['path'], d)
-        if deeper_subd is not None:
-            pth = os.path.join(pth, deeper_subd)
-        if os.path.isdir(pth) or os.path.isfile(pth) :
-            return [pth]
-        else:
-            return []
+    def find_src_subdir(dirlist, deeper_subd=None):
+        returnlist = []
+        for d in dirlist:
+            pth = os.path.join(ctx.fwinfo['path'], d)
+            if deeper_subd is not None:
+                pth = os.path.join(pth, deeper_subd)
+            if os.path.isdir(pth) or os.path.isfile(pth):
+                returnlist.append(pth)
+            else:
+                pass  # We drop it
+        return returnlist
 
     # Paths and basic project info
 
@@ -523,9 +526,13 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     # What about providing the build directory? We could get the version
     # as well, then.
 
-    input_list = [ctx.fwinfo['path']+"/README.md"]
-    for srcdir in ctx.fwinfo['srcdirs']:
-        input_list.extend(find_src_subdir(srcdir))
+    input_list = []
+    if os.path.isfile(ctx.fwinfo['path']+"/README.md"):
+        input_list.append(ctx.fwinfo['path']+"/README.md")
+    if os.path.isfile(ctx.fwinfo['path']+"/Mainpage.dox"):
+        input_list.append(ctx.fwinfo['path']+"/Mainpage.dox")
+
+    input_list.extend(find_src_subdir(ctx.fwinfo['srcdirs']))
     input_list.extend(find_src_subdir(ctx.fwinfo['docdir']))
     image_path_list = []
 

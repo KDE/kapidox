@@ -248,11 +248,16 @@ def sort_metainfo(metalist, all_maintainers):
 
 
 def extract_lib(metainfo, platforms, all_maintainers):
+    def tolist(a):
+        if type(a) is list:
+            return a
+        else:
+            return [a]
+
     outputdir = metainfo.get('name')
     if 'group' in metainfo:
         outputdir = metainfo.get('group') + '/' + outputdir
     outputdir = utils.serialize_name(outputdir)
-
     lib = {
         'name': metainfo['name'],
         'fancyname': metainfo['fancyname'],
@@ -263,10 +268,10 @@ def extract_lib(metainfo, platforms, all_maintainers):
                    'subgroup': utils.serialize_name(metainfo.get('subgroup'))},
         'href': '../'+outputdir.lower() + '/html/index.html',
         'outputdir': outputdir.lower(),
-        'path':  metainfo['path'],
-        'srcdirs':  metainfo.get('public_source_dirs', ['src']),
-        'docdir':  metainfo.get('public_doc_dir', 'docs'),
-        'exampledir':  metainfo.get('public_example_dir', 'examples'),
+        'path': metainfo['path'],
+        'srcdirs': tolist(metainfo.get('public_source_dirs', ['src'])),
+        'docdir': tolist(metainfo.get('public_doc_dir', ['docs'])),
+        'exampledir': tolist(metainfo.get('public_example_dir', ['examples'])),
         'dependency_diagram': None,
         'type': metainfo.get('type', ''),
         'portingAid': metainfo.get('portingAid', False),
