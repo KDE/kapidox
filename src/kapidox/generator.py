@@ -129,13 +129,12 @@ def create_jinja_environment(doxdatadir):
 def process_toplevel_html_file(outputfile, doxdatadir, products, title,
                                api_searchbox=False):
 
-    products.sort(key=lambda x: x['name'].lower())
+    products.sort(key=lambda x: x.fancyname.lower())
     mapping = {
             'resources': './resources',
             'api_searchbox': api_searchbox,
             # steal the doxygen css from one of the frameworks
             # this means that all the doxygen-provided images etc. will be found
-            'doxygencss': products[0]['outputdir'] + '/html/doxygen.css',
             'title': title,
             'breadcrumbs': {
                 'entries': [
@@ -159,9 +158,6 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
         mapping = {
             'resources': '../resources',
             'api_searchbox': api_searchbox,
-            # steal the doxygen css from one of the frameworks
-            # this means that all the doxygen-provided images etc. will be found
-            'doxygencss': group['libraries'][0]['outputdir'] + '/html/doxygen.css',
             'title': title,
             'breadcrumbs': {
                 'entries': [
@@ -171,7 +167,7 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
                     },
                     {
                         'href': './index.html',
-                        'text': group['fancyname']
+                        'text': group.fancyname
                     }
                     ]
                 },
@@ -179,9 +175,9 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
             'available_platforms': sorted(available_platforms),
         }
 
-        if not os.path.isdir(group['name']):
-            os.mkdir(group['name'])
-        outputfile = group['name']+'/index.html'
+        if not os.path.isdir(group.name):
+            os.mkdir(group.name)
+        outputfile = group.name + '/index.html'
         tmpl = create_jinja_environment(doxdatadir).get_template('subgroup.html')
         with codecs.open(outputfile, 'w', 'utf-8') as outf:
             outf.write(tmpl.render(mapping))
@@ -189,7 +185,7 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
 
 def create_dirs(ctx):
     ctx.htmldir = os.path.join(ctx.outputdir, HTML_SUBDIR)
-    ctx.tagfile = os.path.join(ctx.htmldir, ctx.modulename + '.tags')
+    ctx.tagfile = os.path.join(ctx.htmldir, ctx.fwinfo.fancyname + '.tags')
 
     if not os.path.exists(ctx.outputdir):
         os.makedirs(ctx.outputdir)
@@ -511,7 +507,7 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     def find_src_subdir(dirlist, deeper_subd=None):
         returnlist = []
         for d in dirlist:
-            pth = os.path.join(ctx.fwinfo['path'], d)
+            pth = os.path.join(ctx.fwinfo.path, d)
             if deeper_subd is not None:
                 pth = os.path.join(pth, deeper_subd)
             if os.path.isdir(pth) or os.path.isfile(pth):
@@ -527,13 +523,13 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     # as well, then.
 
     input_list = []
-    if os.path.isfile(ctx.fwinfo['path']+"/README.md"):
-        input_list.append(ctx.fwinfo['path']+"/README.md")
-    if os.path.isfile(ctx.fwinfo['path']+"/Mainpage.dox"):
-        input_list.append(ctx.fwinfo['path']+"/Mainpage.dox")
+    if os.path.isfile(ctx.fwinfo.path + "/README.md"):
+        input_list.append(ctx.fwinfo.path + "/README.md")
+    if os.path.isfile(ctx.fwinfo.path + "/Mainpage.dox"):
+        input_list.append(ctx.fwinfo.path + "/Mainpage.dox")
 
-    input_list.extend(find_src_subdir(ctx.fwinfo['srcdirs']))
-    input_list.extend(find_src_subdir(ctx.fwinfo['docdir']))
+    input_list.extend(find_src_subdir(ctx.fwinfo.srcdirs))
+    input_list.extend(find_src_subdir(ctx.fwinfo.docdir))
     image_path_list = []
 
     if ctx.dependency_diagram:
@@ -556,11 +552,11 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
         # FIXME: can we get the project version from CMake? No from GIT TAGS!
 
         # Input locations
-        image_path_list.extend(find_src_subdir(ctx.fwinfo['docdir'], 'pics'))
+        image_path_list.extend(find_src_subdir(ctx.fwinfo.docdir, 'pics'))
         writer.write_entries(
                 INPUT=input_list,
-                DOTFILE_DIRS=find_src_subdir(ctx.fwinfo['docdir'], 'dot'),
-                EXAMPLE_PATH=find_src_subdir(ctx.fwinfo['exampledir']),
+                DOTFILE_DIRS=find_src_subdir(ctx.fwinfo.docdir, 'dot'),
+                EXAMPLE_PATH=find_src_subdir(ctx.fwinfo.exampledir),
                 IMAGE_PATH=image_path_list)
 
         # Other input settings
@@ -595,8 +591,8 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
             writer.write_entries(**doxyfile_entries)
 
         # Module-specific overrides
-        if find_src_subdir(ctx.fwinfo['docdir']):
-            localdoxyfile = os.path.join(find_src_subdir(ctx.fwinfo['docdir'])[0], 'Doxyfile.local')
+        if find_src_subdir(ctx.fwinfo.docdir):
+            localdoxyfile = os.path.join(find_src_subdir(ctx.fwinfo.docdir)[0], 'Doxyfile.local')
             if os.path.isfile(localdoxyfile):
                 with codecs.open(localdoxyfile, 'r', 'utf-8') as f:
                     for line in f:
@@ -674,18 +670,18 @@ def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
 def create_fw_context(args, lib, tagfiles):
     return Context(args,
                    # Names
-                   modulename=lib['name'],
-                   fancyname=lib['fancyname'],
+                   modulename=lib.name,
+                   fancyname=lib.fancyname,
                    fwinfo=lib,
                    # KApidox files
-                   resourcedir=('../../resources' if lib['parent'] is None
+                   resourcedir=('../../resources' if lib.parent is None
                                 else '../../../resources'),
                    # Input
                    #srcdir=lib['srcdir'],
                    tagfiles=tagfiles,
-                   dependency_diagram=lib['dependency_diagram'],
+                   dependency_diagram=lib.dependency_diagram,
                    # Output
-                   outputdir=lib['outputdir'],
+                   outputdir=lib.outputdir,
                    )
 
 
@@ -706,11 +702,11 @@ def finish_fw_apidocs(ctx, group_menu):
         'href': '../../index.html',
         'text': 'KDE API Reference'
         }]
-    if ctx.fwinfo['parent'] is not None:
+    if ctx.fwinfo.parent is not None:
         entries[0]['href'] = '../' + entries[0]['href']
         entries.append({
             'href': '../../index.html',
-            'text': ctx.fwinfo['product']['fancyname']
+            'text': ctx.fwinfo.product.fancyname
             })
     entries.append({
         'href': 'index.html',
@@ -745,7 +741,11 @@ def finish_fw_apidocs(ctx, group_menu):
 def create_fw_tagfile_tuple(lib):
     tagfile = os.path.abspath(
                 os.path.join(
-                    lib['outputdir'],
+                    lib.outputdir,
                     'html',
-                    lib['fancyname']+'.tags'))
-    return (tagfile, '../../' + lib['outputdir'] + '/html/')
+                    lib.fancyname+'.tags'))
+    if lib.part_of_group:
+        prefix = '../../../'
+    else:
+        prefix = '../../'
+    return (tagfile, prefix + lib.outputdir + '/html/')

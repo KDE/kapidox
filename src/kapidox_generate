@@ -119,7 +119,7 @@ def main():
         searchpaths=['/usr/share/doc/qt5', '/usr/share/doc/qt'])
 
     maintainers = download_kde_identities()
-    rootdir = args.frameworksdir
+    rootdir = args.sourcesdir
 
     metalist = kdx.preprocessing.parse_tree(rootdir)
     products, groups, libraries, available_platforms = kdx.preprocessing.sort_metainfo(metalist, maintainers)
@@ -152,10 +152,10 @@ def main():
             assert(dot_files)
 
         for lib in libraries:
-            logging.info('# Generating doc for {}'.format(lib['fancyname']))
+            logging.info('# Generating doc for {}'.format(lib.fancyname))
             if args.depdiagram_dot_dir:
-                png_path = os.path.join(tmp_dir, lib['name']) + '.png'
-                ok = kdx.generator.generate_diagram(png_path, lib['fancyname'],
+                png_path = os.path.join(tmp_dir, lib.name) + '.png'
+                ok = kdx.generator.generate_diagram(png_path, lib.fancyname,
                                       dot_files, tmp_dir)
                 if ok:
                     lib['dependency_diagram'] = png_path
@@ -167,19 +167,19 @@ def main():
         # FIXME: can we be cleverer about deps?
         for lib in libraries:
             logging.info('# Rebuilding {} for interdependencies'
-                         .format(lib['name']))
-            shutil.rmtree(lib['outputdir'])
+                         .format(lib.fancyname))
+            shutil.rmtree(lib.outputdir)
             ctx = kdx.generator.create_fw_context(args, lib, tagfiles)
             kdx.generator.gen_fw_apidocs(ctx, tmp_dir)
             kdx.generator.finish_fw_apidocs(ctx, None)
         logging.info('# Done')
     finally:
         for product in products:
-            if product['logo_url'] is not None:
-                logodir = os.path.dirname(product['logo_url'])
+            if product.logo_url is not None:
+                logodir = os.path.dirname(product.logo_url)
                 if not os.path.isdir(logodir):
                     os.mkdir(logodir)
-                shutil.copy(product['logo_url_src'], product['logo_url'])
+                shutil.copy(product.logo_url_src, product.logo_url)
 
         if args.keep_temp_dirs:
             logging.info('Kept temp dir at {}'.format(tmp_dir))

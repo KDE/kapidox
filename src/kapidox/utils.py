@@ -50,15 +50,56 @@ def setup_logging():
     logging.basicConfig(format=FORMAT, datefmt='%H:%M:%S', level=logging.DEBUG)
 
 
+def tolist(a):
+    """ Return a list based on `a`. """
+    return a if type(a) is list else [a]
+
+
 def serialize_name(name):
+    """ Return a serialized name.
+
+    For now it only replaces ' ' with '_'
+    """
     if name is not None:
         return '_'.join(name.lower().split(' '))
     else:
         return None
 
 
+def set_maintainers(maintainer_keys, all_maintainers):
+    """ Expend the name of the maintainers.
+
+    Args:
+        dictonary: (dict) Dictionary from which the name to expend will be read.
+        key: (string) Key of the dictionary where the name to expend is saved.
+        all_maintainers: (dict of dict) Look-up table where the names and emails of
+    the maintainers are stored.
+
+    Examples:
+
+        maintainer_keys = ['arthur', 'toto']
+        myteam = [{'arthur': {'name': 'Arthur Pendragon',
+                              'email': 'arthur@example.com'},
+                   'toto': {'name': 'Toto',
+                            'email: 'toto123@example.com'}
+                    }]
+        set_maintainers(maintainer_keys, my_team)
+    """
+
+    if not maintainer_keys:
+        maintainers = []
+    elif isinstance(maintainer_keys, list):
+        maintainers = map(lambda x: all_maintainers.get(x, None),
+                             maintainer_keys)
+    else:
+        maintainers = [all_maintainers.get(maintainer_keys, None)]
+
+    maintainers = [x for x in maintainers if x is not None]
+    return maintainers
+
+
 def parse_fancyname(fw_dir):
-    """Returns the framework name for a given source dir
+    """Return the framework name for a given source dir
 
     The framework name is the name of the toplevel CMake project
     """
@@ -134,7 +175,7 @@ def svn_export(remote, local, overwrite=False):
         try:
             subprocess.check_call(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
-            raise StandardException(e.output)
+            raise subprocess.StandardException(e.output)
         except FileNotFoundError as e:
             logging.debug("External svn client not found")
             return False

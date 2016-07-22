@@ -37,7 +37,7 @@ def parse_args(depdiagram_available):
         description='Generate API documentation for the KDE Products'
         )
     group = add_sources_group(parser)
-    group.add_argument('frameworksdir',
+    group.add_argument('sourcesdir',
             help='Location of the sources.')
     group.add_argument('--depdiagram-dot-dir',
             help='Generate dependency diagrams, using the .dot files from DIR.',
@@ -55,8 +55,8 @@ def parse_args(depdiagram_available):
                       'See <http://www.graphviz.org/Download.php>.')
         exit(1)
 
-    if not os.path.isdir(args.frameworksdir):
-        logging.error(args.frameworksdir + " is not a directory")
+    if not os.path.isdir(args.sourcesdir):
+        logging.error(args.sourcesdir + " is not a directory")
         exit(2)
 
     return args
@@ -68,7 +68,7 @@ def add_sources_group(parser):
 
 def add_output_group(parser):
     group = parser.add_argument_group('output options')
-    group.add_argument('--title', default='KDE API Documentation',
+    group.add_argument('--title', default='API Documentation',
             help='String to use for page titles.')
     group.add_argument('--man-pages', action='store_true',
             help='Generate man page documentation.')
@@ -77,7 +77,7 @@ def add_output_group(parser):
     group.add_argument('--searchengine', action='store_true',
             help="Enable Doxygen's search engine feature.")
     group.add_argument('--api-searchbox', action='store_true',
-            help="Enable the API searchbox (only useful for api.kde.org).")
+            help="Enable the API searchbox.")
     return group
 
 

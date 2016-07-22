@@ -83,16 +83,16 @@
               </div>
               <h2>List of the libraries</h2>
 
-              {% if group.libraries | selectattr('subgroup', 'none') | list | length > 0 %}
-                {% if group.subgroups | length > 0 %}
-                <h3><a name="sg-{{ nosubgroup }}"></a>Without subgroup</h3>
+              {% if group.libraries | selectattr('subproduct', 'none') | list | length > 0 %}
+                {% if group.subproducts | length > 0 %}
+                <h3><a name="sg-{{ nosubproduct }}"></a>Without subgroup</h3>
                 {% endif %}
-                {{ write_library_list(group.libraries | selectattr('subgroup', 'none') )}}
+                {{ write_library_list(group.libraries | selectattr('subproduct', 'none') )}}
               {% endif %}
-              {% for subgroup in group.subgroups |sort(attribute='order') %}
-                <h3><a name="sg-{{ subgroup.name }}"></a>{{ subgroup.fancyname }}</h3>
-                <p> {{ subgroup.description }}</p>
-                {{ write_library_list(subgroup.libraries) }}
+              {% for subproduct in group.subproducts |sort(attribute='order') %}
+                <h3><a name="sg-{{ subproduct.name }}"></a>{{ subproduct.fancyname }}</h3>
+                <p> {{ subproduct.description }}</p>
+                {{ write_library_list(subproduct.libraries) }}
               {% endfor %}
 
 
@@ -112,15 +112,15 @@
             <ul>
               <li>
                 <ul>
-                  {% if group.libraries | selectattr('subgroup', 'none') | list | length > 0 %}
-                    {% if group.subgroups | length > 0 %}
-                    <li><a href="#sg-{{ nosubgroup }}">Without subgroups</a></li>
+                  {% if group.libraries | selectattr('subproducts', 'none') | list | length > 0 %}
+                    {% if group.subproduct | length > 0 %}
+                    <li><a href="#sg-{{ nosubproduct }}">Without subgroup</a></li>
                     {% else  %}
                     <li><a href="#content">All</a></li>
                     {% endif %}
                   {% endif %}
-                  {% for subgroup in group.subgroups | sort(attribute='order') %}
-                    <li><a href="#sg-{{ subgroup.name }}">{{ subgroup.fancyname }}</a></li>
+                  {% for subproduct in group.subproducts | sort(attribute='order') %}
+                    <li><a href="#sg-{{ subproduct.name }}">{{ subproduct.fancyname }}</a></li>
                   {% endfor %}
                 </ul>
               </li>

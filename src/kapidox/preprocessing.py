@@ -43,6 +43,7 @@ except:
 import yaml
 
 from kapidox import utils
+from kapidox.models import Library, Product, Subproduct
 
 __all__ = (
     "create_metainfo",
@@ -165,22 +166,19 @@ def parse_tree(rootdir):
 
 
 def sort_metainfo(metalist, all_maintainers):
-    products = []
+    products = dict()
     groups = []
     libraries = []
     available_platforms = set(['Windows', 'MacOSX', 'Linux'])
 
-    all_groups = []
-    defined_groups = []
+    # First extract the structural info
     for metainfo in metalist:
-        if 'group' in metainfo:
-            all_groups.append(metainfo['group'])
-        if 'group_info' in metainfo:
-            defined_groups.append(metainfo['group'])
-    undefined_groups = [x for x in list(set(all_groups)) if x not in defined_groups]
+        product = extract_product(metainfo, all_maintainers)
+        if product is not None:
+            products[product.name] = product
 
+    # Second extract the libraries
     for metainfo in metalist:
-
         try:
             platforms = metainfo['platforms']
             platform_lst = [x['name'] for x in platforms
@@ -189,7 +187,7 @@ def sort_metainfo(metalist, all_maintainers):
 
             available_platforms.update(set(platform_lst))
         except (KeyError, TypeError):
-            logging.warning('{} framework lacks valid platform definitions'
+            logging.warning('{} library lacks valid platform definitions'
                             .format(metainfo['fancyname']))
             platforms = [dict(name=PLATFORM_UNKNOWN)]
 
@@ -197,217 +195,23 @@ def sort_metainfo(metalist, all_maintainers):
 
         expand_platform_all(dct, available_platforms)
         platforms = dct
-
-        lib = extract_lib(metainfo, platforms, all_maintainers)
+        lib = Library(metainfo, products, platforms, all_maintainers)
         libraries.append(lib)
 
-        product = extract_product(metainfo, platforms, all_maintainers, undefined_groups)
-        if product is not None:
-            products.append(product)
+    groups = [p for p in list(products.values()) if len(p.libraries) > 1]
 
-    # We have all groups and libraries, let set the parents.
-    # and check the platforms
-    for lib in libraries:
-        if lib['parent'].get('group') is not None:
-            product_list = [x for x in products if x['name'].lower() == lib['parent']['group'].lower()]
-            if not product_list:
-                continue  # The group_info was not defined
-            else:
-                product = product_list[0]
-            lib['product'] = product
-            if lib['mailinglist'] is None:
-                if product['mailinglist'] is not None:
-                    lib['mailinglist'] = product['mailinglist']
-                else:
-                    lib['mailinglist'] = 'kde-devel'
-            if lib['irc'] is None:
-                if product['irc'] is not None:
-                    lib['irc'] = product['irc']
-                else:
-                    lib['irc'] = 'kde-devel'
-
-            product['libraries'].append(lib)
-            if lib['parent'].get('subgroup') is None:
-                lib['subgroup'] = None
-            else:
-                subgroup_list = [x for x in lib['product']['subgroups'] if x['name'].lower() == lib['parent']['subgroup'].lower()]
-                if not subgroup_list:
-                    logging.warning("Subgroup {} of library {} not documentated, setting subgroup to None"
-                                    .format(lib['parent']['subgroup'], lib['name']))
-                    lib['subgroup'] = None
-                    lib['parent'] = product
-                else:
-                    subgroup = subgroup_list[0]
-                    lib['subgroup'] = subgroup
-                    subgroup['libraries'].append(lib)
-            groups.append(product)
-        else:
-            lib['parent'] = None
-
-    return products, groups, libraries, available_platforms
+    return list(products.values()), groups, libraries, available_platforms
 
 
-def extract_lib(metainfo, platforms, all_maintainers):
-    def tolist(a):
-        if type(a) is list:
-            return a
-        else:
-            return [a]
+def extract_product(metainfo, all_maintainers):
 
-    outputdir = metainfo.get('name')
-    if 'group' in metainfo:
-        outputdir = metainfo.get('group') + '/' + outputdir
-    outputdir = utils.serialize_name(outputdir)
-    lib = {
-        'name': metainfo['name'],
-        'fancyname': metainfo['fancyname'],
-        'description': metainfo.get('description'),
-        'maintainers': set_maintainers(metainfo, 'maintainer', all_maintainers),
-        'platforms': platforms,
-        'parent': {'group': utils.serialize_name(metainfo.get('group')),
-                   'subgroup': utils.serialize_name(metainfo.get('subgroup'))},
-        'href': '../'+outputdir.lower() + '/html/index.html',
-        'outputdir': outputdir.lower(),
-        'path': metainfo['path'],
-        'srcdirs': tolist(metainfo.get('public_source_dirs', ['src'])),
-        'docdir': tolist(metainfo.get('public_doc_dir', ['docs'])),
-        'exampledir': tolist(metainfo.get('public_example_dir', ['examples'])),
-        'dependency_diagram': None,
-        'type': metainfo.get('type', ''),
-        'portingAid': metainfo.get('portingAid', False),
-        'deprecated': metainfo.get('deprecated', False),
-        'libraries': metainfo.get('libraries', []),
-        'cmakename': metainfo.get('cmakename', ''),
-        'irc': metainfo.get('irc'),
-        'mailinglist': metainfo.get('mailinglist'),
-        }
-
-    return lib
-
-
-def extract_product(metainfo, platforms, all_maintainers, undefined_groups):
-    def get_logo_url(dct, name):
-        # take care of the logo
-        if 'logo' in dct:
-            logo_url = os.path.join(metainfo['path'], dct['logo'])
-            if os.path.isfile(logo_url):
-                return logo_url
-            else:
-                logging.warning("{} logo file doesn't exist, set back to None".format(name))
-                return None
-        else:
-            return None
-
-    def set_logo(product):
-        if product['logo_url_src'] is not None:
-            filename = os.path.basename(product['logo_url_src'])
-            product['logo_url'] = outputdir + '/'+ product['name'] + '.' + filename.split('.')[-1]
-
-    # if there is a group, the product is the group
-    # else the product is directly the library
-    if 'group_info' in metainfo:
-        outputdir = utils.serialize_name(metainfo['group'])
-        product = {
-            'name': utils.serialize_name(metainfo['group']),
-            'fancyname': metainfo['group_info'].get('fancyname', string.capwords(metainfo['group'])),
-            'description': metainfo['group_info'].get('description'),
-            'long_description': metainfo['group_info'].get('long_description', []),
-            'maintainers': set_maintainers(metainfo['group_info'],
-                                           'maintainer',
-                                           all_maintainers),
-            'platforms': metainfo['group_info'].get('platforms'),
-            'logo_url_src': get_logo_url(metainfo['group_info'],
-                                         metainfo['group']),
-            'logo_url': None,  # We'll set this later
-            'outputdir': outputdir,
-            'href': outputdir + '/index.html',
-            'libraries': [],  # We'll set this later
-            'subgroups': [],  # We'll set this later
-            'irc': metainfo['group_info'].get('irc'),
-            'mailinglist': metainfo['group_info'].get('mailinglist'),
-            }
-
-        if 'subgroups' in metainfo['group_info']:
-            for sg in metainfo['group_info']['subgroups']:
-                if 'name' in sg:
-                    product['subgroups'].append({
-                            'fancyname': sg['name'],
-                            'name': utils.serialize_name(sg['name']),
-                            'description': sg.get('description'),
-                            'order': sg.get('order', 99),  # If no order, go to end
-                            'libraries': []
-                            })
-        set_logo(product)
-        return product
-    elif 'group' in metainfo and metainfo['group'] in undefined_groups:
-        outputdir = utils.serialize_name(metainfo['group'])
-        product = {
-            'name': utils.serialize_name(metainfo['group']),
-            'fancyname': string.capwords(metainfo['group']),
-            'description': '',
-            'long_description': [],
-            'maintainers': set_maintainers(dict(),
-                                           'maintainer',
-                                           all_maintainers),
-            'platforms': None,
-            'logo_url_src': None,
-            'logo_url': None,  # We'll set this later
-            'outputdir': outputdir,
-            'href': outputdir + '/index.html',
-            'libraries': [],  # We'll set this later
-            'subgroups': [],  # We'll set this later
-            'irc': None,
-            'mailinglist': None,
-            }
-        return product
-    elif 'group' not in metainfo:
-        outputdir = metainfo['name']
-
-        product = {
-            'name': utils.serialize_name(metainfo['name']),
-            'fancyname': metainfo['fancyname'],
-            'description': metainfo.get('description'),
-            'maintainers': set_maintainers(metainfo,
-                                          'maintainer',
-                                          all_maintainers),
-            'platforms': platforms,
-            'logo_url_src': get_logo_url(metainfo, metainfo['fancyname']),
-            'logo_url': None,  # We'll set that later
-            'href': outputdir + '/html/index.html',
-            'outputdir': outputdir
-            }
-        set_logo(product)
-        return product
-    else:
+    if 'group_info' not in metainfo and 'group' in metainfo:
+        # This is not a product but a simple lib
         return None
 
-def set_maintainers(dictionary, key, maintainers):
-    """ Expend the name of the maintainers.
-
-    Args:
-        dictonary: (dict) Dictionary from which the name to expend will be read.
-        key: (string) Key of the dictionary where the name to expend is saved.
-        maintainers: (list of dict) Look-up table where the names and emails of
-    the maintainers are stored.
-
-    Examples:
-
-        metainfo = { 'key1': 'something', 'maintainers': ['arthur', 'toto']}
-        myteam = [{'arthur': {'name': 'Arthur Pendragon',
-                              'email': 'arthur@example.com'},
-                   'toto': {'name': 'Toto',
-                            'email: 'toto123@example.com'}
-                    }]
-        set_maintainers(metainfo, "maintainers", my_team)
-    """
-
-    if key not in dictionary:
-        fw_maintainers = []
-    elif isinstance(dictionary[key], list):
-        fw_maintainers = map(lambda x: maintainers.get(x, None),
-                             dictionary[key])
-    else:
-        fw_maintainers = [maintainers.get(dictionary[key], None)]
-
-    fw_maintainers = [x for x in fw_maintainers if x is not None]
-    return fw_maintainers
+    try:
+        product = Product(metainfo, all_maintainers)
+    except ValueError as e:
+        logging.error(e)
+    finally:
+        return product
