@@ -14,6 +14,7 @@ documentation.
 
 ## Dependencies
 
+### Required
 Python 2 or 3 is required to run the scripts.  Whichever version of python you
 use needs to have the jinja2 and yaml (or pyyaml) modules.
 
@@ -21,11 +22,16 @@ The following command should install them for the current user:
 
     pip install --user PyYAML jinja2
 
+Of course, you need Doxygen!
+
+### Optional
+Doxyqml and doxypypy might be needed to let doxygen document respectevely qml
+and python sources.
+
 To generate the dependency diagrams, you need the Graphviz Python bindings.
 They are currently not available from pip, but most distributions provide them.
 You can get binaries and source archives from
 <http://www.graphviz.org/Download.php>.
-
 
 ## Installation
 
