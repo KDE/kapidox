@@ -43,8 +43,7 @@ if sys.version_info.major < 3:
 else:
     from urllib.request import urlretrieve
 
-import kapidox as kdx
-from kapidox import generator
+from kapidox import generator, utils, argparserutils, preprocessing
 
 try:
     from kapidox import depdiagram
@@ -65,7 +64,7 @@ def download_kde_identities():
     """Download the "accounts" file on the KDE SVN repository in order to get
        the KDE identities with their name and e-mail address
     """
-    cache_file = os.path.join(kdx.utils.cache_dir(), 'kde-accounts')
+    cache_file = os.path.join(utils.cache_dir(), 'kde-accounts')
     needs_download = True
     if os.path.exists(cache_file):
         logging.debug("Found cached identities file at %s", cache_file)
@@ -79,7 +78,7 @@ def download_kde_identities():
     if needs_download:
         logging.info("Downloading KDE identities")
         try:
-            if not kdx.utils.svn_export(
+            if not utils.svn_export(
                     'svn://anonsvn.kde.org/home/kde/trunk/kde-common/accounts',
                     cache_file,
                     overwrite=True):
@@ -109,8 +108,8 @@ def download_kde_identities():
 
 
 def main():
-    kdx.utils.setup_logging()
-    args = kdx.argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
+    utils.setup_logging()
+    args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
 
     tagfiles = generator.search_for_tagfiles(
         suggestion=args.qtdoc_dir,
@@ -121,8 +120,8 @@ def main():
     maintainers = download_kde_identities()
     rootdir = args.sourcesdir
 
-    metalist = kdx.preprocessing.parse_tree(rootdir)
-    products, groups, libraries, available_platforms = kdx.preprocessing.sort_metainfo(metalist, maintainers)
+    metalist = preprocessing.parse_tree(rootdir)
+    products, groups, libraries, available_platforms = preprocessing.sort_metainfo(metalist, maintainers)
 
     dirsrc = os.path.join(args.doxdatadir, 'htmlresource')
     dirdest = 'resources'
@@ -131,13 +130,13 @@ def main():
     shutil.copytree(dirsrc, dirdest)
     os.rename(dirdest+'/favicon.ico', './favicon.ico')
 
-    kdx.generator.process_toplevel_html_file('index.html',
+    generator.process_toplevel_html_file('index.html',
                                args.doxdatadir,
                                title=args.title,
                                products=products,
                                api_searchbox=args.api_searchbox
                                )
-    kdx.generator.process_subgroup_html_files('index.html',
+    generator.process_subgroup_html_files('index.html',
                                 args.doxdatadir,
                                 title=args.title,
                                 groups=groups,
@@ -155,13 +154,13 @@ def main():
             logging.info('# Generating doc for {}'.format(lib.fancyname))
             if args.depdiagram_dot_dir:
                 png_path = os.path.join(tmp_dir, lib.name) + '.png'
-                ok = kdx.generator.generate_diagram(png_path, lib.fancyname,
+                ok = generator.generate_diagram(png_path, lib.fancyname,
                                       dot_files, tmp_dir)
                 if ok:
                     lib.dependency_diagram = png_path
-            ctx = kdx.generator.create_fw_context(args, lib, tagfiles)
-            kdx.generator.gen_fw_apidocs(ctx, tmp_dir)
-            tagfiles.append(kdx.generator.create_fw_tagfile_tuple(lib))
+            ctx = generator.create_fw_context(args, lib, tagfiles)
+            generator.gen_fw_apidocs(ctx, tmp_dir)
+            tagfiles.append(generator.create_fw_tagfile_tuple(lib))
 
         # Rebuild for interdependencies
         # FIXME: can we be cleverer about deps?
@@ -169,9 +168,9 @@ def main():
             logging.info('# Rebuilding {} for interdependencies'
                          .format(lib.fancyname))
             shutil.rmtree(lib.outputdir)
-            ctx = kdx.generator.create_fw_context(args, lib, tagfiles)
-            kdx.generator.gen_fw_apidocs(ctx, tmp_dir)
-            kdx.generator.finish_fw_apidocs(ctx, None)
+            ctx = generator.create_fw_context(args, lib, tagfiles)
+            generator.gen_fw_apidocs(ctx, tmp_dir)
+            generator.finish_fw_apidocs(ctx, None)
         logging.info('# Done')
     finally:
         for product in products:
