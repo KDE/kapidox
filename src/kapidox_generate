@@ -158,7 +158,7 @@ def main():
                 ok = kdx.generator.generate_diagram(png_path, lib.fancyname,
                                       dot_files, tmp_dir)
                 if ok:
-                    lib['dependency_diagram'] = png_path
+                    lib.dependency_diagram = png_path
             ctx = kdx.generator.create_fw_context(args, lib, tagfiles)
             kdx.generator.gen_fw_apidocs(ctx, tmp_dir)
             tagfiles.append(kdx.generator.create_fw_tagfile_tuple(lib))
