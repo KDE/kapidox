@@ -36,14 +36,17 @@ import shutil
 import sys
 import tempfile
 
-"""
-This module contains code which is shared between depdiagram-prepare and other
-components.
-
-Code in this dir should not import any module which is not shipped with Python
-because this module is used by depdiagram-prepare, which must be able to run
-on builds.kde.org, which may not have all the required dependencies.
-"""
+## @package kapidox.utils
+#
+# Multiple usage utils.
+#
+# This module contains code which is shared between depdiagram-prepare and
+# other components.
+#
+# Code in this dir should not import any module which is not shipped with
+# Python because this module is used by depdiagram-prepare, which must be able
+# to run on builds.kde.org, which may not have all the required dependencies.
+#
 
 def setup_logging():
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
@@ -58,7 +61,7 @@ def tolist(a):
 def serialize_name(name):
     """ Return a serialized name.
 
-    For now it only replaces ' ' with '_'
+    For now it only replaces ' ' with '_' and lower the letters.
     """
     if name is not None:
         return '_'.join(name.lower().split(' '))
@@ -76,14 +79,15 @@ def set_maintainers(maintainer_keys, all_maintainers):
     the maintainers are stored.
 
     Examples:
+        >>> maintainer_keys = ['arthur', 'toto']
 
-        maintainer_keys = ['arthur', 'toto']
-        myteam = [{'arthur': {'name': 'Arthur Pendragon',
-                              'email': 'arthur@example.com'},
-                   'toto': {'name': 'Toto',
-                            'email: 'toto123@example.com'}
-                    }]
-        set_maintainers(maintainer_keys, my_team)
+        >>> myteam = {'arthur': {'name': 'Arthur Pendragon',
+                                 'email': 'arthur@example.com'},
+                      'toto': {'name': 'Toto',
+                               'email: 'toto123@example.com'}
+                      }
+
+        >>> set_maintainers(maintainer_keys, my_team)
     """
 
     if not maintainer_keys:
@@ -153,7 +157,18 @@ def cache_dir():
 def svn_export(remote, local, overwrite=False):
     """Wraps svn export.
 
-    Raises an exception on failure.
+    Args:
+        remote:     (string) the remote url.
+        local:      (string) the local path where to dowload.
+        overwrite:  (bool) whether to overwrite `local` or not. (optional,
+    default = False)
+
+    Returns:
+        True if success.
+
+    Raises:
+        FileNotFoundError: &nbsp;
+        subprocess.CalledProcessError: &nbsp;
     """
     try:
         import svn.core
@@ -187,8 +202,9 @@ def svn_export(remote, local, overwrite=False):
 def copy_dir_contents(directory, dest):
     """Copy the contents of a directory
 
-    directory -- the directory to copy the contents of
-    dest      -- the directory to copy them into
+    Args:
+        directory: (string) the directory to copy the contents of.
+        dest: (string) the directory to copy them into.
     """
     ignored = ['CMakeLists.txt']
     ignore = shutil.ignore_patterns(*ignored)

@@ -28,10 +28,14 @@ import os.path
 import string
 from kapidox import utils
 
-
+## @package kapidox.models
+#
+# Contains the classes representing the objects used by kapidox
+#
 
 class Library(object):
-
+    """ Library
+    """
     def __init__(self, metainfo, products, platforms, all_maintainers):
 
         # If it does not belong to a product, no need to go further
@@ -102,6 +106,8 @@ class Library(object):
 
 
 class Product(object):
+    """ Product
+    """
     parent = None
     # if there is a group, the product is the group
     # else the product is directly the library
@@ -171,6 +177,8 @@ class Product(object):
             return None
 
 class Subproduct(object):
+    """ Subproduct
+    """
     def __init__(self, sginfo, product):
         self.fancyname = sginfo['name']
         self.name = utils.serialize_name(sginfo['name'])

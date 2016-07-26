@@ -40,8 +40,11 @@ class DoxyfileWriter(object):
     def write_entry(self, key, value):
         """Write an entry
 
-        key -- the key part of the entry
-        value -- the value part of the entry. Can be a string, a list, a tuple or a boolean"""
+        Args:
+            key: the key part of the entry
+            value: the value part of the entry. Can be a string, a list, a
+        tuple or a boolean
+        """
         if isinstance(value, (list, tuple)):
             txt = ' '.join([_quote(x) for x in value])
         elif isinstance(value, bool):

@@ -54,6 +54,11 @@ except ImportError:
 
 from .doxyfilewriter import DoxyfileWriter
 
+
+## @package kapidox.generator
+#
+# The generator
+
 __all__ = (
     "Context",
     "generate_apidocs",
@@ -88,6 +93,7 @@ class Context(object):
         'srcdir',
         'tagfiles',
         'dependency_diagram',
+        'copyright',
         # Output
         'outputdir',
         'htmldir',
@@ -211,21 +217,24 @@ def load_template(path):
 
 
 def find_tagfiles(docdir, doclink=None, flattenlinks=False, exclude=None, _depth=0):
-    """Find Doxygen-generated tag files in a directory
+    """Find Doxygen-generated tag files in a directory.
 
     The tag files must have the extention .tags, and must be in the listed
     directory, a subdirectory or a subdirectory named html of a subdirectory.
 
-    docdir       -- the directory to search
-    doclink      -- the path or URL to use when creating the documentation
-                    links; if None, this will default to docdir
-    flattenlinks -- if this is True, generated links will assume all the html
-                    files are directly under doclink; if False (the default),
-                    the html files are assumed to be at the same relative
-                    location to doclink as the tag file is to docdir; ignored
-                    if doclink is not set
+    Args:
+        docdir:       (string) the directory to search.
+        doclink:      (string) the path or URL to use when creating the
+                      documentation links; if None, this will default to
+                      docdir. (optional, default None)
+        flattenlinks: (bool) if True, generated links will assume all the html
+                      files are directly under doclink; else the html files are
+                      assumed to be at the same relative location to doclink as
+                      the tag file is to docdir; ignored if doclink is not set.
+                      (optional, default False)
 
-    Returns a list of pairs of (tag_file,link_path)
+    Returns:
+        A list of pairs of (tag_file,link_path).
     """
 
     if not os.path.isdir(docdir):
@@ -279,18 +288,20 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
 
     At least one of docdir or searchpaths must be given for it to find anything.
 
-    suggestion   -- the first place to look (will complain if there are no
-                    documentation tag files there)
-    doclink      -- the path or URL to use when creating the documentation
-                    links; if None, this will default to docdir
-    flattenlinks -- if this is True, generated links will assume all the html
-                    files are directly under doclink; if False (the default),
-                    the html files are assumed to be at the same relative
-                    location to doclink as the tag file is to docdir; ignored
-                    if doclink is not set
-    searchpaths  -- other places to look for documentation tag files
+    Args:
+        suggestion:   the first place to look (will complain if there are no
+                      documentation tag files there)
+        doclink:      the path or URL to use when creating the documentation
+                      links; if None, this will default to docdir
+        flattenlinks: if this is True, generated links will assume all the html
+                      files are directly under doclink; if False (the default),
+                      the html files are assumed to be at the same relative
+                      location to doclink as the tag file is to docdir; ignored
+                      if doclink is not set
+        searchpaths:  other places to look for documentation tag files
 
-    Returns a list of pairs of (tag_file,link_path)
+    Returns:
+        A list of pairs of (tag_file,link_path)
     """
 
     if not suggestion is None:
@@ -319,9 +330,12 @@ def menu_items(htmldir, modulename):
     Looks for a set of standard Doxygen files (like namespaces.html) and
     provides menu text for those it finds in htmldir.
 
-    htmldir -- the directory the HTML files are contained in
+    Args:
+        htmldir:    (string) the directory the HTML files are contained in.
+        modulname:  (string) the name of the library
 
-    Returns a list of maps with 'text' and 'href' keys
+    Returns:
+        A list of maps with 'text' and 'href' keys.
     """
     entries = [
             {'text': 'Main Page', 'href': 'index.html'},
@@ -351,20 +365,21 @@ def parse_dox_html(stream):
     The HTML files produced by Doxygen with our custom header and footer files
     look like this:
 
-        <!--
-        key1: value1
-        key2: value2
-        ...
-        -->
-        <html>
-        <head>
-        ...
-        </head>
-        <body>
-        ...
-        </body>
-        </html>
-
+    @code
+    <!--
+    key1: value1
+    key2: value2
+    ...
+    -->
+    <html>
+    <head>
+    ...
+    </head>
+    <body>
+    ...
+    </body>
+    </html>
+    @endcode
 
     The parser fills the dict from the top key/value block, and add the content
     of the body to the dict using the "content" key.
@@ -413,8 +428,10 @@ def postprocess_internal(htmldir, tmpl, mapping):
 
     Performs text substitutions on each line in each .html file in a directory.
 
-    htmldir -- the directory containing the .html files
-    mapping -- a dict of mappings
+    Args:
+        htmldir: (string) the directory containing the .html files.
+        mapping: (dict) a dict of mappings.
+
     """
     for name in os.listdir(htmldir):
         if name.endswith('.html'):
@@ -443,9 +460,11 @@ def postprocess_internal(htmldir, tmpl, mapping):
 def build_classmap(tagfile):
     """Parses a tagfile to get a map from classes to files
 
-    tagfile -- the Doxygen-generated tagfile to parse
+    Args:
+        tagfile: the Doxygen-generated tagfile to parse.
 
-    Returns a list of maps (keys: classname and filename)
+    Returns:
+        A list of maps (keys: classname and filename).
     """
     import xml.etree.ElementTree as ET
     tree = ET.parse(tagfile)
@@ -465,14 +484,19 @@ def write_mapping_to_php(mapping, outputfile, varname='map'):
     """Write a mapping out as PHP code
 
     Creates a PHP array as described by mapping.  For example, the mapping
-      [("foo","bar"),("x","y")]
+
+        [("foo","bar"),("x","y")]
+
     would cause the file
-      <?php $map = array('foo' => 'bar','x' => 'y') ?>
+
+        <?php $map = array('foo' => 'bar','x' => 'y') ?>
+
     to be written out.
 
-    mapping    -- a list of pairs of strings
-    outputfile -- the file to write to
-    varname    -- override the PHP variable name (defaults to 'map')
+    Args:
+        mapping:    a list of pairs of strings
+        outputfile: the file to write to
+        varname:    override the PHP variable name (defaults to 'map')
     """
     logging.info('Generating PHP mapping')
     with codecs.open(outputfile, 'w', 'utf-8') as f:
@@ -515,12 +539,6 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
             else:
                 pass  # We drop it
         return returnlist
-
-    # Paths and basic project info
-
-    # FIXME: preprocessing?
-    # What about providing the build directory? We could get the version
-    # as well, then.
 
     input_list = []
     if os.path.isfile(ctx.fwinfo.path + "/README.md"):
@@ -603,14 +621,12 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 
 
 def postprocess(ctx, classmap, template_mapping=None):
-    # TODO: copyright must be set from outside
-    copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     mapping = {
             'doxygencss': 'doxygen.css',
             'resources': ctx.resourcedir,
             'title': ctx.title,
             'fwinfo': ctx.fwinfo,
-            'copyright': copyright,
+            'copyright': ctx.copyright,
             'api_searchbox': ctx.api_searchbox,
             'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
             'class_map': {'classes': classmap},
@@ -667,7 +683,7 @@ def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
     return True
 
 
-def create_fw_context(args, lib, tagfiles):
+def create_fw_context(args, lib, tagfiles, copyright=''):
     return Context(args,
                    # Names
                    modulename=lib.name,
@@ -677,7 +693,7 @@ def create_fw_context(args, lib, tagfiles):
                    resourcedir=('../../resources' if lib.parent is None
                                 else '../../../resources'),
                    # Input
-                   #srcdir=lib['srcdir'],
+                   copyright=copyright,
                    tagfiles=tagfiles,
                    dependency_diagram=lib.dependency_diagram,
                    # Output

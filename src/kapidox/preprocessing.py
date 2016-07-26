@@ -32,7 +32,6 @@ from __future__ import (division, absolute_import, print_function,
 
 import logging
 import os
-import string
 
 try:
     from urllib2 import Request, urlopen, HTTPError
@@ -43,12 +42,11 @@ except:
 import yaml
 
 from kapidox import utils
-from kapidox.models import Library, Product, Subproduct
+from kapidox.models import Library, Product
 
 __all__ = (
     "create_metainfo",
-    "parse_tree",
-    "set_maintainers")
+    "parse_tree")
 
 
 PLATFORM_ALL = "All"
@@ -57,7 +55,7 @@ PLATFORM_UNKNOWN = "UNKNOWN"
 
 ## @package kapidox.preprocessing
 #
-# Preprocess the needed information.
+# Preprocessing of the needed information.
 #
 # The module allow to walk through folders, read metainfo files and create
 # products, subgroups and libraries representing the projects.
@@ -91,7 +89,7 @@ def create_metainfo(path):
     """Look for a `metadata.yaml` file and create a dictionary out it.
 
     Args:
-        path: (string) the current path to search;
+        path: (string) the current path to search.
     Returns:
         A dictionary containing all the parsed information, or `None` if it
     did not fullfill some conditions.
@@ -106,7 +104,8 @@ def create_metainfo(path):
 
     try:
         metainfo = yaml.load(open(metainfo_file))
-    except:
+    except Exception as e:
+        print(e)
         logging.warning('Could not load metainfo.yaml for {}, skipping it'
                         .format(path))
         return None
@@ -143,10 +142,10 @@ def parse_tree(rootdir):
     """Recursively call create_metainfo() in subdirs of rootdir
 
     Args:
-        rootdir: (string)  Top level directory containing the libraries
+        rootdir: (string)  Top level directory containing the libraries.
 
     Returns:
-        A list of metainfo dictionary (see create_metainfo())
+        A list of metainfo dictionary (see create_metainfo()).
 
     """
     metalist = []
@@ -166,6 +165,18 @@ def parse_tree(rootdir):
 
 
 def sort_metainfo(metalist, all_maintainers):
+    """Extract the structure (Product/Subproduct/Library) from the metainfo
+    list.
+
+    Args:
+        metalist: (list of dict) lists of the metainfo extracted in
+    parse_tree().
+        all_maintainers: (dict of dict)  all possible maintainers.
+
+    Returns:
+        A list of Products, a list of groups (which are products containing
+    several libraries), a list of Libraries and the available platforms.
+    """
     products = dict()
     groups = []
     libraries = []
@@ -204,6 +215,15 @@ def sort_metainfo(metalist, all_maintainers):
 
 
 def extract_product(metainfo, all_maintainers):
+    """Extract a product from a metainfo dictionary.
+
+    Args:
+        metainfo: (dict) metainfo created by the create_metainfo() function.
+        all_maintainer: (dict of dict) all possible maintainers
+
+    Returns:
+        A Product or None if the metainfo does not describe a product.
+    """
 
     if 'group_info' not in metainfo and 'group' in metainfo:
         # This is not a product but a simple lib
@@ -213,5 +233,6 @@ def extract_product(metainfo, all_maintainers):
         product = Product(metainfo, all_maintainers)
     except ValueError as e:
         logging.error(e)
+        product = None
     finally:
         return product

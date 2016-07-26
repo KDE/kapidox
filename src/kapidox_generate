@@ -37,6 +37,7 @@ import shutil
 import sys
 import tempfile
 import time
+import datetime
 
 if sys.version_info.major < 3:
     from urllib import urlretrieve
@@ -108,6 +109,7 @@ def download_kde_identities():
 
 
 def main():
+    kde_copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     utils.setup_logging()
     args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
 
@@ -168,7 +170,7 @@ def main():
             logging.info('# Rebuilding {} for interdependencies'
                          .format(lib.fancyname))
             shutil.rmtree(lib.outputdir)
-            ctx = generator.create_fw_context(args, lib, tagfiles)
+            ctx = generator.create_fw_context(args, lib, tagfiles, kde_copyright)
             generator.gen_fw_apidocs(ctx, tmp_dir)
             generator.finish_fw_apidocs(ctx, None)
         logging.info('# Done')
