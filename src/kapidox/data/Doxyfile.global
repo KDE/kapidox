@@ -117,7 +117,7 @@ EXCLUDE_SYMBOLS        = iterator const_iterator
 
 # Use doxyqml filter for qml files
 FILTER_PATTERNS        = *.qml=doxyqml
-
+EXTENSION_MAPPING      = qml=C++
 USE_MDFILE_AS_MAINPAGE = README.md
 
 #---------------------------------------------------------------------------
