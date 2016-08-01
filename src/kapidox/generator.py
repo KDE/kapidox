@@ -718,7 +718,7 @@ def finish_fw_apidocs(ctx, group_menu):
         'href': '../../index.html',
         'text': 'KDE API Reference'
         }]
-    if ctx.fwinfo.parent is not None:
+    if  ctx.fwinfo.part_of_group:
         entries[0]['href'] = '../' + entries[0]['href']
         entries.append({
             'href': '../../index.html',
