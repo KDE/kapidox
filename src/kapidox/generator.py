@@ -541,10 +541,10 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
         return returnlist
 
     input_list = []
-    if os.path.isfile(ctx.fwinfo.path + "/README.md"):
-        input_list.append(ctx.fwinfo.path + "/README.md")
     if os.path.isfile(ctx.fwinfo.path + "/Mainpage.dox"):
         input_list.append(ctx.fwinfo.path + "/Mainpage.dox")
+    elif os.path.isfile(ctx.fwinfo.path + "/README.md"):
+        input_list.append(ctx.fwinfo.path + "/README.md")
 
     input_list.extend(find_src_subdir(ctx.fwinfo.srcdirs))
     input_list.extend(find_src_subdir(ctx.fwinfo.docdir))
@@ -690,8 +690,8 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
                    fancyname=lib.fancyname,
                    fwinfo=lib,
                    # KApidox files
-                   resourcedir=('../../resources' if lib.parent is None
-                                else '../../../resources'),
+                   resourcedir=('../../../resources' if lib.part_of_group
+                                else '../../resources'),
                    # Input
                    copyright=copyright,
                    tagfiles=tagfiles,
