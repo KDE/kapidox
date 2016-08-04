@@ -10,7 +10,7 @@
   <p>{{ fwinfo.description }}</p>
 
   <dl>
-    <dt>Maintainer{% if fwinfo.maintainers|count != 0 %}s{% endif %}</dt>
+    <dt>Maintainer{% if fwinfo.maintainers|count > 1 %}s{% endif %}</dt>
       <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
 
 {#    <dt>Dependencies</dt>
@@ -36,8 +36,8 @@
       </dd>
 
     <dt>Community</dt>
-      <dd>IRC channel: #{{ fwinfo.irc }} on Freenode</dd>
-      <dd><a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">Mailing list</a></dd>
+      <dd>IRC channel: <a href="irc://freenode/#{{ fwinfo.irc }}">#{{ fwinfo.irc }}</a> on Freenode</dd>
+      <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">{{ fwinfo.mailinglist }}</a></dd>
 
 {% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
     <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
@@ -50,7 +50,9 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
       <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
 {% endif %}
 
-    <dt>Clone URL</dt>
-      <dd><pre class="fragment">git clone <a href="https://quickgit.kde.org/?p={{ fwinfo.name }}.git">git://anongit.kde.org/{{ fwinfo.name }}.git</a></pre></dd>
+    <dt>Clone</dt>
+      <dd><pre class="fragment">git clone git://anongit.kde.org/{{ fwinfo.name }}.git</pre></dd>
+    <dt>Browse source</dt>
+      <dd>{{ fwinfo.fancyname }} on <a href="https://quickgit.kde.org/?p={{ fwinfo.name }}.git">Quickgit</a></dd>
   </dl>
 </div>
