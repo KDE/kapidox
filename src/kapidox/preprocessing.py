@@ -126,7 +126,8 @@ def create_metainfo(path):
         logging.warning('Could not find fancy name for {}, skipping it'
                         .format(path))
         return None
-
+    # A fancyname has 1st char capitalized
+    fancyname = fancyname[0].capitalize() + fancyname[1:]
     metainfo.update({
         'fancyname': fancyname,
         'name': name,
