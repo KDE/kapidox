@@ -86,9 +86,8 @@ class Library(object):
         self.deprecated = metainfo.get('deprecated', False)
         self.libraries = metainfo.get('libraries', [])
         self.cmakename = metainfo.get('cmakename', '')
-        self.irc = self._extend_parent(metainfo, 'irc', 'irc', 'kde-devel')
-        self.mailinglist = self._extend_parent(metainfo, 'mailinglist',
-                                               'mailinglist', 'kde-devel')
+        self.irc = metainfo.get('irc', self.product.irc)
+        self.mailinglist = metainfo.get('mailinglist', self.product.mailinglist)
 
     def _extend_parent(self, metainfo, key, key_obj, default):
         if key in metainfo:
@@ -127,8 +126,8 @@ class Product(object):
             self.logo_url = self._set_logo()
             self.libraries = []  # We'll set this later
             self.subgroups = []  # We'll set this later
-            self.irc = metainfo['group_info'].get('irc')
-            self.mailinglist = metainfo['group_info'].get('mailinglist')
+            self.irc = metainfo['group_info'].get('irc', 'kde-devel')
+            self.mailinglist = metainfo['group_info'].get('mailinglist', 'kde-devel')
             self.subproducts = self._extract_subproducts(metainfo['group_info'])
 
         elif 'group' not in metainfo:
