@@ -102,17 +102,22 @@ ul.list-unstyled li:first-child {
     font-weight: bold;
 }
 
-dt a {
+.menu_box dl {
+    padding: 0 0 0 10px;
+}
+
+.menu_box dt a {
     font-weight: bold;
 }
 
-dt {
+.menu_box dt {
+    font-weight: bold;
     margin-top: 0.8em;
 }
-dt:first-child {
+.menu_box dt:first-child {
     margin-top: 0;
 }
-dd {
+.menu_box dd {
     margin-left: 1em;
     color: #323232;
 }
