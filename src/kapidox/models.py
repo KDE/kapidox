@@ -48,7 +48,7 @@ class Library(object):
         else:
             productname = metainfo['name']
             self.part_of_group = False
-        if productname not in products:
+        if utils.serialize_name(productname) not in products:
             productname = metainfo['name']
             del metainfo['group']
             products[metainfo['name']] = Product(metainfo, all_maintainers)
