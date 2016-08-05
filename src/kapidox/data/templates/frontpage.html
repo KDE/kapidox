@@ -40,7 +40,13 @@
                     <ul class="list-unstyled">
                       <li class=product-name><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></li>
                       <li>{{ product.description }}</li>
-                      <li class="prod-maintainers">{% include "maintainers.html" %}</li>
+                      <li class="prod-maintainers">
+                {% for maintainer in product.maintainers %}
+                        <a href="mailto:{{ maintainer.email }}">{{ maintainer.name }}</a>{% if not loop.last %},{% endif %}
+                {% else %}
+                        <a href="mailto:kde-devel@kde.org">The KDE Community</a>
+                {% endfor %}
+                      </li>
                     {% if product.platforms %}
                       <li class="prod-platforms">{{ product.platforms | join(' | ') }}</li>
                     {% endif %}
