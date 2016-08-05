@@ -48,9 +48,14 @@ class Library(object):
         else:
             productname = metainfo['name']
             self.part_of_group = False
+        if productname not in products:
+            productname = metainfo['name']
+            del metainfo['group']
+            products[metainfo['name']] = Product(metainfo, all_maintainers)
+            self.part_of_group = False
+            logging.warning("Group of {} not found: dropped.".format(metainfo['fancyname']))
         self.product = products[utils.serialize_name(productname)]
         if self.product is None:
-            print(self.part_of_group)
             raise ValueError("'{}' does not belong to a product."
                              .format(metainfo['name']))
 
