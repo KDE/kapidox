@@ -121,7 +121,11 @@ def create_metainfo(path):
         return None
 
     name = os.path.basename(path)
-    fancyname = utils.parse_fancyname(path)
+    if 'fancyname' in metainfo:
+        fancyname = metainfo['fancyname']
+    else:
+        fancyname = utils.parse_fancyname(path)
+
     if not fancyname:
         logging.warning('Could not find fancy name for {}, skipping it'
                         .format(path))
