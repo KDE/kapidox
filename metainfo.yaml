@@ -6,7 +6,6 @@ platforms:
     - name: Linux
     - name: Windows
     - name: MacOSX
-      note: Python is required
 portingAid: false
 deprecated: false
 release: true
