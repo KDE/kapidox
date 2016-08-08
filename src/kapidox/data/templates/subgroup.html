@@ -141,14 +141,15 @@
                   <input id="platform-filter" type="checkbox">Filter by platform
                 </label>
                 <ul id="platform-filter-group" style="display: none">
-                  <li>Only show frameworks which supports all of:</li>
-                  {% for platform in available_platforms %}
+                    <li><br><i>Only show frameworks which supports all of:</i></li>
+                  {% for platform in available_platforms | sort %}
                     <li>
                       <label>
                         <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
                       </label>
                     </li>
                   {% endfor %}
+                  <br />
                 </ul>
               </li>
               <li>

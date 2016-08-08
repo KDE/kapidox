@@ -24,7 +24,7 @@
 
     <dt>Supported platforms</dt>
       <dd>
-        {% for platform in fwinfo.platforms %}
+        {% for platform in fwinfo.platforms | sort %}
           {% if platform.name == "All" %}
             Linux, MacOS X, Windows
           {% elif platform.name == "UNKNOWN" %}

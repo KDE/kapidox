@@ -48,7 +48,7 @@
                 {% endfor %}
                       </li>
                     {% if product.platforms %}
-                      <li class="prod-platforms">{{ product.platforms | join(' | ') }}</li>
+                      <li class="prod-platforms">{{ product.platforms | sort | join(' | ') }}</li>
                     {% endif %}
                        <!--<li>?? avaliable versions vX.X | vY.Y</li> -->
                     </ul>
