@@ -78,6 +78,8 @@ def add_output_group(parser):
             help="Enable Doxygen's search engine feature.")
     group.add_argument('--api-searchbox', action='store_true',
             help="Enable the API searchbox.")
+    group.add_argument('--indexing', action='store_true',
+            help="Enable indexing.")
     return group
 
 

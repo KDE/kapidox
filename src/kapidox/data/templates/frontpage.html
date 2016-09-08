@@ -94,40 +94,4 @@
           </div>
         </div>
 
-        <div class="menu_box">
-
-{#          <div class="menutitle">
-            <div>
-              <h2>Filters</h2>
-            </div>
-          </div>
-          <div>
-            <ul>
-              <li>
-                <label>
-                  <input id="platform-filter" type="checkbox">Filter by platform
-                </label>
-                <ul id="platform-filter-group" style="display: none">
-                  <li>Only show frameworks which supports all of:</li>
-                  {% for platform in available_platforms %}
-                    <li>
-                      <label>
-                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
-                      </label>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </li>
-#}
-{#
-              <li>
-                <label>
-                  <input id="showMaintainers" type="checkbox">Show maintainers
-                </label>
-              </li>
-#}
-{#            </ul>
-          </div>
-        </div>
-#}
 {% endblock %} {# sidebar #}

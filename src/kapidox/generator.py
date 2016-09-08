@@ -45,6 +45,9 @@ if sys.version_info.major < 3:
 else:
     from urllib.parse import urljoin
 
+import xml.etree.ElementTree as xmlET
+import json
+
 from kapidox import utils
 try:
     from kapidox import depdiagram
@@ -602,8 +605,8 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 
         writer.write_entries(
                 GENERATE_MAN=ctx.man_pages,
-                GENERATE_QHP=ctx.qhp,
-                SEARCHENGINE=ctx.searchengine)
+                GENERATE_QHP=ctx.qhp)
+                #, SEARCHENGINE=ctx.searchengine)
 
         if doxyfile_entries:
             writer.write_entries(**doxyfile_entries)
@@ -765,3 +768,94 @@ def create_fw_tagfile_tuple(lib):
     else:
         prefix = '../../'
     return (tagfile, prefix + lib.outputdir + '/html/')
+
+
+import re
+
+def index_classes(lib, output):
+    regex = re.compile(r"^class([A-Z].*)(?<!-members)\.html$")
+
+    file_out = output + "classmap-" + lib.product.name + "-" + lib.name + ".inc"
+
+    with open(file_out, 'w') as f:
+        f.write("<?php\n")
+        f.write("$map = array(\n")
+
+        for htmlfile in os.listdir(lib.outputdir + '/html'):
+            match = regex.match(htmlfile)
+            if match is not None:
+                classname = match.group(1).lower()
+                f.write("  \"{}\" => \"{}\",\n".format(htmlfile, classname))
+        f.write("  \"index\" => \"{}/{}\"\n".format(lib.product.name, lib.name))
+        f.write(");\n")
+        f.write("?>\n")
+
+
+def index_namespaces(lib, output):
+    regex = re.compile(r"^namespace([A-Z].*)\.html$")
+
+    file_out = output + "/namespacemap-" + lib.product.name + "-" + lib.name + ".inc"
+
+    with open(file_out, 'w') as f:
+        f.write("<?php\n")
+        f.write("$map = array(\n")
+
+        for htmlfile in os.listdir(lib.outputdir + '/html'):
+            match = regex.match(htmlfile)
+            if match is not None:
+                classname = match.group(1).lower()
+                f.write("  \"{}\" => \"{}\",\n".format(htmlfile, classname))
+        f.write("  \"index\" => \"{}/{}\"\n".format(lib.product.name, lib.name))
+        f.write(");\n")
+
+
+def indexer(lib, output):
+        if not os.path.isdir(output):
+            os.mkdir(output)
+        index_namespaces(lib, output)
+        index_classes(lib, output)
+
+def indexer2(lib):
+    """ Create json index from xml
+    <add>
+      <doc>
+    <field name="type">source</field>
+    <field name="name">kcmodule.cpp</field>
+    <field name="url">kcmodule_8cpp_source.html#l00001</field>
+    <field name="keywords"></field>
+    <field name="text"></field>
+  </doc>
+  </add
+
+    """
+
+    doclist = []
+    lib.outputdir + '/searchdata.xml'
+    tree = xmlET.parse(lib.outputdir + '/searchdata.xml')
+    for doc_child in tree.getroot():
+        field = {}
+        for child in doc_child:
+            if child.attrib['name'] == "type":
+                if child.text == 'source':
+                    field = None
+                    break; # We go to next <doc>
+                field['type'] = child.text
+            elif child.attrib['name'] == "name":
+                field['name'] = child.text
+            elif child.attrib['name'] == "url":
+                field['url'] = child.text
+            elif child.attrib['name'] == "keywords":
+                field['keyword'] = child.text
+            elif child.attrib['name'] == "text":
+                field['text'] = child.text
+        if field is not None:
+            doclist.append(field)
+
+    indexdic = {
+        'name': lib.name,
+        'docfields': doclist
+        }
+
+    with open(lib.outputdir + '/searchdata.json','w') as f:
+        for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)

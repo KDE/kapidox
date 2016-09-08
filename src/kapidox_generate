@@ -160,9 +160,9 @@ def main():
                                       dot_files, tmp_dir)
                 if ok:
                     lib.dependency_diagram = png_path
-            ctx = generator.create_fw_context(args, lib, tagfiles)
-            generator.gen_fw_apidocs(ctx, tmp_dir)
-            tagfiles.append(generator.create_fw_tagfile_tuple(lib))
+#            ctx = generator.create_fw_context(args, lib, tagfiles)
+#            generator.gen_fw_apidocs(ctx, tmp_dir)
+#            tagfiles.append(generator.create_fw_tagfile_tuple(lib))
 
         # Rebuild for interdependencies
         # FIXME: can we be cleverer about deps?
@@ -173,6 +173,8 @@ def main():
             ctx = generator.create_fw_context(args, lib, tagfiles, kde_copyright)
             generator.gen_fw_apidocs(ctx, tmp_dir)
             generator.finish_fw_apidocs(ctx, None)
+            logging.info('# Generate maps')
+            generator.indexer2(lib)
         logging.info('# Done')
     finally:
         for product in products:
