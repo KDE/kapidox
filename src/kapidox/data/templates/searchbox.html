@@ -1,0 +1,15 @@
+<script>
+function searchfunction() {
+    $.getJSON("../searchdata.json", function(json) {
+    alert(json.toSource());
+        $.each(json.docfields, function(key, val) {
+            if (val.name.search(new RegExp(/recent/)) != -1) {
+                alert(val.text + '\n' + val.name);
+                return;
+            }
+        });
+    });
+}
+</script>
+
+<input type="search" name="searchfield" placeholder="Search here" style="width:90%;border:none;" /><button onclick=searchfunction() name="Search">>></button>

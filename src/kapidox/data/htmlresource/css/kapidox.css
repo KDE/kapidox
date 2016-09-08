@@ -1,0 +1,14 @@
+html {
+    margin: 0;
+}
+
+footer {
+    margin-top: 15px;
+    padding: 15px 0px 5px 0px;
+    margin-bottom: 0px;
+}
+
+.bg-primary {
+    background-color: blue;
+    color: white;
+}
