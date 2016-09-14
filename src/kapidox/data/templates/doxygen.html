@@ -59,7 +59,7 @@
   </div>
   <div class="nav_list">
     <form name="guideform">
-      <select name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
+      <select class="form-control" name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
         <option value="annotated.html">-- Choose --</option>
         {% for class in class_map.classes %}
         <option value="{{class.filename}}">{{class.classname}}</option>

@@ -756,6 +756,11 @@ def finish_fw_apidocs(ctx, group_menu):
     tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
     postprocess_internal(ctx.htmldir, tmpl, mapping)
 
+    tmpl2 = create_jinja_environment(ctx.doxdatadir).get_template('search.html')
+    search_output = ctx.fwinfo.outputdir + "/html/search.html"
+    with codecs.open(search_output, 'w', 'utf-8') as outf:
+        outf.write(tmpl2.render(mapping))
+
 
 def create_fw_tagfile_tuple(lib):
     tagfile = os.path.abspath(
@@ -830,7 +835,6 @@ def indexer2(lib):
     """
 
     doclist = []
-    lib.outputdir + '/searchdata.xml'
     tree = xmlET.parse(lib.outputdir + '/searchdata.xml')
     for doc_child in tree.getroot():
         field = {}
@@ -847,7 +851,7 @@ def indexer2(lib):
             elif child.attrib['name'] == "keywords":
                 field['keyword'] = child.text
             elif child.attrib['name'] == "text":
-                field['text'] = child.text
+                field['text'] = "" if child.text is None else child.text
         if field is not None:
             doclist.append(field)
 
@@ -856,6 +860,6 @@ def indexer2(lib):
         'docfields': doclist
         }
 
-    with open(lib.outputdir + '/searchdata.json','w') as f:
+    with open(lib.outputdir + '/html/searchdata.json','w') as f:
         for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)

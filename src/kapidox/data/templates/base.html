@@ -24,7 +24,7 @@
    {% if kapidox_version %}
     <meta name="generator" content="kapidox {{ kapidox_version }}" />
    {% endif %}
-    <script type="text/javascript" src="{{resources}}/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="{{resources}}/3rd-party/jquery-3.1.0.min.js"></script>
     <script type="text/javascript" src="dynsections.js"></script>
     <link rel="shortcut icon" href="{{resources}}/favicon.ico" />
     <link rel="icon" href="{{resources}}/favicon.ico" />
@@ -62,7 +62,7 @@
     <div class="container-fluid">
       <ol class="breadcrumb navbar-nav">
       {% for entry in breadcrumbs.entries %}
-        <li{% if loop.last %} class="active"{% endif %}><a href="{{entry.href}}">{{entry.text}}</a></li>
+        <li{% if loop.last %} class="active"{% endif %}><a href="{{ entry.href }}">{{ entry.text }}</a></li>
       {% endfor %}
       </ol>
 
@@ -84,14 +84,18 @@
       <div id="right" class="col-md-9">
         <div class="content">
           <div id="main">
-            <div class="input-group col-md-4 pull-right">
-              <input type="text" aria-label="Search input" class="form-control" placeholder="Search for...">
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default" aria-label="Search">
-                  t <span class="glyphicon glyphicon-search"></span>
-                </button>
-              </span>
-            </div>
+
+            <form action="search.html" method="get" class="form-inline">
+              <div id="search" class="input-group col-md-4 pull-right">
+                <input type="text" name="query" aria-label="Search input" class="form-control" placeholder="Search for...">
+                <span class="input-group-btn">
+                  <button type="submit" class="btn btn-default" aria-label="Search">
+                    <span class="glyphicon glyphicon-search"></span>
+                  </button>
+                </span>
+              </div>
+            </form>
+
             {% block content %}{% endblock %}
           </div>
         </div>

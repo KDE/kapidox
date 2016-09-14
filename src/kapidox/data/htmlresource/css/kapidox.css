@@ -12,3 +12,12 @@ footer {
     background-color: blue;
     color: white;
 }
+
+footer a {
+    font-weight: bold;
+    color: white;
+}
+
+footer a:hover {
+    color: white;
+}
