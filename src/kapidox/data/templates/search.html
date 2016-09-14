@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{title}}{% endblock %}
+{% block title %}{% endblock %}
+
+{% block head %}
+  <script type="text/javascript" src="{{resources}}/search.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script>
+  $( document ).ready( function() {
+    render_search();
+});
+  </script>
+{% endblock %}
+
+{% block content %}
+            <h2><a name="content"></a>{{title}}</h2>
+
+            <div class="header">
+              <div class="headertitle">
+                <div class="title">
+                  Search results
+                </div>
+              </div>
+            </div>
+
+            <div id="results" class="contents">
+
+
+            </div>
+
+{% endblock content %}
+
+{% block sidebar %}
+
+
+
+{% endblock %} {# sidebar #}
