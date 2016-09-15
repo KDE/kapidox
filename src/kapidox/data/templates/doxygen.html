@@ -7,15 +7,10 @@
 {% if classname %}
 <ul class="additional_info">
   <li><a href="http://lxr.kde.org/ident?v=kf5-qt5&amp;_i={{ classname }}">View on LXR</a></li>
-  <li><a href="#comments">Comments</a></li>
 </ul>
 {% endif %}
 
 {{ dox.content }}
-
-{% if classname %}
-  {% include "comments.html" %}
-{% endif %}
 
 <div class="copyrights">
   This file is part of the KDE documentation.<br/>
