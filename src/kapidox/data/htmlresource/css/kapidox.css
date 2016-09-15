@@ -13,7 +13,8 @@ html {
 }
 
 body {
-    background: #eee;
+    background: url("bg.png") repeat;
+    font-family: "Noto Sans",Verdana, Geneva, Arial, sans-serif;
 }
 
 #navbar .navbar-brand
