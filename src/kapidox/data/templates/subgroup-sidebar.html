@@ -1,0 +1,75 @@
+<div class="menu-box">
+    <div class="menu-title">
+    <h2>Table of Content</h2>
+    </div>
+    <div class="menu-content">
+    <ul>
+        <li>
+        <ul>
+            {% if group.libraries | selectattr('subproducts', 'none') | list | length > 0 %}
+            {% if group.subproduct | length > 0 %}
+            <li><a href="#sg-{{ nosubproduct }}">Without subgroup</a></li>
+            {% else  %}
+            <li><a href="#content">All</a></li>
+            {% endif %}
+            {% endif %}
+            {% for subproduct in group.subproducts | sort(attribute='order') %}
+            <li><a href="#sg-{{ subproduct.name }}">{{ subproduct.fancyname }}</a></li>
+            {% endfor %}
+        </ul>
+        </li>
+    </ul>
+    </div>
+</div>
+
+<div class="menu-box">
+    <div class="menu-title">
+    <h2>Filters</h2>
+    </div>
+    <div class="menu-content">
+    <ul>
+        <li>
+        <label>
+            <input id="platform-filter" type="checkbox"> Filter by platform
+        </label>
+        <ul id="platform-filter-group" style="display: none">
+            <li><br><i>Only show libraries which supports all of:</i></li>
+            {% for platform in available_platforms | sort %}
+            <li>
+                <label>
+                <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1"> {{ platform }}
+                </label>
+            </li>
+            {% endfor %}
+            <br />
+        </ul>
+        </li>
+        <li>
+        <label>
+            <input id="showMaintainers" type="checkbox"> Show maintainers
+        </label>
+        </li>
+    </ul>
+    </div>
+</div>
+
+<div class="menu-box">
+    <div class="menu-title">
+    <h2>About</h2>
+    </div>
+    <div class="menu-content">
+    <p>{{ group.description }}</p>
+
+    <dl>
+        <dt>Maintainer{% if group.maintainers|count > 1 %}s{% endif %}</dt>
+        <dd>{% set product = group %}{% include "maintainers.html" %}</dd>
+    {% if group.platforms %}
+        <dt>Supported platforms</dt>
+        <dd>{{ group.platforms | sort | join(', ') }}</dd>
+    {% endif %}
+        <dt>Community</dt>
+        <dd>IRC channel: <a href="irc://freenode/#{{ group.irc }}">#{{ group.irc }}</a> on Freenode</dd>
+        <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ group.mailinglist }}">{{ group.mailinglist }}</a></dd>
+    </dl>
+    </div>
+</div>
