@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 
+{% if fwinfo %}
+    {% set type = "library" %}
+{% elif group %}
+    {% set type = "group" %}
+{% elif product_list %} {# global search page #}
+    {% set type = "global" %}
+{% endif %}
+
 {% block page_title %}{{ title }} - Search results{% endblock %}
 
 {% block head %}
   <script type="text/javascript" src="{{resources}}/js/search.js"></script>
   <script>
   $( document ).ready( function() {
-    render_search();
+    render_search("{{ type }}")
 });
   </script>
 {% endblock %}
 
 {% block title %}
-    {{ fwinfo.fancyname }}
+    {% if type == "library" %}
+        {{ fwinfo.fancyname }}
+    {% elif type == "group" %}
+        {{ group.fancyname }}
+    {% elif type == "global" %}
+        {{ title }}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -21,9 +35,14 @@
             <div id="results" class="contents">
             </div>
 
-{% endblock content %}
+{% endblock %}
 
 {% block sidebar %}
-
-
-{% endblock %} {# sidebar #}
+    {% if type == "library" %}
+        {% include "library-sidebar.html" %}
+    {% elif type == "group" %}
+        {% include "subgroup-sidebar.html" %}
+    {% elif type == "global" %}
+        {% include "frontpage-sidebar.html" %}
+    {% endif %}
+{% endblock %}

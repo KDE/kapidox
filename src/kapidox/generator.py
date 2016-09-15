@@ -159,6 +159,11 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title,
     with codecs.open(outputfile, 'w', 'utf-8') as outf:
         outf.write(tmpl.render(mapping))
 
+    tmpl2 = create_jinja_environment(doxdatadir).get_template('search.html')
+    search_output = "search.html"
+    with codecs.open(search_output, 'w', 'utf-8') as outf:
+        outf.write(tmpl2.render(mapping))
+
 
 def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title,
                                 api_searchbox=False):
@@ -190,6 +195,11 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
         tmpl = create_jinja_environment(doxdatadir).get_template('subgroup.html')
         with codecs.open(outputfile, 'w', 'utf-8') as outf:
             outf.write(tmpl.render(mapping))
+
+        tmpl2 = create_jinja_environment(doxdatadir).get_template('search.html')
+        search_output = group.name + "/search.html"
+        with codecs.open(search_output, 'w', 'utf-8') as outf:
+            outf.write(tmpl2.render(mapping))
 
 
 def create_dirs(ctx):
@@ -712,10 +722,22 @@ def gen_fw_apidocs(ctx, tmp_base_dir):
                      doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
                      )
 
+def create_fw_tagfile_tuple(lib):
+    tagfile = os.path.abspath(
+                os.path.join(
+                    lib.outputdir,
+                    'html',
+                    lib.fancyname+'.tags'))
+    if lib.part_of_group:
+        prefix = '../../../'
+    else:
+        prefix = '../../'
+    return (tagfile, prefix + lib.outputdir + '/html/')
+
 
 def finish_fw_apidocs(ctx, group_menu):
     classmap = build_classmap(ctx.tagfile)
-    write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
+    #write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
 
     entries = [{
         'href': '../../index.html',
@@ -753,7 +775,7 @@ def finish_fw_apidocs(ctx, group_menu):
         mapping.update(template_mapping)
     logging.info('Postprocessing')
 
-    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('library.html')
     postprocess_internal(ctx.htmldir, tmpl, mapping)
 
     tmpl2 = create_jinja_environment(ctx.doxdatadir).get_template('search.html')
@@ -762,65 +784,7 @@ def finish_fw_apidocs(ctx, group_menu):
         outf.write(tmpl2.render(mapping))
 
 
-def create_fw_tagfile_tuple(lib):
-    tagfile = os.path.abspath(
-                os.path.join(
-                    lib.outputdir,
-                    'html',
-                    lib.fancyname+'.tags'))
-    if lib.part_of_group:
-        prefix = '../../../'
-    else:
-        prefix = '../../'
-    return (tagfile, prefix + lib.outputdir + '/html/')
-
-
-import re
-
-def index_classes(lib, output):
-    regex = re.compile(r"^class([A-Z].*)(?<!-members)\.html$")
-
-    file_out = output + "classmap-" + lib.product.name + "-" + lib.name + ".inc"
-
-    with open(file_out, 'w') as f:
-        f.write("<?php\n")
-        f.write("$map = array(\n")
-
-        for htmlfile in os.listdir(lib.outputdir + '/html'):
-            match = regex.match(htmlfile)
-            if match is not None:
-                classname = match.group(1).lower()
-                f.write("  \"{}\" => \"{}\",\n".format(htmlfile, classname))
-        f.write("  \"index\" => \"{}/{}\"\n".format(lib.product.name, lib.name))
-        f.write(");\n")
-        f.write("?>\n")
-
-
-def index_namespaces(lib, output):
-    regex = re.compile(r"^namespace([A-Z].*)\.html$")
-
-    file_out = output + "/namespacemap-" + lib.product.name + "-" + lib.name + ".inc"
-
-    with open(file_out, 'w') as f:
-        f.write("<?php\n")
-        f.write("$map = array(\n")
-
-        for htmlfile in os.listdir(lib.outputdir + '/html'):
-            match = regex.match(htmlfile)
-            if match is not None:
-                classname = match.group(1).lower()
-                f.write("  \"{}\" => \"{}\",\n".format(htmlfile, classname))
-        f.write("  \"index\" => \"{}/{}\"\n".format(lib.product.name, lib.name))
-        f.write(");\n")
-
-
-def indexer(lib, output):
-        if not os.path.isdir(output):
-            os.mkdir(output)
-        index_namespaces(lib, output)
-        index_classes(lib, output)
-
-def indexer2(lib):
+def indexer(lib):
     """ Create json index from xml
       <add>
         <doc>
@@ -859,6 +823,31 @@ def indexer2(lib):
         'docfields': doclist
         }
 
-    with open(lib.outputdir + '/html/searchdata.json','w') as f:
+    with open(lib.outputdir + '/html/searchdata.json', 'w') as f:
         for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)
+
+def create_product_index(product):
+    doclist = []
+    for lib in product.libraries:
+        with open(lib.outputdir+'/html/searchdata.json', 'r') as f:
+            doclist.append(json.load(f))
+
+    indexdic = {
+        'name': product.name,
+        'libraries': doclist
+        }
+
+    with open(product.outputdir + '/searchdata.json', 'w') as f:
+        for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)
+
+def create_global_index(products):
+    doclist = []
+    for product in products:
+        with open(product.outputdir+'/searchdata.json', 'r') as f:
+            doclist.append(json.load(f))
+
+    with open('searchdata.json', 'w') as f:
+        for chunk in json.JSONEncoder().iterencode(doclist):
             f.write(chunk)

@@ -11,7 +11,7 @@ function GetURLParameter(sParam)
     }
 }
 
-function do_search(json_path, query)
+function do_search(json_path, query, type)
 {
     var results = []
     $.ajax({
@@ -20,37 +20,53 @@ function do_search(json_path, query)
         error: function(data, status, err) {
             console.log(err)
         },
-        success: function(json) {
-
-            $.each(json.docfields, function(key, val) {
-                if (!('name' in val) || !('text' in val)) {
-                    return // like continue in $.each, don't ask, jQuery...
-                }
-
-                if (val.name.search(new RegExp(query, "i")) != -1 || val.text.search(new RegExp(query, "i")) != -1) {
-                    results.push(val)
-                }
-            });
-            fill_results(results)
+        success: function (json) {
+            search_json(type, json, query)
         }
     });
 }
 
-function fill_results(results)
+function search_json(type, json, query)
 {
-    $( '#results' ).append("<ul>")
-    $.each(results, function(key, result) {
-        $( '#results' ).append("\t<li><a href=\"" + result.url + "\">"+ result.name + "</a>: " + result.text + "</li>" + '\n')
-    });
-    $( '#results' ).append("</ul>\n")
-
+    result_html = ""
+    if (type == 'library') {
+        results_html = search_json_library(json, query)
+    } else if (type == 'group') {
+        results_html = search_json_group(json, query)
+    } else if (type == 'global') {
+        results_html = search_json_global(json, query)
+    }
+    $( '#results' ).append(results_html)
 }
 
-function render_search()
+function search_json_library(json, query)
 {
-    var query = GetURLParameter("query")
-    $( "#search-input" ).val(query)
-    $( "#search-title" ).append(" \"<i>" + query + "</i>\"")
-    var json_path =  "searchdata.json"
-    do_search(json_path, query)
+    var results = []
+    $.each(json.docfields, function(key, val) {
+        if (!('name' in val) || !('text' in val)) {
+            return // acts like continue in $.each, don't ask, it's jQuery...
+        }
+
+        if (val.name.search(new RegExp(query, "i")) != -1 || val.text.search(new RegExp(query, "i")) != -1) {
+            results.push(val)
+        }
+    });
+
+    var html_results = "<ul>\n"
+    $.each(results, function(key, result) {
+        html_results += "\t<li><a href=\"" + result.url + "\">"+ result.name + "</a>: " + result.text + "</li>" + '\n'
+    });
+    html_results += "</ul>\n"
+
+    return html_results
+}
+
+
+function render_search(type)
+{
+    var query = GetURLParameter("query");
+    $( "#search-input" ).val(query);
+    $( "#search-title" ).append(" <i>" + query + "</i>");
+    var json_path =  "searchdata.json";
+    do_search(json_path, query, type);
 }
