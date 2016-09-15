@@ -138,7 +138,7 @@ table.libraries {
     width: 100%;
     border-collapse: collapse;
 }
-table.libraries td, table.libraries th{
+table.libraries td, table.libraries th {
     border: solid 1px #0057ae;
 }
 
@@ -156,6 +156,7 @@ table.libraries th {
     color:white;
     font-size: 1.1em;
     line-height: 1.7em;
+    text-align: center;
 }
 
 .library-main-column {
