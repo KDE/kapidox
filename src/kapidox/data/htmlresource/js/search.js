@@ -43,11 +43,14 @@ function fill_results(results)
         $( '#results' ).append("\t<li><a href=\"" + result.url + "\">"+ result.name + "</a>: " + result.text + "</li>" + '\n')
     });
     $( '#results' ).append("</ul>\n")
+
 }
 
 function render_search()
 {
     var query = GetURLParameter("query")
+    $( "#search-input" ).val(query)
+    $( "#search-title" ).append(" \"<i>" + query + "</i>\"")
     var json_path =  "searchdata.json"
     do_search(json_path, query)
 }

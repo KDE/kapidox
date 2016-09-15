@@ -1,10 +1,8 @@
 {% extends "base.html" %}
 {% block page_title %}{{ dox.projectname }} - {{ dox.title }}{% endblock %}
-{% block title %} &ndash; {{ dox.title }} ({{ dox.projectname }}){% endblock %}
+{% block title %} {{ dox.projectname }} {% endblock %}
 
 {% block content %}
-
-<h2><a name="content"></a>{{ dox.projectname }}</h2>
 
 {% if classname %}
 <ul class="additional_info">
@@ -33,31 +31,29 @@
 {% endblock %}
 
 {% block sidebar %}
-<div class="menu_box">
+<div class="menu-box">
   <a name="cp-menu" />
-  <div class="menutitle">
-    <div>
-      <h2 id="cp-menu-project">{{ dox.projectname }}</h2>
-      <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{ dox.projectname }}"</a>
-    </div>
+  <div class="menu-title">
+    <h2 id="cp-menu-project">Quick Links</h2>
+    <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{ dox.projectname }}"</a>
   </div>
+  <div class="menu-content">
   {% if doxygen_menu %}
-  <ul>
+    <ul>
     {% for entry in doxygen_menu.entries %}
       <li><a href="{{entry.href}}">{{entry.text}}</a></li>
     {% endfor %}
-  </ul>
+    </ul>
   {% endif %}
+  </div>
 </div>
 
 {% if class_map %}
 <div class="menu_box">
-  <div class="menutitle">
-    <div>
-      <h2>Class Picker</h2>
-    </div>
+  <div class="menu-title">
+    <h2>Class Picker</h2>
   </div>
-  <div class="nav_list">
+  <div class="menu-content">
     <form name="guideform">
       <select class="form-control" name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
         <option value="annotated.html">-- Choose --</option>
@@ -75,15 +71,13 @@
 {% endif %}
 
 {% if group_menu %}
-<div class="menu_box">
+<div class="menu-box">
   <a name="cp-menu" />
-  <div class="menutitle">
-    <div>
+  <div class="menu-title">
       <h2 id="cp-menu-project">{{group_menu.group_title}}</h2>
       <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_menu.group_title}}"</a>
-    </div>
   </div>
-  <div class="nav_list">
+  <div class="menu-content">
     <ul>
       {% for section in group_menu.sections %}
         <li>{{section.title}}

@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 
-{% block page_title %}{{title}}{% endblock %}
-{% block title %}{% endblock %}
+{% block page_title %}{{ title }} - Search results{% endblock %}
 
 {% block head %}
-  <script type="text/javascript" src="{{resources}}/search.js"></script>
-  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script type="text/javascript" src="{{resources}}/js/search.js"></script>
   <script>
   $( document ).ready( function() {
     render_search();
@@ -13,26 +11,19 @@
   </script>
 {% endblock %}
 
-{% block content %}
-            <h2><a name="content"></a>{{title}}</h2>
+{% block title %}
+    {{ fwinfo.fancyname }}
+{% endblock %}
 
-            <div class="header">
-              <div class="headertitle">
-                <div class="title">
-                  Search results
-                </div>
-              </div>
-            </div>
+{% block content %}
+            <h2 id="search-title"><a name="content"></a>Search results:</h2>
 
             <div id="results" class="contents">
-
-
             </div>
 
 {% endblock content %}
 
 {% block sidebar %}
-
 
 
 {% endblock %} {# sidebar #}

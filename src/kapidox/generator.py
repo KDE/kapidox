@@ -822,16 +822,15 @@ def indexer(lib, output):
 
 def indexer2(lib):
     """ Create json index from xml
-    <add>
-      <doc>
-    <field name="type">source</field>
-    <field name="name">kcmodule.cpp</field>
-    <field name="url">kcmodule_8cpp_source.html#l00001</field>
-    <field name="keywords"></field>
-    <field name="text"></field>
-  </doc>
-  </add
-
+      <add>
+        <doc>
+          <field name="type">source</field>
+          <field name="name">kcmodule.cpp</field>
+          <field name="url">kcmodule_8cpp_source.html#l00001</field>
+          <field name="keywords"></field>
+          <field name="text"></field>
+        </doc>
+      </add
     """
 
     doclist = []
