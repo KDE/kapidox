@@ -230,6 +230,10 @@ table.libraries th {
     color: red;
 }
 
+.warning-tooltip {
+    width: 15px;
+}
+
 /* Platform note -------------------------------------*/
 .note-tip {
     display: none;
