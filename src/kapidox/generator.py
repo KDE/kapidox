@@ -697,6 +697,15 @@ def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
 
 
 def create_fw_context(args, lib, tagfiles, copyright=''):
+
+    # There is one more level for groups
+    if lib.part_of_group:
+        corrected_tagfiles = []
+        for k in range(len(tagfiles)):
+            corrected_tagfiles.append((tagfiles[k][0], '../' + tagfiles[k][1]))
+    else:
+        corrected_tagfiles = tagfiles
+
     return Context(args,
                    # Names
                    modulename=lib.name,
@@ -707,7 +716,7 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
                                 else '../../resources'),
                    # Input
                    copyright=copyright,
-                   tagfiles=tagfiles,
+                   tagfiles=corrected_tagfiles,
                    dependency_diagram=lib.dependency_diagram,
                    # Output
                    outputdir=lib.outputdir,
@@ -729,7 +738,7 @@ def create_fw_tagfile_tuple(lib):
                     'html',
                     lib.fancyname+'.tags'))
     if lib.part_of_group:
-        prefix = '../../../'
+        prefix = '../../'
     else:
         prefix = '../../'
     return (tagfile, prefix + lib.outputdir + '/html/')
