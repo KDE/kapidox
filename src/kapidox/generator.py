@@ -45,6 +45,9 @@ if sys.version_info.major < 3:
 else:
     from urllib.parse import urljoin
 
+import xml.etree.ElementTree as xmlET
+import json
+
 from kapidox import utils
 try:
     from kapidox import depdiagram
@@ -156,6 +159,11 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title,
     with codecs.open(outputfile, 'w', 'utf-8') as outf:
         outf.write(tmpl.render(mapping))
 
+    tmpl2 = create_jinja_environment(doxdatadir).get_template('search.html')
+    search_output = "search.html"
+    with codecs.open(search_output, 'w', 'utf-8') as outf:
+        outf.write(tmpl2.render(mapping))
+
 
 def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title,
                                 api_searchbox=False):
@@ -187,6 +195,11 @@ def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platfo
         tmpl = create_jinja_environment(doxdatadir).get_template('subgroup.html')
         with codecs.open(outputfile, 'w', 'utf-8') as outf:
             outf.write(tmpl.render(mapping))
+
+        tmpl2 = create_jinja_environment(doxdatadir).get_template('search.html')
+        search_output = group.name + "/search.html"
+        with codecs.open(search_output, 'w', 'utf-8') as outf:
+            outf.write(tmpl2.render(mapping))
 
 
 def create_dirs(ctx):
@@ -602,8 +615,8 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
 
         writer.write_entries(
                 GENERATE_MAN=ctx.man_pages,
-                GENERATE_QHP=ctx.qhp,
-                SEARCHENGINE=ctx.searchengine)
+                GENERATE_QHP=ctx.qhp)
+                #, SEARCHENGINE=ctx.searchengine)
 
         if doxyfile_entries:
             writer.write_entries(**doxyfile_entries)
@@ -709,10 +722,22 @@ def gen_fw_apidocs(ctx, tmp_base_dir):
                      doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
                      )
 
+def create_fw_tagfile_tuple(lib):
+    tagfile = os.path.abspath(
+                os.path.join(
+                    lib.outputdir,
+                    'html',
+                    lib.fancyname+'.tags'))
+    if lib.part_of_group:
+        prefix = '../../../'
+    else:
+        prefix = '../../'
+    return (tagfile, prefix + lib.outputdir + '/html/')
+
 
 def finish_fw_apidocs(ctx, group_menu):
     classmap = build_classmap(ctx.tagfile)
-    write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
+    #write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
 
     entries = [{
         'href': '../../index.html',
@@ -750,18 +775,91 @@ def finish_fw_apidocs(ctx, group_menu):
         mapping.update(template_mapping)
     logging.info('Postprocessing')
 
-    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('library.html')
     postprocess_internal(ctx.htmldir, tmpl, mapping)
 
+    tmpl2 = create_jinja_environment(ctx.doxdatadir).get_template('search.html')
+    search_output = ctx.fwinfo.outputdir + "/html/search.html"
+    with codecs.open(search_output, 'w', 'utf-8') as outf:
+        outf.write(tmpl2.render(mapping))
 
-def create_fw_tagfile_tuple(lib):
-    tagfile = os.path.abspath(
-                os.path.join(
-                    lib.outputdir,
-                    'html',
-                    lib.fancyname+'.tags'))
-    if lib.part_of_group:
-        prefix = '../../../'
-    else:
-        prefix = '../../'
-    return (tagfile, prefix + lib.outputdir + '/html/')
+
+def indexer(lib):
+    """ Create json index from xml
+      <add>
+        <doc>
+          <field name="type">source</field>
+          <field name="name">kcmodule.cpp</field>
+          <field name="url">kcmodule_8cpp_source.html#l00001</field>
+          <field name="keywords"></field>
+          <field name="text"></field>
+        </doc>
+      </add
+    """
+
+    doclist = []
+    tree = xmlET.parse(lib.outputdir + '/searchdata.xml')
+    for doc_child in tree.getroot():
+        field = {}
+        for child in doc_child:
+            if child.attrib['name'] == "type":
+                if child.text == 'source':
+                    field = None
+                    break; # We go to next <doc>
+                field['type'] = child.text
+            elif child.attrib['name'] == "name":
+                field['name'] = child.text
+            elif child.attrib['name'] == "url":
+                field['url'] = child.text
+            elif child.attrib['name'] == "keywords":
+                field['keyword'] = child.text
+            elif child.attrib['name'] == "text":
+                field['text'] = "" if child.text is None else child.text
+        if field is not None:
+            doclist.append(field)
+
+    indexdic = {
+        'name': lib.name,
+        'fancyname': lib.fancyname,
+        'docfields': doclist
+        }
+
+    with open(lib.outputdir + '/html/searchdata.json', 'w') as f:
+        for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)
+
+def create_product_index(product):
+    doclist = []
+    for lib in product.libraries:
+        with open(lib.outputdir+'/html/searchdata.json', 'r') as f:
+            libindex = json.load(f)
+            for item in libindex['docfields']:
+                item['url'] = lib.name + '/html/' + item['url']
+            doclist.append(libindex)
+
+    indexdic = {
+        'name': product.name,
+        'fancyname': product.fancyname,
+        'libraries': doclist
+        }
+
+    with open(product.outputdir + '/searchdata.json', 'w') as f:
+        for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)
+
+def create_global_index(products):
+    doclist = []
+    for product in products:
+        with open(product.outputdir+'/searchdata.json', 'r') as f:
+            prodindex = json.load(f)
+            for proditem in prodindex['libraries']:
+                for item in proditem['docfields']:
+                    item['url'] = product.name + '/' + item['url']
+            doclist.append(prodindex)
+
+    indexdic = {
+        'all': doclist
+        }
+    with open('searchdata.json', 'w') as f:
+        for chunk in json.JSONEncoder().iterencode(indexdic):
+            f.write(chunk)

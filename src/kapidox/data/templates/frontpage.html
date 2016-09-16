@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block page_title %}{{title}}{% endblock %}
-{% block title %}{% endblock %}
 
 {% block head %}
   <script type="text/javascript" src="{{resources}}/notetip.js"></script>
@@ -12,122 +11,61 @@
   </script>
 {% endblock %}
 
-{% block content %}
-            <h2><a name="content"></a>{{title}}</h2>
+{% block title %}
+    The KDE products
+{% endblock %}
 
-            <div class="header">
-              <div class="headertitle">
-                <div class="title">
-                  KDE API Reference
-                </div>
-              </div>
-            </div>
-            <div class="contents">
-              <h2>The KDE products</h2>
+{% block content %}
               <div class="textblock">
                 {% for para in intro %}
                   <p>{{ para }}</p>
                 {% endfor %}
               </div>
-              <h2>List of our products</h2>
-                <table class="products">
+              <h3>List of our products</h3>
+
               {% for product in product_list | sort(attribute='name')%}
-                <tr class="product">
-                  <td class="product-logo">
-                    <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}" width="80px" />
-                  </td>
-                  <td class="product-descr">
-                    <ul class="list-unstyled">
-                      <li class=product-name><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></li>
-                      <li>{{ product.description }}</li>
-                      <li class="prod-maintainers">
-                {% for maintainer in product.maintainers %}
-                        <a href="mailto:{{ maintainer.email }}">{{ maintainer.name }}</a>{% if not loop.last %},{% endif %}
-                {% else %}
-                        <a href="mailto:kde-devel@kde.org">The KDE Community</a>
-                {% endfor %}
-                      </li>
-                    {% if product.platforms %}
-                      <li class="prod-platforms">{{ product.platforms | sort | join(' | ') }}</li>
-                    {% endif %}
-                       <!--<li>?? avaliable versions vX.X | vY.Y</li> -->
-                    </ul>
-                  </td>
-                </tr>
+                <div class="row">
+                  <div class="col-md-9">
+                    <div class="product-row">
+                      <div class="row">
+
+                        <div class="col-md-2 product-logo">
+                          <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}" width="80px" />
+                        </div>
+
+                        <div class="col-md-10 product-descr">
+                          <ul class="list-unstyled">
+                            <li class=product-name><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></li>
+                            <li>{{ product.description }}</li>
+                            <li class="prod-maintainers"><b>Maintainer{% if product.maintainers | length > 1 %}s{% endif %}:</b>
+                          {% for maintainer in product.maintainers %}
+                              <a href="mailto:{{ maintainer.email }}">{{ maintainer.name }}</a>{% if not loop.last %},{% endif %}
+                          {% else %}
+                              <a href="mailto:kde-devel@kde.org">The KDE Community</a>
+                          {% endfor %}
+                            </li>
+                          {% if product.platforms %}
+                            <li class="prod-platforms"><b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b>
+                            {{ product.platforms | sort | join(' | ') }}</li>
+                          {% endif %}
+                          {% if qch or man %}
+                            <li class="prod-download">
+                            {% if qch %} <a href="{{ product.href }}/{{product.name}}.qch">QCH</a>{% endif %}
+                            {% if man %} <a href="{{ product.href }}/{{product.name}}.man">QCH</a>{% endif %}
+                            </li>
+                          {% endif %}
+
+                          <!--<li>?? avaliable versions vX.X | vY.Y</li> -->
+                          </ul>
+                        </div> <!-- product-descr -->
+                      </div> <!-- row -->
+                    </div> <!-- product-row -->
+                  </div>
+                </div> <!-- row -->
               {% endfor %}
-              </table>
-              </div>
 
 {% endblock content %}
 
 {% block sidebar %}
-
-        <div class="menu_box">
-          <div class="menutitle">
-            <div>
-              <h2>KDE Products for developers</h2>
-            </div>
-          </div>
-          <ul>
-            <li>Description of what you can find here</li>
-            <li> &nbsp; </li>
-            <li>If you are looking for documentation about KDE software or how to use Plasma, please refer to our <a href="https://userbase.kde.org">userbase website</a>.</li>
-          </ul>
-        </div>
-        <div class="menu_box">
-          <div class="menutitle"><div><h2>Other KDE Products</h2></div></div>
-          <div style="text-align: left;">
-            <ul>
-              <li><a href="http://api.kde.org/other.php">Other KDE Software</a></li>
-              <li><a href="http://api.kde.org/ecm/">Extra CMake Modules</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="menu_box">
-          <div class="menutitle"><div><h2>Deprecated Products</h2></div></div>
-          <div style="text-align: left;">
-            <ul>
-              <li><a href="http://api.kde.org/cmake/modules.html">KDE CMake Modules</a></li>
-              <li><a href="http://api.kde.org/history4.php">KDE4 Versions</a></li>
-              <li><a href="http://api.kde.org/history.php">KDE3 and older versions</a></li>
-            <ul>
-          </div>
-        </div>
-
-        <div class="menu_box">
-
-{#          <div class="menutitle">
-            <div>
-              <h2>Filters</h2>
-            </div>
-          </div>
-          <div>
-            <ul>
-              <li>
-                <label>
-                  <input id="platform-filter" type="checkbox">Filter by platform
-                </label>
-                <ul id="platform-filter-group" style="display: none">
-                  <li>Only show frameworks which supports all of:</li>
-                  {% for platform in available_platforms %}
-                    <li>
-                      <label>
-                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
-                      </label>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </li>
-#}
-{#
-              <li>
-                <label>
-                  <input id="showMaintainers" type="checkbox">Show maintainers
-                </label>
-              </li>
-#}
-{#            </ul>
-          </div>
-        </div>
-#}
-{% endblock %} {# sidebar #}
+    {% include "frontpage-sidebar.html" %}
+{% endblock %}

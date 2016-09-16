@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block page_title %}{{ dox.projectname }} - {{ dox.title }}{% endblock %}
+{% block title %} {{ dox.projectname }} {% endblock %}
+
+{% block content %}
+
+{% if classname %}
+<ul class="additional_info">
+  <li><a href="http://lxr.kde.org/ident?v=kf5-qt5&amp;_i={{ classname }}">View on LXR</a></li>
+</ul>
+{% endif %}
+
+{{ dox.content }}
+
+<div class="copyrights">
+  This file is part of the KDE documentation.<br/>
+  Documentation copyright &copy; {{copyright}}.<br/>
+  Generated on {{ dox.datetime }} by
+  <a href="http://www.doxygen.org/">doxygen</a> {{ dox.doxygenversion }} written
+  by <a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>, &copy;&nbsp;1997-2006
+  <p>
+  KDE's <a href="http://community.kde.org/Policies/Library_Documentation_Policy">Doxygen guidelines</a> are available online.
+  </p>
+</div>
+
+{% endblock %}
+
+{% block sidebar %}
+    {% include "library-sidebar.html" %}
+{% endblock %} {# sidebar #}

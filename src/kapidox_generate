@@ -165,7 +165,6 @@ def main():
             tagfiles.append(generator.create_fw_tagfile_tuple(lib))
 
         # Rebuild for interdependencies
-        # FIXME: can we be cleverer about deps?
         for lib in libraries:
             logging.info('# Rebuilding {} for interdependencies'
                          .format(lib.fancyname))
@@ -173,15 +172,18 @@ def main():
             ctx = generator.create_fw_context(args, lib, tagfiles, kde_copyright)
             generator.gen_fw_apidocs(ctx, tmp_dir)
             generator.finish_fw_apidocs(ctx, None)
+            logging.info('# Generate indexing files')
+            generator.indexer(lib)
         logging.info('# Done')
-    finally:
         for product in products:
+            generator.create_product_index(product)
             if product.logo_url is not None:
                 logodir = os.path.dirname(product.logo_url)
                 if not os.path.isdir(logodir):
                     os.mkdir(logodir)
                 shutil.copy(product.logo_url_src, product.logo_url)
-
+        generator.create_global_index(products)
+    finally:
         if args.keep_temp_dirs:
             logging.info('Kept temp dir at {}'.format(tmp_dir))
         else:

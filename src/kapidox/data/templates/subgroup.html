@@ -11,40 +11,40 @@
 {% endmacro %}
 
 {% macro write_library_list(libs) %}
-  <table class="doxtable frameworks">
+  <table class="doxtable libraries">
     <tr>
-      <th class="framework-main-column">Framework</th>
-      <th class="framework-detail-column framework-maintainer-column">Maintainer</th>
-      <th class="framework-detail-column framework-type-column">Type</th>
+      <th class="library-main-column">Framework</th>
+      <th class="library-detail-column library-maintainer-column">Maintainer</th>
+      <th class="library-detail-column library-type-column">Type</th>
     </tr>
   {% for lib in libs | sort(attribute='fancyname')%}
-    <tr class="framework-row" id="lib-{{ lib.name }}" data-platforms="{{ lib.platforms|join(',') }}">
-      <td class="framework-main-column">
-        <img class="not-available-indicator" src="{{resources}}/icons/bad.png"/>
-        <img class="available-indicator" src="{{resources}}/icons/ok.png"/>
+    <tr class="library-row" id="lib-{{ lib.name }}" data-platforms="{{ lib.platforms|join(',') }}">
+      <td class="library-main-column">
+        <img class="indicator not-available-indicator" src="{{resources}}/icons/bad.png"/>
+        <img class="indicator available-indicator" src="{{resources}}/icons/ok.png"/>
         <div>
-          <div class="framework-platforms">
+          <div class="library-platforms">
           {% for platform in available_platforms %}
-            <span class="framework-platform
-              framework-platform-{{ platform }}
-              {% if platform not in lib.platforms %}framework-platform-unsupported{% endif %}"
+            <span class="library-platform
+              library-platform-{{ platform }}
+              {% if platform not in lib.platforms %}library-platform-unsupported{% endif %}"
               >
             {% if lib.platforms.get(platform) %}
               <a data-note="{{ lib.platforms.get(platform) }}" href="#">
             {% endif %}
-                <span class="framework-platform-text">{{ platform }}</span>
+                <span class="library-platform-text">{{ platform }}</span>
             {% if lib.platforms.get(platform) %}
-                <img src="{{resources}}/icons/warning.png"/></a>
+                <img class="warning-tooltip" src="{{resources}}/icons/warning.png"/></a>
             {% endif %}
             </span>
           {% endfor %}
           </div>
-          <a class="framework-fancyname" href="{{lib.href}}">{{lib.fancyname}}</a>
+          <a class="library-fancyname" href="{{lib.href}}">{{lib.fancyname}}</a>
         </div>
-        <span class="framework-description">{{lib.description}}</span>
+        <span class="library-description">{{lib.description}}</span>
       </td>
-      <td class="framework-detail-column framework-maintainer-column">{% set product = lib %}{% include "maintainers.html" %}</td>
-      <td class="framework-detail-column framework-type-column">{{ lib.type }}</td>
+      <td class="library-detail-column library-maintainer-column">{% set product = lib %}{% include "maintainers.html" %}</td>
+      <td class="library-detail-column library-type-column">{{ lib.type }}</td>
       </td>
     </tr>
   {% endfor %}
@@ -52,29 +52,21 @@
 {% endmacro %}
 
 {% block page_title %}{{ title }}{% endblock %}
-{% block title %} &ndash; {{ group.fancyname }}{% endblock %}
 
 {% block head %}
-  <script type="text/javascript" src="{{resources}}/notetip.js"></script>
-  <script type="text/javascript" src="{{resources}}/frameworks.js"></script>
-  <link rel="stylesheet" type="text/css" href="{{resources}}/frameworks.css" />
+  <script type="text/javascript" src="{{resources}}/js/notetip.js"></script>
+  <script type="text/javascript" src="{{resources}}/js/subgroup.js"></script>
   <script>
   $(document).ready(main);
   </script>
 {% endblock %}
 
-{% block content %}
-            <h2><a name="content"></a>{{title}}</h2>
+{% block title %}
+    {{ group.fancyname }}
+{% endblock %}
 
-            <div class="header">
-              <div class="headertitle">
-                <div class="title">
-                  KDE API Reference
-                </div>
-              </div>
-            </div>
+{% block content %}
             <div class="contents">
-              <h1>{{ group.fancyname}}</h1>
               <div class="textblock">
                 {% for paragraph in group.long_description %}
                     <p>{{ paragraph }}</p>
@@ -101,86 +93,5 @@
 {% endblock content %}
 
 {% block sidebar %}
-
-        <div class="menu_box">
-          <div class="menutitle">
-            <div>
-              <h2>Table of Content</h2>
-            </div>
-          </div>
-          <div class="nav_list">
-            <ul>
-              <li>
-                <ul>
-                  {% if group.libraries | selectattr('subproducts', 'none') | list | length > 0 %}
-                    {% if group.subproduct | length > 0 %}
-                    <li><a href="#sg-{{ nosubproduct }}">Without subgroup</a></li>
-                    {% else  %}
-                    <li><a href="#content">All</a></li>
-                    {% endif %}
-                  {% endif %}
-                  {% for subproduct in group.subproducts | sort(attribute='order') %}
-                    <li><a href="#sg-{{ subproduct.name }}">{{ subproduct.fancyname }}</a></li>
-                  {% endfor %}
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="menu_box">
-          <div class="menutitle">
-            <div>
-              <h2>Filters</h2>
-            </div>
-          </div>
-          <div>
-            <ul>
-              <li>
-                <label>
-                  <input id="platform-filter" type="checkbox">Filter by platform
-                </label>
-                <ul id="platform-filter-group" style="display: none">
-                    <li><br><i>Only show frameworks which supports all of:</i></li>
-                  {% for platform in available_platforms | sort %}
-                    <li>
-                      <label>
-                        <input data-platform="{{ platform }}" class="platform-checkbox" type="checkbox" checked="1">{{ platform }}
-                      </label>
-                    </li>
-                  {% endfor %}
-                  <br />
-                </ul>
-              </li>
-              <li>
-                <label>
-                  <input id="showMaintainers" type="checkbox">Show maintainers
-                </label>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="menu_box">
-          <div class="menutitle">
-            <div>
-              <h2>About</h2>
-            </div>
-          </div>
-
-          <p>{{ group.description }}</p>
-
-          <dl>
-            <dt>Maintainer{% if group.maintainers|count > 1 %}s{% endif %}</dt>
-            <dd>{% set product = group %}{% include "maintainers.html" %}</dd>
-          {% if group.platforms %}
-            <dt>Supported platforms</dt>
-            <dd>{{ group.platforms | sort | join(', ') }}</dd>
-          {% endif %}
-            <dt>Community</dt>
-            <dd>IRC channel: <a href="irc://freenode/#{{ group.irc }}">#{{ group.irc }}</a> on Freenode</dd>
-            <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ group.mailinglist }}">{{ group.mailinglist }}</a></dd>
-          </dl>
-        </div>
-
-{% endblock %} {# sidebar #}
+    {% include "subgroup-sidebar.html" %}
+{% endblock %}

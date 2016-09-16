@@ -38,7 +38,6 @@ class Library(object):
     """
     def __init__(self, metainfo, products, platforms, all_maintainers):
 
-        # If it does not belong to a product, no need to go further
         self.product = None
         self.subproduct = None
 
@@ -59,7 +58,7 @@ class Library(object):
             raise ValueError("'{}' does not belong to a product."
                              .format(metainfo['name']))
 
-        if 'subgroup' in metainfo:
+        if 'subgroup' in metainfo and self.part_of_group:
             for sp in self.product.subproducts:
                 if sp.name == utils.serialize_name(metainfo['subgroup']):
                     self.subproduct = sp
@@ -121,7 +120,7 @@ class Product(object):
             self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(metainfo['group']))
             self.description = metainfo['group_info'].get('description')
             self.long_description = metainfo['group_info'].get('long_description', [])
-            self.maintainers = utils.set_maintainers(metainfo['group_info']['maintainer'],
+            self.maintainers = utils.set_maintainers(metainfo['group_info'].get('maintainer'),
                                                      all_maintainers)
             self.platforms = metainfo['group_info'].get('platforms')
             self.outputdir = self.name

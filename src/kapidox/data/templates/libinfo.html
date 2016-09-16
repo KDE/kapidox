@@ -1,58 +1,54 @@
-<div class="menu_box">
-  <div class="menutitle">
-    <div>
-      <h2>About</h2>
-    </div>
+<div class="menu-box">
+  <div class="menu-title">
+    <h2>About</h2>
   </div>
-  {% if fwinfo.inqlude %}
-  <p style="text-align: center"><a style="font-weight: bold;" href="http://inqlude.org/libraries/{{ fwinfo.fancyname|lower }}.html">Download on <span style="color: black;">#In<span style="color: #80C342;">q</span>lude</span></a></p>
-  {% endif %}
-  <p>{{ fwinfo.description }}</p>
+  <div class="menu-content">
+    <p>{{ fwinfo.description }}</p>
 
-  <dl>
-    <dt>Maintainer{% if fwinfo.maintainers|count > 1 %}s{% endif %}</dt>
-      <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
+    <dl>
+      <dt>Maintainer{% if fwinfo.maintainers|count > 1 %}s{% endif %}</dt>
+        <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
 
-{#    <dt>Dependencies</dt>
+  {#    <dt>Dependencies</dt>
       {% if fwinfo.tier >= 2 %}
-      <dd><a href="http://qt-project.org/">Qt 5</a></dd>
-      <dd><a href="http://api.kde.org/frameworks-api/frameworks5-apidocs/#fw-tier{{ fwinfo.tier - 1 }}">Other frameworks</a></dd>
+        <dd><a href="http://qt-project.org/">Qt 5</a></dd>
+        <dd><a href="http://api.kde.org/frameworks-api/frameworks5-apidocs/#fw-tier{{ fwinfo.tier - 1 }}">Other frameworks</a></dd>
       {% else %}
-      <dd><a href="http://qt-project.org/">Qt 5</a>, no other framework required</dd>
+        <dd><a href="http://qt-project.org/">Qt 5</a>, no other framework required</dd>
       {% endif %}
 #}
 
-    <dt>Supported platforms</dt>
-      <dd>
-        {% for platform in fwinfo.platforms | sort %}
-          {% if platform.name == "All" %}
-            Linux, MacOS X, Windows
-          {% elif platform.name == "UNKNOWN" %}
+      <dt>Supported platforms</dt>
+        <dd>
+      {% for platform in fwinfo.platforms | sort %}
+        {% if platform.name == "UNKNOWN" %}
             All the platforms supported by Qt
-          {% else %}
+        {% else %}
             {{ platform }}{% if not loop.last %}, {% endif %}
-          {% endif %}
-        {% endfor %}
-      </dd>
+        {% endif %}
+      {% endfor %}
+         </dd>
 
-    <dt>Community</dt>
-      <dd>IRC channel: <a href="irc://freenode/#{{ fwinfo.irc }}">#{{ fwinfo.irc }}</a> on Freenode</dd>
-      <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">{{ fwinfo.mailinglist }}</a></dd>
+      <dt>Community</dt>
+        <dd>IRC: <a href="irc://freenode/#{{ fwinfo.irc }}">#{{ fwinfo.irc }}</a> on Freenode</dd>
+        <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">{{ fwinfo.mailinglist }}</a></dd>
 
-{% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
-    <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
-      <dd><pre class="fragment">find_package({{ fwinfo.cmakename }})
-target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{% endfor %})</pre></dd>
+    {% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
+      <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>
+        <dd><pre class="fragment">find_package({{ fwinfo.cmakename }})
+target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{% endfor %})</pre>
+        </dd>
 
-{% endif %}
-{% if fwinfo.libraries|selectattr("qmake")|list|count != 0 %}
-    <dt>Use with QMake</dt>
-      <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
-{% endif %}
+    {% endif %}
+    {% if fwinfo.libraries|selectattr("qmake")|list|count != 0 %}
+      <dt>Use with QMake</dt>
+        <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
+    {% endif %}
 
-    <dt>Clone</dt>
-      <dd><pre class="fragment">git clone git://anongit.kde.org/{{ fwinfo.name }}.git</pre></dd>
-    <dt>Browse source</dt>
-      <dd>{{ fwinfo.fancyname }} on <a href="https://quickgit.kde.org/?p={{ fwinfo.name }}.git">Quickgit</a></dd>
-  </dl>
+      <dt>Clone</dt>
+        <dd><pre class="fragment">git clone git://anongit.kde.org/{{ fwinfo.name }}.git</pre></dd>
+      <dt>Browse source</dt>
+        <dd>{{ fwinfo.fancyname }} on <a href="https://quickgit.kde.org/?p={{ fwinfo.name }}.git">Quickgit</a></dd>
+    </dl>
+  </div>
 </div>

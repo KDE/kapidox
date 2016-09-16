@@ -1,149 +1,122 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block page_title %}{% endblock %}</title>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-<head>
-  <title>{% block page_title %}{% endblock %}</title>
+    <style type="text/css">
+      .cp-doNotDisplay { display: none; }
+      @media aural, braille, handheld, tty { .cp-doNotDisplay { display: inline; speak: normal; }}
+      .cp-edit { text-align: right; }
+      @media print, embossed { .cp-edit { display: none; }}
+    </style>
 
-<style type="text/css">
-  .cp-doNotDisplay { display: none; }
-  @media aural, braille, handheld, tty { .cp-doNotDisplay { display: inline; speak: normal; }}
-  .cp-edit { text-align: right; }
-  @media print, embossed { .cp-edit { display: none; }}
-</style>
-
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <link rel="meta" href="http://www.kde.org/labels.rdf" type="application/rdf+xml" title="ICRA labels" />
-  <meta name="trademark" content="KDE e.V." />
-  <meta name="description" content="K Desktop Environment Homepage, KDE.org" />
-  <meta name="MSSmartTagsPreventParsing" content="true" />
-  <meta name="robots" content="all" />
-  <meta name="no-email-collection" content="http://www.unspam.com/noemailcollection" />
-  {% if kapidox_version %}
-  <meta name="generator" content="kapidox {{ kapidox_version }}" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <link rel="meta" href="http://www.kde.org/labels.rdf" type="application/rdf+xml" title="ICRA labels" />
+    <meta name="trademark" content="KDE e.V." />
+    <meta name="description" content="K Desktop Environment Homepage, KDE.org" />
+    <meta name="MSSmartTagsPreventParsing" content="true" />
+    <meta name="robots" content="all" />
+    <meta name="no-email-collection" content="http://www.unspam.com/noemailcollection" />
+   {% if kapidox_version %}
+    <meta name="generator" content="kapidox {{ kapidox_version }}" />
+   {% endif %}
+    <script type="text/javascript" src="{{resources}}/3rd-party/jquery/jquery-3.1.0.min.js"></script>
+    <script type="text/javascript" src="dynsections.js"></script>
+    <link rel="shortcut icon" href="{{resources}}/favicon.ico" />
+    <link rel="icon" href="{{resources}}/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{resources}}/3rd-party/bootstrap/css/bootstrap.min.css" />
+  {% if doxygencss %}
+    <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
   {% endif %}
-  <script type="text/javascript" src="{{resources}}/jquery-2.1.0.min.js"></script>
-  <script type="text/javascript" src="dynsections.js"></script>
-  <link rel="shortcut icon" href="{{resources}}/favicon.ico" />
-  <link rel="icon" href="{{resources}}/favicon.ico" />
-{% if doxygencss %}
-  <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
-{% endif %}
-  <link rel="stylesheet" type="text/css" href="{{resources}}/kde.css" />
+    <link rel="stylesheet" type="text/css" href="{{resources}}/css/kapidox.css" />
+{#    <link rel="stylesheet" type="text/css" href="{{resources}}/kde.css" />#}
 
-{% block head %}{% endblock %}
+  {% block head %}{% endblock %}
 </head>
 
 <body>
 
-<ul class="cp-doNotDisplay">
-  <li><a href="#cp-content" accesskey="2">Skip to content</a></li>
-  <li><a href="#cp-menu" accesskey="5">Skip to link menu</a></li>
-</ul>
+  <ul class="cp-doNotDisplay">
+    <li><a href="#cp-content" accesskey="2">Skip to content</a></li>
+    <li><a href="#cp-menu" accesskey="5">Skip to link menu</a></li>
+  </ul>
 
-<div id="container">
-  <div id="header">
-    <div id="header_top">
-      <div>
-        <div>
-          <img alt="" width=35px src="{{resources}}/kde-white.svg"/>
-          {{title}} {% block title %}{% endblock %}
-        </div>
+  <nav id="navbar" class="navbar navbar-static-top bg-primary">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">
+          <img alt="Brand" id="navbar-logo" src="{{ resources }}/kde-white.svg"/>
+        </a>
       </div>
+      <p id="navbar-title" class="navbar-text">
+        {{title}} {#% block title %}{% endblock %#}
+      </p>
     </div>
-    <div id="header_bottom">
-      {% if breadcrumbs %}
-        <div id="location">
-          <ul>
-            {% for entry in breadcrumbs.entries %}
-            <li><a href="{{entry.href}}">{{entry.text}}</a></li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
+  </nav>
 
-      <div id="menu">
-        <ul>
+  <nav class="navbar">
+    <div class="container">
+      <ol class="breadcrumb navbar-nav">
+      {% for entry in breadcrumbs.entries %}
+        <li{% if loop.last %} class="active"{% endif %}><a href="{{ entry.href }}">{{ entry.text }}</a></li>
+      {% endfor %}
+      </ol>
+
+        <ul class="nav navbar-nav navbar-right">
           <li><a href="http://www.kde.org/">KDE Home</a></li>
           <li><a href="http://kde.org/contact/">Contact Us</a></li>
         </ul>
       </div>
     </div>
-  </div> <!-- /header -->
+  </nav> <!-- /header -->
 
-  <div id="body_wrapper">
-    <div id="body">
+  <div id="body_wrapper" class="container">
+    <div class="row">
+      <div id="left" class="col-md-3">
+        {% block sidebar %}{% endblock %}
+      </div> <!-- /left -->
+
       <!-- begin main content -->
-      <div id="right">
-        <div class="content">
+      <div id="right" class="col-md-9">
+        <div class="row">
+          <div class="page-header">
+
+            <form action="search.html" method="get" class="form-inline">
+              <div id="search" class="input-group pull-right">
+                <input type="text" id="search-input" name="query" aria-label="Search input" class="form-control" placeholder="Search for...">
+                <span class="input-group-btn">
+                  <button type="submit" class="btn btn-default" aria-label="Search">
+                    <span class="glyphicon glyphicon-search"></span>
+                  </button>
+                </span>
+              </div>
+            </form>
+
+            <div>
+              <h1><a name="content"></a>{% block title %}{% endblock %}</h1>
+            </div>
+          </div>
+        </div>
+        <div class="row content">
           <div id="main">
-            <div class="clearer">&nbsp;</div>
             {% block content %}{% endblock %}
           </div>
         </div>
       </div> <!-- /right -->
-
-      <div id="left">
-        {% block sidebar %}{% endblock %}
-
-        {% if api_searchbox %}
-        <div class="menu_box">
-          <div class="menutitle"><div><h2>Search</h2></div></div>
-          <div style="text-align: left;">
-            <form action="/mapsearcher.php" method="get">
-              <input type="search" name="class" placeholder="search term" style="width:100%;" />
-              <br />
-              <select name="module">
-                <option>ALL</option>
-                <option>kdelibs</option>
-                <option>kdepimlibs</option>
-                <option>kdebase-apps</option>
-                <option>kdebase-runtime</option>
-                <option>kdebase-workspace</option>
-                <option>kdeedu</option>
-                <option>kdegames</option>
-                <option>kdegraphics</option>
-                <option>kdemultimedia</option>
-                <option>kdenetwork</option>
-                <option>kdepim</option>
-                <option>kdepim-runtime</option>
-                <option>kdeplasma-addons</option>
-                <option>kdesdk</option>
-                <option>kdevelop</option>
-                <option>kdeutils</option>
-                <option>kdewebdev</option>
-                <option>kdesupport</option>
-              </select>
-              <select name="version">
-                <option>ALL</option>
-                <option>4.x</option>
-                <option>4.8</option>
-                <option>3.5</option>
-                <option>extragear</option>
-                <option>kdesupport</option>
-              </select><br/>
-              <input type="submit" name="go" value="Go" />
-            </form>
-          </div>
-        </div>
-        {% endif %}
-      </div> <!-- /left -->
-      <div class="clearer"></div>
     </div> <!-- /body -->
-    <div class="clearer"></div>
   </div> <!-- /body_wrapper -->
-</div>
 
-<div id="end_body"></div>
-<div id="footer">
-  <div id="footer_text">
-    Report problems with this website to <a href="https://go.kde.org/u/systickets">our bug tracking system</a>.<br>
-    Contact the specific authors with questions and comments about the page contents.<p>
-    KDE<sup>&#174;</sup> and <a href="/media/images/kde_gear_black.png">the K Desktop Environment<sup>&#174;</sup> logo</a> are registered trademarks of <a href="http://ev.kde.org/" title="Homepage of the KDE non-profit Organization">KDE e.V.</a> |
-        <a href="http://www.kde.org/contact/impressum.php">Legal</a></p>
-  </div>
-</div>
+  <footer class="footer bg-primary">
+    {% block footer %}
+    <div id="footer-text" class="col-md-5 center-block" style="float: none;">
+      <p>Generated by <a href="https://api.kde.org/frameworks/kapidox/html/index.html">KApiDox</a>, a <a href="https://www.kde.org">KDE</a> product.</p>
+    </div>
+    {% endblock %}
+  </footer>
 
 <!--
 WARNING: DO NOT SEND MAIL TO THE FOLLOWING EMAIL ADDRESS! YOU WILL

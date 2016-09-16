@@ -158,7 +158,7 @@ MAN_LINKS              = YES
 DISABLE_INDEX          = YES
 
 # Turn off built-in JS search engine
-SEARCHENGINE           = NO
+#SEARCHENGINE           = NO
 
 
 #---------------------------------------------------------------------------
@@ -208,3 +208,6 @@ COLLABORATION_GRAPH    = NO
 # relations between templates and their instances.
 TEMPLATE_RELATIONS     = YES
 
+SEARCHENGINE           = YES
+SERVER_BASED_SEARCH    = YES
+EXTERNAL_SEARCH        = YES

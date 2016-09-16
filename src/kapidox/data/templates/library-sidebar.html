@@ -1,0 +1,61 @@
+<div class="menu-box">
+  <a name="cp-menu" />
+  <div class="menu-title">
+    <h2 id="cp-menu-project">Quick Links</h2>
+    <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{ dox.projectname }}"</a>
+  </div>
+  <div class="menu-content">
+  {% if doxygen_menu %}
+    <ul>
+    {% for entry in doxygen_menu.entries %}
+      <li><a href="{{entry.href}}">{{entry.text}}</a></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </div>
+</div>
+
+{% if class_map %}
+<div class="menu_box">
+  <div class="menu-title">
+    <h2>Class Picker</h2>
+  </div>
+  <div class="menu-content">
+    <form name="guideform">
+      <select class="form-control" name="guidelinks" style="width:100%;" onChange="window.location=document.guideform.guidelinks.options[document.guideform.guidelinks.selectedIndex].value">
+        <option value="annotated.html">-- Choose --</option>
+        {% for class in class_map.classes %}
+        <option value="{{class.filename}}">{{class.classname}}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if fwinfo %}
+  {% include "libinfo.html" %}
+{% endif %}
+
+{% if group_menu %}
+<div class="menu-box">
+  <a name="cp-menu" />
+  <div class="menu-title">
+      <h2 id="cp-menu-project">{{group_menu.group_title}}</h2>
+      <a href="#cp-skip-project" class="cp-doNotDisplay">Skip menu "{{group_menu.group_title}}"</a>
+  </div>
+  <div class="menu-content">
+    <ul>
+      {% for section in group_menu.sections %}
+        <li>{{section.title}}
+          <ul>
+            {% for member in section.members %}
+              <li><a href="{{member.href}}">{{member.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
