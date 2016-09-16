@@ -14,7 +14,12 @@ html {
 
 body {
     background: url("bg.png") repeat;
+}
+
+body, table, div, p, dl {
     font-family: "Noto Sans",Verdana, Geneva, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4em;
 }
 
 #navbar .navbar-brand
