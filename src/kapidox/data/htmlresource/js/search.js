@@ -178,6 +178,10 @@ function search_json_global(json, query)
 function render_search(type)
 {
     var query = GetURLParameter("query");
+    if (query == "") {
+        $( "#search-title" ).html("<i>...If you don't tell what to search, I can't find anything...</i>");
+        return
+    }
     $( "#search-input" ).val(query);
     $( "#search-title" ).append(" <i>" + query + "</i>");
     var json_path =  "searchdata.json";
