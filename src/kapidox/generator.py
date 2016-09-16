@@ -834,7 +834,10 @@ def create_product_index(product):
         with open(lib.outputdir+'/html/searchdata.json', 'r') as f:
             libindex = json.load(f)
             for item in libindex['docfields']:
-                item['url'] = lib.name + '/html/' + item['url']
+                if lib.part_of_group:
+                    item['url'] = lib.name + '/html/' + item['url']
+                else:
+                    item['url'] = 'html/' + item['url']
             doclist.append(libindex)
 
     indexdic = {
