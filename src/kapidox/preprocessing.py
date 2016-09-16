@@ -159,7 +159,6 @@ def parse_tree(rootdir):
         dirs[:] = [d for d in dirs if not d[0] == '.']
         metainfo = create_metainfo(path)
         if metainfo is not None:
-
             if metainfo['public_lib']:
                 metalist.append(metainfo)
             else:

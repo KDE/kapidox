@@ -820,6 +820,7 @@ def indexer(lib):
 
     indexdic = {
         'name': lib.name,
+        'fancyname': lib.fancyname,
         'docfields': doclist
         }
 
@@ -831,10 +832,14 @@ def create_product_index(product):
     doclist = []
     for lib in product.libraries:
         with open(lib.outputdir+'/html/searchdata.json', 'r') as f:
-            doclist.append(json.load(f))
+            libindex = json.load(f)
+            for item in libindex['docfields']:
+                item['url'] = lib.name + '/html/' + item['url']
+            doclist.append(libindex)
 
     indexdic = {
         'name': product.name,
+        'fancyname': product.fancyname,
         'libraries': doclist
         }
 
@@ -846,8 +851,15 @@ def create_global_index(products):
     doclist = []
     for product in products:
         with open(product.outputdir+'/searchdata.json', 'r') as f:
-            doclist.append(json.load(f))
+            prodindex = json.load(f)
+            for proditem in prodindex['libraries']:
+                for item in proditem['docfields']:
+                    item['url'] = product.name + '/' + item['url']
+            doclist.append(prodindex)
 
+    indexdic = {
+        'all': doclist
+        }
     with open('searchdata.json', 'w') as f:
-        for chunk in json.JSONEncoder().iterencode(doclist):
+        for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)
