@@ -45,7 +45,7 @@ group_info:
     subgroups:
         - name: Tier 1
           order: 1
-          description: Tier 1 frameworks depend only on Qt (and possibly a small number of other third-party libraries), so can easily be used by an Qt-based project.
+          description: Tier 1 frameworks depend only on Qt (and possibly a small number of other third-party libraries), so can easily be used by any Qt-based project.
         - name: Tier 2
           order: 2
           description: Tier 2 frameworks additionally depend on tier 1 frameworks, but still have easily manageable dependencies.
