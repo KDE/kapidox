@@ -130,6 +130,7 @@ footer a:hover {
 .product-row {
     background: #fff;
     padding: .6em;
+    margin-bottom: 15px;
 }
 
 .product-logo {
