@@ -606,6 +606,11 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
                 HTML_FOOTER=ctx.doxdatadir + '/footer.html'
                 )
 
+        # Set a layout so that properties are first
+        writer.write_entries(
+            LAYOUT_FILE=ctx.doxdatadir + '/DoxygenLayout.xml'
+            )
+
         # Always write these, even if QHP is disabled, in case Doxygen.local
         # overrides it
         writer.write_entries(
