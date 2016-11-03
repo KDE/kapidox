@@ -293,6 +293,11 @@ div.header {
 /**
  * classes
  */
+
+.memtitle {
+    display: none;
+}
+
 .memproto, dl.reflist dt {
     background:  #0057ae;
     border-radius: 0;
@@ -301,6 +306,7 @@ div.header {
 
 .memname {
     color: #eeeeee;
+    font-weight: bold;
     text-shadow: none;
 }
 
@@ -308,13 +314,19 @@ div.header {
     color: #aaaabb;
     font-weight: bold;
 }
+
 .memproto a.el {
     color: #ccccee;
     font-weight: bold;
 }
 
+.memproto .paramtype {
+    font-weight: bold;
+}
+
 .memproto .paramname {
     color: #f7800a;
+    font-weight: bold;
 }
 
 .memproto span.mlabel {
