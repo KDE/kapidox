@@ -116,8 +116,8 @@ class Product(object):
     # else the product is directly the library
     def __init__(self, metainfo, all_maintainers):
         if 'group_info' in metainfo:
-            self.name = utils.serialize_name(metainfo['group'])
-            self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(metainfo['group']))
+            self.name = utils.serialize_name(metainfo['group_info']['name'])
+            self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(metainfo['group_info']['name']))
             self.description = metainfo['group_info'].get('description')
             self.long_description = metainfo['group_info'].get('long_description', [])
             self.maintainers = utils.set_maintainers(metainfo['group_info'].get('maintainer'),
@@ -133,6 +133,7 @@ class Product(object):
             self.irc = metainfo['group_info'].get('irc', 'kde-devel')
             self.mailinglist = metainfo['group_info'].get('mailinglist', 'kde-devel')
             self.subproducts = self._extract_subproducts(metainfo['group_info'])
+            self.part_of_group = True
 
         elif 'group' not in metainfo:
             self.name = utils.serialize_name(metainfo['name'])
@@ -147,6 +148,7 @@ class Product(object):
             self.libraries = []
             self.irc = None
             self.mailinglist = None
+            self.part_of_group = False
         else:
             raise ValueError("I do not recognize a product in {}."
                              .format(metainfo['name']))

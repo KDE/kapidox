@@ -12,6 +12,7 @@ the other keys are optionals. See below for a simplier example.
 
 ```yaml
 description: Library doing X and Y
+fancyname: The FancyName # optional, else replaced by the `project()` value of the `CMakeLists.txt`
 maintainer: ochurlaud  # optional, replaced by The KDE Community
 group: frameworks # optional
 subgroup: tier 1 # optional, a group must be defined
@@ -39,7 +40,8 @@ cmakename: KF5BluezQt  # optional
 irc: kde  # optional, overwrite group field, if both not defined, default to kde-devel
 mailinglist: mylib-dev  # optional, overwrite group field, if both not defined, default to kde-devel
 
-group_info: # optional, only once per group, the name is defined by the 'group' key above.
+group_info: # optional, only once per group
+  name: frameworks # optional, else the name is defined by the 'group' key above.
   fancyname: The KDE Frameworks
   maintainer: dfaure
   irc: kde-devel

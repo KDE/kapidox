@@ -159,7 +159,7 @@ def parse_tree(rootdir):
         dirs[:] = [d for d in dirs if not d[0] == '.']
         metainfo = create_metainfo(path)
         if metainfo is not None:
-            if metainfo['public_lib']:
+            if metainfo['public_lib'] or 'group_info' in metainfo:
                 metalist.append(metainfo)
             else:
                 logging.warning("{} has no public libraries"
@@ -210,10 +210,17 @@ def sort_metainfo(metalist, all_maintainers):
 
         expand_platform_all(dct, available_platforms)
         platforms = dct
-        lib = Library(metainfo, products, platforms, all_maintainers)
-        libraries.append(lib)
 
-    groups = [p for p in list(products.values()) if len(p.libraries) > 1]
+        if metainfo['public_lib']:
+            lib = Library(metainfo, products, platforms, all_maintainers)
+            libraries.append(lib)
+
+    groups = []
+    for key in products.copy():
+        if len(products[key].libraries) == 0:
+            del products[key]
+        elif products[key].part_of_group:
+            groups.append(products[key])
 
     return list(products.values()), groups, libraries, available_platforms
 

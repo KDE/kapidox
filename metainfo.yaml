@@ -17,6 +17,7 @@ public_source_dirs:
     - src
 
 group_info:
+    name: frameworks
     fancyname: The KDE Frameworks
     maintainer: dfaure
     mailinglist: kde-frameworks-devel
