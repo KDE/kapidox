@@ -50,7 +50,7 @@ class Library(object):
         if utils.serialize_name(productname) not in products:
             productname = metainfo['name']
             del metainfo['group']
-            products[metainfo['name']] = Product(metainfo, all_maintainers)
+            products[utils.serialize_name(metainfo['name'])] = Product(metainfo, all_maintainers)
             self.part_of_group = False
             logging.warning("Group of {} not found: dropped.".format(metainfo['fancyname']))
         self.product = products[utils.serialize_name(productname)]
@@ -114,10 +114,12 @@ class Product(object):
     parent = None
     # if there is a group, the product is the group
     # else the product is directly the library
+
+    # TODO: If no name and no group, it will fail !
     def __init__(self, metainfo, all_maintainers):
         if 'group_info' in metainfo:
-            self.name = utils.serialize_name(metainfo['group_info']['name'])
-            self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(metainfo['group_info']['name']))
+            self.name = utils.serialize_name(metainfo['group_info'].get('name', metainfo.get('group')))
+            self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(self.name))
             self.description = metainfo['group_info'].get('description')
             self.long_description = metainfo['group_info'].get('long_description', [])
             self.maintainers = utils.set_maintainers(metainfo['group_info'].get('maintainer'),

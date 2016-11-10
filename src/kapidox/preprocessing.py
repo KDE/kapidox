@@ -242,8 +242,7 @@ def extract_product(metainfo, all_maintainers):
 
     try:
         product = Product(metainfo, all_maintainers)
+        return product
     except ValueError as e:
         logging.error(e)
-        product = None
-    finally:
-        return product
+        return None
