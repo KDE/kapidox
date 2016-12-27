@@ -90,6 +90,7 @@ FILE_PATTERNS          = *.h \
                          *.dox \
                          *.c++ \
                          *.cxx \
+                         *.mm \
                          *.h++ \
                          *.hh \
                          *.qml \
