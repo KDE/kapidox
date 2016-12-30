@@ -184,7 +184,7 @@ def sort_metainfo(metalist, all_maintainers):
     products = dict()
     groups = []
     libraries = []
-    available_platforms = set(['Windows', 'MacOSX', 'Linux', 'FreeBSD'])
+    available_platforms = set(['Windows', 'MacOSX', 'Linux', 'Android', 'FreeBSD'])
 
     # First extract the structural info
     for metainfo in metalist:
