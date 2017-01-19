@@ -707,7 +707,10 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
     if lib.part_of_group:
         corrected_tagfiles = []
         for k in range(len(tagfiles)):
-            corrected_tagfiles.append((tagfiles[k][0], '../' + tagfiles[k][1]))
+            if tagfiles[k][1].startswith("http://") or tagfiles[k][1].startswith("https://"):
+                corrected_tagfiles.append(tagfiles[k])
+            else:
+                corrected_tagfiles.append((tagfiles[k][0], '../' + tagfiles[k][1]))
     else:
         corrected_tagfiles = tagfiles
 
