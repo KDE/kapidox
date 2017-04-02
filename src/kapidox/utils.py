@@ -264,3 +264,11 @@ def get_kapidox_version():
         # cause the code to fail
         logging.warning("Getting git info failed: {}".format(exc))
     return _KAPIDOX_VERSION
+
+
+def find_dot_files(dot_dir):
+    """Returns a list of path to files ending with .dot in subdirs of `dot_dir`."""
+    lst = []
+    for (root, dirs, files) in os.walk(dot_dir):
+        lst.extend([os.path.join(root, x) for x in files if x.endswith('.dot')])
+    return lst

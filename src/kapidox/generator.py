@@ -37,6 +37,7 @@ import shutil
 import subprocess
 import tempfile
 import sys
+import xml.etree.ElementTree as ET
 
 import jinja2
 
@@ -621,6 +622,7 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
         writer.write_entries(
                 GENERATE_MAN=ctx.man_pages,
                 GENERATE_QHP=ctx.qhp)
+
                 #, SEARCHENGINE=ctx.searchengine)
 
         if doxyfile_entries:
@@ -883,3 +885,80 @@ def create_global_index(products):
     with open('searchdata.json', 'w') as f:
         for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)
+
+def create_qch(products, tagfiles):
+    tag_root = "QtHelpProject"
+    tag_files = "files"
+    tag_filterSection = "filterSection"
+    tag_keywords = "keywords"
+    tag_toc = "toc"
+    for product in products:
+        tree_out = ET.ElementTree(ET.Element("QtHelpProject"))
+        root_out = tree_out.getroot()
+        root_out.set("version", "1.0")
+        namespace = ET.SubElement(root_out, "namespace")
+        namespace.text = "org.kde." + product.name
+        virtualFolder = ET.SubElement(root_out, "virtualFolder")
+        virtualFolder.text = product.name
+        filterSection = ET.SubElement(root_out, tag_filterSection)
+        filterAttribute = ET.SubElement(filterSection, "filterAttribute")
+        filterAttribute.text = "doxygen"
+        toc = ET.SubElement(filterSection, "toc")
+        keywords = ET.SubElement(filterSection, tag_keywords)
+        if len(product.libraries) > 0:
+            if product.libraries[0].part_of_group:
+                product_indexSection = ET.SubElement(toc, "section", {'ref': product.name + "/index.html", 'title': product.fancyname})
+        files = ET.SubElement(filterSection, tag_files)
+
+        for lib in sorted(product.libraries, key=lambda lib: lib.name):
+            tree = ET.parse(lib.outputdir + '/html/index.qhp')
+            root = tree.getroot()
+            for child in root.findall(".//*[@ref]"):
+                if lib.part_of_group:
+                    child.attrib['ref'] = lib.name + "/html/" + child.attrib['ref']
+                else:
+                    child.attrib['ref'] = "html/" + child.attrib['ref']
+                child.attrib['ref'] = product.name + '/' +child.attrib['ref']
+
+            for child in root.find(".//"+tag_toc):
+                print(child.attrib['ref'])
+                if lib.part_of_group:
+                    product_indexSection.append(child)
+                else:
+                    toc.append(child)
+
+            for child in root.find(".//keywords"):
+                keywords.append(child)
+
+            resources = [
+                "*.json",
+                product.name + "/*.json",
+                product.name +"/" + lib.name +"/html/*.json",
+                product.name + "/*.html",
+                product.name + "/html/*.html",
+                product.name +"/html/*.png",
+                product.name +"/html/*.css",
+                product.name +"/html/*.js",
+                product.name +"/" + lib.name +"/html/*.html",
+                product.name +"/" + lib.name +"/html/*.png",
+                product.name +"/" + lib.name +"/html/*.css",
+                product.name +"/" + lib.name +"/html/*.js",
+                "resources/css/*.css",
+                "resources/3rd-party/bootstrap/css/*.css",
+                "resources/3rd-party/jquery/jquery-3.1.0.min.js",
+                "resources/*.svg",
+                "resources/js/*.js",
+                "resources/icons/*",
+            ]
+            for resource in resources:
+                file_elem = ET.SubElement(files, "file")
+                file_elem.text = resource
+
+        if not os.path.isdir('qch'):
+            os.mkdir('qch')
+
+        name = product.name+".qhp"
+        outname = product.name+".qch"
+        tree_out.write(name, encoding="utf-8", xml_declaration=True)
+        subprocess.call(["qhelpgenerator", name, '-o', 'qch/'+outname])
+        os.remove(name)
