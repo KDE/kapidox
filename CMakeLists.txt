@@ -3,7 +3,13 @@ cmake_minimum_required(VERSION 3.0)
 
 find_package(PythonInterp REQUIRED)
 
-file(TO_NATIVE_PATH ${CMAKE_BINARY_DIR} BINARY_DIR)
+if(WIN32)
+    # Needs native path and extra escaping of spaces
+    file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}" BINARY_DIR)
+else()
+    set(BINARY_DIR ${CMAKE_BINARY_DIR})
+endif()
+
 add_custom_target(build ALL
     COMMAND ${PYTHON_EXECUTABLE} setup.py build --build-base ${BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
