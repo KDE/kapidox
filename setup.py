@@ -6,7 +6,7 @@ import os
 
 setup(
         name='kapidox',
-        version='5.39.0',
+        version='5.40.0',
         description='KDE API documentation generation tools',
         maintainer = 'Olivier Churlaud',
         maintainer_email = 'olivier@churlaud.com',
