@@ -40,6 +40,8 @@
           {% endfor %}
           </div>
           <a class="library-fancyname" href="{{lib.href}}">{{lib.fancyname}}</a>
+                {% if qch %} [<a href="{{ lib.name }}/qch/{{lib.fancyname }}.qch">QCH file</a>]{% endif %}
+                {% if man %} <a href="{{ product.href }}/{{product.name}}.man">MAN</a>{% endif %}
         </div>
         <span class="library-description">{{lib.description}}</span>
       </td>

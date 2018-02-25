@@ -71,7 +71,6 @@ __all__ = (
     "build_classmap",
     "postprocess",
     "create_dirs",
-    "write_mapping_to_php",
     "create_jinja_environment",
     )
 
@@ -132,7 +131,7 @@ def create_jinja_environment(doxdatadir):
     return jinja2.Environment(loader=loader)
 
 
-def process_toplevel_html_file(outputfile, doxdatadir, products, title):
+def process_toplevel_html_file(outputfile, doxdatadir, products, title, qch_enabled=False):
 
     products.sort(key=lambda x: x.fancyname.lower())
     mapping = {
@@ -140,6 +139,7 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title):
             # steal the doxygen css from one of the frameworks
             # this means that all the doxygen-provided images etc. will be found
             'title': title,
+            'qch': qch_enabled,
             'breadcrumbs': {
                 'entries': [
                     {
@@ -160,12 +160,13 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title):
         outf.write(tmpl2.render(mapping))
 
 
-def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title):
+def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title, qch_enabled=False):
 
     for group in groups:
         mapping = {
             'resources': '../resources',
             'title': title,
+            'qch': qch_enabled,
             'breadcrumbs': {
                 'entries': [
                     {
@@ -486,37 +487,6 @@ def build_classmap(tagfile):
     return mapping
 
 
-def write_mapping_to_php(mapping, outputfile, varname='map'):
-    """Write a mapping out as PHP code
-
-    Creates a PHP array as described by mapping.  For example, the mapping
-
-        [("foo","bar"),("x","y")]
-
-    would cause the file
-
-        <?php $map = array('foo' => 'bar','x' => 'y') ?>
-
-    to be written out.
-
-    Args:
-        mapping:    a list of pairs of strings
-        outputfile: the file to write to
-        varname:    override the PHP variable name (defaults to 'map')
-    """
-    logging.info('Generating PHP mapping')
-    with codecs.open(outputfile, 'w', 'utf-8') as f:
-        f.write('<?php $' + varname + ' = array(')
-        first = True
-        for entry in mapping:
-            if first:
-                first = False
-            else:
-                f.write(',')
-            f.write("'" + entry['classname'] + "' => '" + entry['filename'] + "'")
-        f.write(') ?>')
-
-
 def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagram):
     """Create `modulename`-dependencies.md in `tmp_dir`"""
     template_path = os.path.join(doxdatadir, 'dependencies.md.tmpl')
@@ -698,6 +668,9 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
     if lib.part_of_group:
         corrected_tagfiles = []
         for k in range(len(tagfiles)):
+            # tagfiles are tupples like:
+            # ('/usr/share/doc/qt/KF5Completion.tags', '/usr/share/doc/qt')
+            # ('/where/the/tagfile/is/Name.tags', '/where/the/root/folder/is')
             if tagfiles[k][1].startswith("http://") or tagfiles[k][1].startswith("https://"):
                 corrected_tagfiles.append(tagfiles[k])
             else:
@@ -745,7 +718,6 @@ def create_fw_tagfile_tuple(lib):
 
 def finish_fw_apidocs(ctx, group_menu):
     classmap = build_classmap(ctx.tagfile)
-    #write_mapping_to_php(classmap, os.path.join(ctx.outputdir, 'classmap.inc'))
 
     entries = [{
         'href': '../../index.html',
@@ -769,6 +741,7 @@ def finish_fw_apidocs(ctx, group_menu):
                 }
     copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
     mapping = {
+            'qch': ctx.qhp,
             'doxygencss': 'doxygen.css',
             'resources': ctx.resourcedir,
             'title': ctx.title,
@@ -909,7 +882,6 @@ def create_qch(products, tagfiles):
                 child.attrib['ref'] = product.name + '/' +child.attrib['ref']
 
             for child in root.find(".//"+tag_toc):
-                print(child.attrib['ref'])
                 if lib.part_of_group:
                     product_indexSection.append(child)
                 else:
@@ -921,16 +893,6 @@ def create_qch(products, tagfiles):
             resources = [
                 "*.json",
                 product.name + "/*.json",
-                product.name +"/" + lib.name +"/html/*.json",
-                product.name + "/*.html",
-                product.name + "/html/*.html",
-                product.name +"/html/*.png",
-                product.name +"/html/*.css",
-                product.name +"/html/*.js",
-                product.name +"/" + lib.name +"/html/*.html",
-                product.name +"/" + lib.name +"/html/*.png",
-                product.name +"/" + lib.name +"/html/*.css",
-                product.name +"/" + lib.name +"/html/*.js",
                 "resources/css/*.css",
                 "resources/3rd-party/bootstrap/css/*.css",
                 "resources/3rd-party/jquery/jquery-3.1.0.min.js",
@@ -938,6 +900,24 @@ def create_qch(products, tagfiles):
                 "resources/js/*.js",
                 "resources/icons/*",
             ]
+            if product.part_of_group:
+                resources.extend([
+                    product.name + "/*.html",
+                    product.name + "/" + lib.name +"/html/*.html",
+                    product.name + "/" + lib.name +"/html/*.png",
+                    product.name + "/" + lib.name +"/html/*.css",
+                    product.name + "/" + lib.name +"/html/*.js",
+                    product.name + "/" + lib.name +"/html/*.json"
+                    ])
+
+            else:
+                resources.extend([
+                    product.name + "/html/*.html",
+                    product.name + "/html/*.png",
+                    product.name + "/html/*.css",
+                    product.name + "/html/*.js"
+                    ])
+
             for resource in resources:
                 file_elem = ET.SubElement(files, "file")
                 file_elem.text = resource

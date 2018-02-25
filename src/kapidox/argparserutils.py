@@ -78,8 +78,6 @@ def add_output_group(parser):
             help='Generate man page documentation.')
     group.add_argument('--qhp', action='store_true',
             help='Generate Qt Compressed Help documentation.')
-    group.add_argument('--indexing', action='store_true',
-            help="Enable indexing.")
     return group
 
 

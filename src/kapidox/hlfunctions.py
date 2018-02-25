@@ -85,13 +85,16 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
     generator.process_toplevel_html_file('index.html',
                                args.doxdatadir,
                                title=args.title,
-                               products=products
+                               products=products,
+                               qch_enabled=args.qhp
                                )
     generator.process_subgroup_html_files('index.html',
                                 args.doxdatadir,
                                 title=args.title,
                                 groups=groups,
-                                available_platforms=available_platforms                                )
+                                available_platforms=available_platforms,
+                                qch_enabled=args.qhp
+                                )
     tmp_dir = tempfile.mkdtemp(prefix='kapidox-')
 
     try:
@@ -106,9 +109,16 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
                                       dot_files, tmp_dir)
                 if ok:
                     lib.dependency_diagram = png_path
+
+            # store this as we won't use that everytime
+            create_qhp = args.qhp
+            args.qhp = False
             ctx = generator.create_fw_context(args, lib, tagfiles)
+            # set it back
+            args.qhp = create_qhp
+
             generator.gen_fw_apidocs(ctx, tmp_dir)
-            tagfiles.append(generator.create_fw_tagfile_tuple(lib))
+            tagfiles.insert(0, generator.create_fw_tagfile_tuple(lib))
 
         # Rebuild for interdependencies
         for lib in libraries:
@@ -120,7 +130,6 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
             generator.finish_fw_apidocs(ctx, None)
             logging.info('# Generate indexing files')
             generator.indexer(lib)
-        logging.info('# Done')
         for product in products:
             generator.create_product_index(product)
             if product.logo_url is not None:
@@ -130,7 +139,10 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
                 shutil.copy(product.logo_url_src, product.logo_url)
         generator.create_global_index(products)
         if args.qhp:
+            logging.info('# Merge qch files'
+                         .format(lib.fancyname))
             generator.create_qch(products, tagfiles)
+        logging.info('# Done')
     finally:
         if args.keep_temp_dirs:
             logging.info('Kept temp dir at {}'.format(tmp_dir))

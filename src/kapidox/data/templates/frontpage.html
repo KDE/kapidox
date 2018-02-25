@@ -50,8 +50,8 @@
                           {% endif %}
                           {% if qch or man %}
                             <li class="prod-download">
-                            {% if qch %} <a href="{{ product.href }}/{{product.name}}.qch">QCH</a>{% endif %}
-                            {% if man %} <a href="{{ product.href }}/{{product.name}}.man">QCH</a>{% endif %}
+                            {% if qch %} [<a href="qch/{{product.name}}.qch">QCH file</a>]{% endif %}
+                            {% if man %} <a href="qch/{{product.name}}.man">MAN</a>{% endif %}
                             </li>
                           {% endif %}
 
