@@ -105,8 +105,6 @@ class Context(object):
         # Output options
         'man_pages',
         'qhp',
-        'searchengine',
-        'api_searchbox',
         # Binaries
         'doxygen',
         'qhelpgenerator',
@@ -120,8 +118,6 @@ class Context(object):
         # Output options
         self.man_pages = args.man_pages
         self.qhp = args.qhp
-        self.searchengine = args.searchengine
-        self.api_searchbox = args.api_searchbox
         # Binaries
         self.doxygen = args.doxygen
         self.qhelpgenerator = args.qhelpgenerator
@@ -136,13 +132,11 @@ def create_jinja_environment(doxdatadir):
     return jinja2.Environment(loader=loader)
 
 
-def process_toplevel_html_file(outputfile, doxdatadir, products, title,
-                               api_searchbox=False):
+def process_toplevel_html_file(outputfile, doxdatadir, products, title):
 
     products.sort(key=lambda x: x.fancyname.lower())
     mapping = {
             'resources': './resources',
-            'api_searchbox': api_searchbox,
             # steal the doxygen css from one of the frameworks
             # this means that all the doxygen-provided images etc. will be found
             'title': title,
@@ -166,13 +160,11 @@ def process_toplevel_html_file(outputfile, doxdatadir, products, title,
         outf.write(tmpl2.render(mapping))
 
 
-def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title,
-                                api_searchbox=False):
+def process_subgroup_html_files(outputfile, doxdatadir, groups, available_platforms, title):
 
     for group in groups:
         mapping = {
             'resources': '../resources',
-            'api_searchbox': api_searchbox,
             'title': title,
             'breadcrumbs': {
                 'entries': [
@@ -623,8 +615,6 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
                 GENERATE_MAN=ctx.man_pages,
                 GENERATE_QHP=ctx.qhp)
 
-                #, SEARCHENGINE=ctx.searchengine)
-
         if doxyfile_entries:
             writer.write_entries(**doxyfile_entries)
 
@@ -647,7 +637,6 @@ def postprocess(ctx, classmap, template_mapping=None):
             'title': ctx.title,
             'fwinfo': ctx.fwinfo,
             'copyright': ctx.copyright,
-            'api_searchbox': ctx.api_searchbox,
             'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
             'class_map': {'classes': classmap},
             'kapidox_version': utils.get_kapidox_version(),
@@ -785,7 +774,6 @@ def finish_fw_apidocs(ctx, group_menu):
             'title': ctx.title,
             'fwinfo': ctx.fwinfo,
             'copyright': copyright,
-            'api_searchbox': ctx.api_searchbox,
             'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
             'class_map': {'classes': classmap},
             'kapidox_version': utils.get_kapidox_version(),

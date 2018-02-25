@@ -158,10 +158,6 @@ MAN_LINKS              = YES
 # Turn off the condensed index at top of each HTML page.
 DISABLE_INDEX          = YES
 
-# Turn off built-in JS search engine
-#SEARCHENGINE           = NO
-
-
 #---------------------------------------------------------------------------
 # Configuration options related to the preprocessor
 #---------------------------------------------------------------------------
@@ -210,6 +206,7 @@ COLLABORATION_GRAPH    = NO
 # relations between templates and their instances.
 TEMPLATE_RELATIONS     = YES
 
+# Do not overwrite these values or the KApiDox JS search function will break.
 SEARCHENGINE           = YES
 SERVER_BASED_SEARCH    = YES
 EXTERNAL_SEARCH        = YES

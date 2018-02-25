@@ -85,16 +85,13 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
     generator.process_toplevel_html_file('index.html',
                                args.doxdatadir,
                                title=args.title,
-                               products=products,
-                               api_searchbox=args.api_searchbox
+                               products=products
                                )
     generator.process_subgroup_html_files('index.html',
                                 args.doxdatadir,
                                 title=args.title,
                                 groups=groups,
-                                available_platforms=available_platforms,
-                                api_searchbox=args.api_searchbox
-                                )
+                                available_platforms=available_platforms                                )
     tmp_dir = tempfile.mkdtemp(prefix='kapidox-')
 
     try:
