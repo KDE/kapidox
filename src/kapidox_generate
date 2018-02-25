@@ -99,11 +99,10 @@ def download_kde_identities():
 
 
 def main():
-    utils.setup_logging()
     kde_copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
-    maintainers = download_kde_identities()
+    get_maintainers = download_kde_identities
 
-    hlfunctions.do_it(maintainers=maintainers,
+    hlfunctions.do_it(maintainers_fct=get_maintainers,
                       copyright=kde_copyright)
 
 

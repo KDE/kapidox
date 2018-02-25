@@ -33,8 +33,12 @@ import sys
 
 
 def parse_args(depdiagram_available):
+    import textwrap
     parser = argparse.ArgumentParser(
-        description='Generate API documentation for the KDE Products'
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent('''Generate API documentations of complex projects.
+
+>> This function must be run from an empty directory (where the documentation will be build).''')
         )
     group = add_sources_group(parser)
     group.add_argument('sourcesdir',

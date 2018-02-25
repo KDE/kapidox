@@ -49,11 +49,19 @@ try:
 except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
-def do_it(maintainers, copyright, searchpaths=None):
+
+def do_it(maintainers_fct, copyright, searchpaths=None):
+    utils.setup_logging()
     if searchpaths is None:
         searchpaths = searchpaths=['/usr/share/doc/qt5', '/usr/share/doc/qt']
-    utils.setup_logging()
     args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
+
+    if len(os.listdir(os.getcwd())) > 0:
+        logging.error("Run this command from an empty directory.")
+        exit(2)
+
+    if not DEPDIAGRAM_AVAILABLE:
+        logging.warning("Missing Graphviz dependency: diagrams will not be generated.")
 
     tagfiles = generator.search_for_tagfiles(
         suggestion=args.qtdoc_dir,
@@ -62,6 +70,7 @@ def do_it(maintainers, copyright, searchpaths=None):
         searchpaths=searchpaths)
 
     rootdir = args.sourcesdir
+    maintainers = maintainers_fct()
 
     metalist = preprocessing.parse_tree(rootdir)
     products, groups, libraries, available_platforms = preprocessing.sort_metainfo(metalist, maintainers)
