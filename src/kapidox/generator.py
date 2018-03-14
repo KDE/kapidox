@@ -30,6 +30,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import codecs
+from distutils.spawn import find_executable
 import datetime
 import os
 import logging
@@ -928,5 +929,14 @@ def create_qch(products, tagfiles):
         name = product.name+".qhp"
         outname = product.name+".qch"
         tree_out.write(name, encoding="utf-8", xml_declaration=True)
-        subprocess.call(["qhelpgenerator", name, '-o', 'qch/'+outname])
+
+        # On many distributions, qhelpgenerator from Qt5 is suffixed with
+        # "-qt5". Look for it first, and fall back to unsuffixed one if
+        # not found.
+        qhelpgenerator = find_executable("qhelpgenerator-qt5")
+
+        if qhelpgenerator is None:
+            qhelpgenerator = "qhelpgenerator"
+
+        subprocess.call([qhelpgenerator, name, '-o', 'qch/'+outname])
         os.remove(name)
