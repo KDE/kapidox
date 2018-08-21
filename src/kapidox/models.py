@@ -36,9 +36,33 @@ from kapidox import utils
 class Library(object):
     """ Library
     """
+    
     def __init__(self, metainfo, products, platforms, all_maintainers):
-
-        self.product = None
+        """
+            Constructor of the Library object
+            
+            Args:
+                metainfo:     (dict) dictonary describing a library
+                products:     (list of Products) list of all already created products
+                platforms:    (dict) dictionarry of all plaforms for which the library
+                              is available, where the key is a platform and the value
+                              is a restriction. For instance:  
+                                { 
+                                    'Linux': '', 
+                                    'Windows': 'Tested with Windows 10 only'
+                                }
+                              would work.
+                all_maintainers: (dict of dict)  all possible maintainers, where the main key
+                              is a username/unique pseudo, and the key is a dictionary of name,
+                              email address. For example:
+                                {
+                                    'username01': { 'name': 'Paul Developer', 'email': 'mail@example.com' },
+                                    'username02': { 'name': 'Marc Developer2', 'email': 'mail2@example.com' }
+                                }
+                              would work. 
+                                
+        """
+        self.product = None        
         self.subproduct = None
 
         if 'group' in metainfo:
@@ -111,12 +135,29 @@ class Library(object):
 class Product(object):
     """ Product
     """
-    parent = None
-    # if there is a group, the product is the group
-    # else the product is directly the library
 
     # TODO: If no name and no group, it will fail !
     def __init__(self, metainfo, all_maintainers):
+        """
+            Constructor of the Product object
+            
+            Args:
+                metainfo:     (dict) dictonary describing a product
+                all_maintainers: (dict of dict)  all possible maintainers, where the main key
+                              is a username/unique pseudo, and the key is a dictionary of name,
+                              email address. For example:
+                                {
+                                    'username01': { 'name': 'Paul Developer', 'email': 'mail@example.com' },
+                                    'username02': { 'name': 'Marc Developer2', 'email': 'mail2@example.com' }
+                                }
+                              would work. 
+                                
+        """
+        
+        self.parent = None
+        # if there is a group, the product is the group
+        # else the product is directly the library
+            
         if 'group_info' in metainfo:
             self.name = utils.serialize_name(metainfo['group_info'].get('name', metainfo.get('group')))
             self.fancyname = metainfo['group_info'].get('fancyname', string.capwords(self.name))
@@ -186,11 +227,24 @@ class Product(object):
 class Subproduct(object):
     """ Subproduct
     """
-    def __init__(self, sginfo, product):
-        self.fancyname = sginfo['name']
-        self.name = utils.serialize_name(sginfo['name'])
-        self.description = sginfo.get('description')
-        self.order = sginfo.get('order', 99)  # If no order, go to end
+    def __init__(self, spinfo, product):
+        """
+            Constructor of the Subproduct object
+            
+            Args:
+                spinfo:       (dict) description of the subproduct. It is not more than:
+                {
+                    'name': 'Subproduct Name',
+                    'description': 'This subproduct does this and that',
+                    'order': 3, # this is optional
+                }
+                for example.
+                product:      (Product) the product it is part of.
+        """
+        self.fancyname = spinfo['name']
+        self.name = utils.serialize_name(spinfo['name'])
+        self.description = spinfo.get('description')
+        self.order = spinfo.get('order', 99)  # If no order, go to end
         self.libraries = []
         self.product = product
         self.parent = product
