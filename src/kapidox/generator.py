@@ -219,7 +219,7 @@ def load_template(path):
     content = codecs.open(path, encoding='utf-8', errors='ignore').read()
     try:
         return jinja2.Template(content)
-    except jinja2.exceptions.TemplateSyntaxError as exc:
+    except jinja2.exceptions.TemplateSyntaxError:
         logging.error('Failed to parse template {}'.format(path))
         raise
 
@@ -855,7 +855,7 @@ def create_qch(products, tagfiles):
     tag_keywords = "keywords"
     tag_toc = "toc"
     for product in products:
-        tree_out = ET.ElementTree(ET.Element("QtHelpProject"))
+        tree_out = ET.ElementTree(ET.Element(tag_root))
         root_out = tree_out.getroot()
         root_out.set("version", "1.0")
         namespace = ET.SubElement(root_out, "namespace")
