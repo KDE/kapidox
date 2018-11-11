@@ -32,6 +32,9 @@ import os
 import sys
 
 
+def normalized_path(inputpath):
+    return os.path.normpath(inputpath)
+
 def parse_args(depdiagram_available):
     import textwrap
     parser = argparse.ArgumentParser(
@@ -41,9 +44,9 @@ def parse_args(depdiagram_available):
 >> This function must be run from an empty directory (where the documentation will be build).''')
         )
     group = add_sources_group(parser)
-    group.add_argument('sourcesdir',
+    group.add_argument('sourcesdir', type=normalized_path,
             help='Location of the sources.')
-    group.add_argument('--depdiagram-dot-dir',
+    group.add_argument('--depdiagram-dot-dir', type=normalized_path,
             help='Generate dependency diagrams, using the .dot files from DIR.',
             metavar="DIR")
     add_output_group(parser)
@@ -83,7 +86,7 @@ def add_output_group(parser):
 
 def add_qt_doc_group(parser):
     group = parser.add_argument_group('Qt documentation')
-    group.add_argument('--qtdoc-dir',
+    group.add_argument('--qtdoc-dir', type=normalized_path,
             help='Location of (local) Qt documentation; this is searched ' +
                  'for tag files to create links to Qt classes.')
     group.add_argument('--qtdoc-link',
@@ -99,9 +102,9 @@ def add_qt_doc_group(parser):
 
 def add_paths_group(parser):
     group = parser.add_argument_group('paths')
-    group.add_argument('--doxygen', default='doxygen',
+    group.add_argument('--doxygen', default='doxygen', type=normalized_path,
             help='(Path to) the doxygen executable.')
-    group.add_argument('--qhelpgenerator', default='qhelpgenerator',
+    group.add_argument('--qhelpgenerator', default='qhelpgenerator', type=normalized_path,
             help='(Path to) the qhelpgenerator executable.')
     return group
 
@@ -111,7 +114,7 @@ def add_misc_group(parser):
     doxdatadir = os.path.join(scriptdir, 'data')
 
     group = parser.add_argument_group('misc')
-    group.add_argument('--doxdatadir', default=doxdatadir,
+    group.add_argument('--doxdatadir', default=doxdatadir, type=normalized_path,
             help='Location of the HTML header files and support graphics.')
     group.add_argument('--keep-temp-dirs', action='store_true',
             help='Do not delete temporary dirs, useful for debugging.')
