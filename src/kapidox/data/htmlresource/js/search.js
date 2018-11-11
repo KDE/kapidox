@@ -29,6 +29,21 @@ function GetURLParameter(sParam)
     return ""
 }
 
+async function render_search(type)
+{
+    var query = GetURLParameter("query");
+    if (query == "") {
+        $( '.loader' ).remove()
+        $( "#search-title" ).html("<i>...If you don't tell what to search, I can't find anything...</i>");
+        return
+    }
+    $( "#search-input" ).val(query);
+    $( "#search-title" ).append(" <i>" + query + "</i>");
+    var json_path =  "searchdata.json";
+
+    await do_search(json_path, query, type);
+}
+
 function do_search(json_path, query, type)
 {
     var results = []
@@ -54,6 +69,8 @@ function search_json(type, json, query)
     } else if (type == 'global') {
         results_html = search_json_global(json, query)
     }
+
+    $( '.loader' ).remove()
     $( '#results' ).append(results_html)
 }
 
@@ -190,17 +207,4 @@ function search_json_global(json, query)
     html_results += "</ul>\n"
 
     return html_results
-}
-
-function render_search(type)
-{
-    var query = GetURLParameter("query");
-    if (query == "") {
-        $( "#search-title" ).html("<i>...If you don't tell what to search, I can't find anything...</i>");
-        return
-    }
-    $( "#search-input" ).val(query);
-    $( "#search-title" ).append(" <i>" + query + "</i>");
-    var json_path =  "searchdata.json";
-    do_search(json_path, query, type);
 }
