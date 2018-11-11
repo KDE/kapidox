@@ -53,7 +53,7 @@ group_info: # optional, only once per group
   description: Providing everything from simple utility classes to ..
   logo: relative/path/to/logo.png
   long_description: # optional, one item per paragraph, html authorized
-    - The KDE Frameworks build on the <a href="http://qt-project.org">Qt
+    - The KDE Frameworks build on the <a href="http://www.qt.io">Qt
       framework</a>, providing everything from simple utility classes (such as
       those in KCoreAddons) to integrated solutions for common requirements of
       desktop applications (such as KNewStuff, for fetching downloadable add-on

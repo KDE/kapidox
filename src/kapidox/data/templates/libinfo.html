@@ -9,15 +9,6 @@
       <dt>Maintainer{% if fwinfo.maintainers|count > 1 %}s{% endif %}</dt>
         <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
 
-  {#    <dt>Dependencies</dt>
-      {% if fwinfo.tier >= 2 %}
-        <dd><a href="http://qt-project.org/">Qt 5</a></dd>
-        <dd><a href="http://api.kde.org/frameworks-api/frameworks5-apidocs/#fw-tier{{ fwinfo.tier - 1 }}">Other frameworks</a></dd>
-      {% else %}
-        <dd><a href="http://qt-project.org/">Qt 5</a>, no other framework required</dd>
-      {% endif %}
-#}
-
       <dt>Supported platforms</dt>
         <dd>
       {% for platform in fwinfo.platforms | sort %}

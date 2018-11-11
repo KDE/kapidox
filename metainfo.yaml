@@ -31,7 +31,7 @@ group_info:
     description: Providing everything from simple utility classes to integrated solutions for common requirements of desktop applications
     logo: konqi_frameworks.png
     long_description:
-        - The KDE Frameworks build on the <a href="http://qt-project.org">Qt
+        - The KDE Frameworks build on the <a href="https://www.qt.io">Qt
           framework</a>, providing everything from simple utility classes (such as
           those in KCoreAddons) to integrated solutions for common requirements of
           desktop applications (such as KNewStuff, for fetching downloadable add-on
