@@ -10,7 +10,7 @@ the other keys are optionals. See below for a simplier example.
 
 ## All possible keys.
 
-```yaml
+~~~{.yaml}
 description: Library doing X and Y
 fancyname: The FancyName # optional, else replaced by the `project()` value of the `CMakeLists.txt`
 maintainer: ochurlaud  # optional, replaced by The KDE Community
@@ -66,19 +66,19 @@ group_info: # optional, only once per group
     - name: Tier 2
       description: Tier 2 frameworks additionally depend on tier 1 frameworks, but still have easily manageable dependencies.
     - ..
-```
+~~~
 
 ## Simple example 1
 
 In this case, the library is not part of a group, and the source is in `src`. If
 there is no logo, a default one is used.
 
-```yaml
+~~~{.yaml}
 description: Library doing X
 maintainer: ochurlaud
 public_lib: true
 logo: libX.png
-```
+~~~
 
 ## Simple example 2
 
@@ -86,7 +86,8 @@ In this case, the libraries X and Y are part of the same group `XY`, and the
 source is in `src`.
 
 ### libX
-```yaml
+
+~~~{.yaml}
 description: Library doing X
 maintainer: ochurlaud
 public_lib: true
@@ -107,14 +108,15 @@ group_info:
   long_description:
     - XY does this and this
     - If you want to contribute please write to ...
-```
+~~~
 
 ### libY
-```yaml
+
+~~~{.yaml}
 description: Library doing Y
 maintainer: otherrandomguy
 public_lib: true
 platforms:
   - name: Linux
 group: XY
-```
+~~~
