@@ -31,7 +31,7 @@ and python sources.
 To generate the dependency diagrams, you need the Graphviz Python bindings.
 They are currently not available from pip, but most distributions provide them.
 You can get binaries and source archives from
-<http://www.graphviz.org/Download.php>.
+<https://www.graphviz.org/download/>.
 
 ## Installation
 
@@ -48,8 +48,8 @@ a wrapper around the setup.py script.
 ## Writing documentation
 
 Writing dox is beyond the scope of this documentation -- see the notes at
-<http://community.kde.org/Policies/Library_Documentation_Policy> and the [doxygen
-manual](http://www.stack.nl/~dimitri/doxygen/manual/).
+<https://community.kde.org/Frameworks/Frameworks_Documentation_Policy> and the [doxygen
+manual](http://doxygen.nl/manual/docblocks.html).
 However, the script expects certain things to be present in the directory it is
 run on.
 
@@ -130,4 +130,4 @@ about them in [depdiagrams](@ref depdiagrams).
 
 ## Examples of generated pages:
 
-- KDE API documentation: <http://api.kde.org/>
+- KDE API documentation: <https://api.kde.org/>

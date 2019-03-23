@@ -75,7 +75,7 @@ def download_kde_identities():
                     overwrite=True):
                 logging.debug("Falling back to using websvn to fetch "
                               "identities file")
-                urlretrieve('http://websvn.kde.org/*checkout*/trunk/kde-common/accounts',
+                urlretrieve('https://websvn.kde.org/*checkout*/trunk/kde-common/accounts',
                             cache_file)
         except Exception as e:
             if os.path.exists(cache_file):
