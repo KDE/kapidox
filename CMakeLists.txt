@@ -21,7 +21,7 @@ add_custom_target(build ALL
 #
 # Note that if(\$ENV{DESTDIR}) always fails, regardless of the value of the DESTDIR
 # environment variable, hence the STREQUAL test.
-# See http://public.kitware.com/Bug/view.php?id=14737
+# See https://public.kitware.com/Bug/view.php?id=14737
 install(CODE
     "set(_root_arg)
      if (NOT \$ENV{DESTDIR} STREQUAL \"\")

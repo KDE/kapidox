@@ -59,7 +59,7 @@ def parse_args(depdiagram_available):
     if args.depdiagram_dot_dir and not depdiagram_available:
         logging.error('You need to install the Graphviz Python bindings to '
                       'generate dependency diagrams.\n'
-                      'See <http://www.graphviz.org/Download.php>.')
+                      'See <https://www.graphviz.org/download/>.')
         exit(1)
 
     if not os.path.isdir(args.sourcesdir):
