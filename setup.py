@@ -4,6 +4,14 @@
 from distutils.core import setup
 import os
 
+# Walk list of data files to install to ensure we install everything. This
+# needs to generate paths relative to the package source.
+kapidox_data_files = []
+for root, dirs, files in os.walk('src/kapidox/data/'):
+    data_root = os.path.relpath(root, 'src/kapidox/')
+    root_files = [os.path.join(data_root, f) for f in files]
+    kapidox_data_files += root_files
+
 setup(
         name='kapidox',
         version='5.61.0',
@@ -20,12 +28,7 @@ setup(
             'kapidox.depdiagram': 'src/kapidox/depdiagram',
         },
         package_data = {
-            'kapidox': [
-                'data/*.*',
-                'data/htmlresource/*.*',
-                'data/htmlresource/icons/*.*',
-                'data/templates/*.*',
-            ]
+            'kapidox': kapidox_data_files
         },
         scripts = [
             'src/kapidox_generate',
