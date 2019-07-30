@@ -32,6 +32,7 @@ from __future__ import (division, absolute_import, print_function,
 
 import logging
 import os
+import sys
 
 try:
     from urllib2 import Request, urlopen, HTTPError
@@ -161,6 +162,8 @@ def parse_tree(rootdir):
     for path, dirs, _ in os.walk(rootdir):
         # We don't want to do the recursion in the dotdirs
         dirs[:] = [d for d in dirs if not d[0] == '.']
+        if sys.version_info.major < 3:
+            path = path.decode(sys.getfilesystemencoding())
         metainfo = create_metainfo(path)
         if metainfo is not None:
             if metainfo['public_lib'] or 'group_info' in metainfo:
