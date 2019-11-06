@@ -227,7 +227,7 @@ def load_template(path):
 def find_tagfiles(docdir, doclink=None, flattenlinks=False, exclude=None, _depth=0):
     """Find Doxygen-generated tag files in a directory.
 
-    The tag files must have the extention .tags, and must be in the listed
+    The tag files must have the extension .tags, and must be in the listed
     directory, a subdirectory or a subdirectory named html of a subdirectory.
 
     Args:

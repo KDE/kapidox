@@ -73,7 +73,7 @@ def set_maintainers(maintainer_keys, all_maintainers):
     """ Expend the name of the maintainers.
 
     Args:
-        dictonary: (dict) Dictionary from which the name to expend will be read.
+        dictionary: (dict) Dictionary from which the name to expend will be read.
         key: (string) Key of the dictionary where the name to expend is saved.
         all_maintainers: (dict of dict) Look-up table where the names and emails of
     the maintainers are stored.

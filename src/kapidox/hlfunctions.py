@@ -109,7 +109,7 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
                 if ok:
                     lib.dependency_diagram = png_path
 
-            # store this as we won't use that everytime
+            # store this as we won't use that every time
             create_qhp = args.qhp
             args.qhp = False
             ctx = generator.create_fw_context(args, lib, tagfiles)

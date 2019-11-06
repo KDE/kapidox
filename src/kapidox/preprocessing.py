@@ -93,7 +93,7 @@ def create_metainfo(path):
         path: (string) the current path to search.
     Returns:
         A dictionary containing all the parsed information, or `None` if it
-    did not fullfill some conditions.
+    did not fulfill some conditions.
     """
 
     if not os.path.isdir(path):

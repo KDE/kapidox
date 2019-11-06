@@ -42,9 +42,9 @@ class Library(object):
             Constructor of the Library object
             
             Args:
-                metainfo:     (dict) dictonary describing a library
+                metainfo:     (dict) dictionary describing a library
                 products:     (list of Products) list of all already created products
-                platforms:    (dict) dictionarry of all plaforms for which the library
+                platforms:    (dict) dictionary of all platforms for which the library
                               is available, where the key is a platform and the value
                               is a restriction. For instance:  
                                 { 
@@ -87,7 +87,7 @@ class Library(object):
                 if sp.name == utils.serialize_name(metainfo['subgroup']):
                     self.subproduct = sp
             if self.subproduct is None:
-                logging.warning("Subgroup {} of library {} not documentated, subgroup will be None"
+                logging.warning("Subgroup {} of library {} not documented, subgroup will be None"
                                 .format(metainfo['subgroup'], metainfo['name']))
 
         if self.subproduct is not None:
@@ -142,7 +142,7 @@ class Product(object):
             Constructor of the Product object
             
             Args:
-                metainfo:     (dict) dictonary describing a product
+                metainfo:     (dict) dictionary describing a product
                 all_maintainers: (dict of dict)  all possible maintainers, where the main key
                               is a username/unique pseudo, and the key is a dictionary of name,
                               email address. For example:
