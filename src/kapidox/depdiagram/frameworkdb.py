@@ -31,8 +31,8 @@ import re
 import gv
 import yaml
 
-import gvutils
-from framework import Framework
+import kapidox.depdiagram.gvutils
+from kapidox.depdiagram.framework import Framework
 
 
 TARGET_SHAPES = [

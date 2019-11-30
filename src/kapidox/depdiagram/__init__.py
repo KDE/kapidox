@@ -1,1 +1,1 @@
-from generate import *
+from kapidox.depdiagram.generate import *
