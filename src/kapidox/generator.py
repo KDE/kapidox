@@ -448,8 +448,13 @@ def postprocess_internal(htmldir, tmpl, mapping):
 
             if name != 'classes.html' and name.startswith('class'):
                 mapping['classname'] = name[5:-5].split('_1_1')[-1]
+                mapping['fullname'] = name[5:-5].replace('_1_1', '::')
+            elif name.startswith('namespace') and name != 'namespaces.html' and not name.startswith('namespacemembers'):
+                mapping['classname'] = None
+                mapping['fullname'] = name[9:-5].replace('_1_1', '::')
             else:
                 mapping['classname'] = None
+                mapping['fullname'] = None
 
             with codecs.open(path, 'r', 'utf-8', errors='ignore') as f:
                 mapping['dox'] = parse_dox_html(f)

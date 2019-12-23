@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block page_title %}{{ dox.projectname }} - {{ dox.title }}{% endblock %}
-{% block title %} {{ dox.projectname }} {% endblock %}
+
+{% block title %}
+{% if fullname %}
+{{ fullname }}
+{% else %}
+{{ dox.projectname }}
+{% endif %}
+{% endblock title %}
 
 {% block content %}
 
