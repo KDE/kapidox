@@ -167,7 +167,10 @@ DISABLE_INDEX          = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 
+# K_DOXYGEN set to have preprocessor macros know that kapidox/doxygen processes them
+# DOXYGEN_SHOULD_SKIP_THIS is the deprecated variant (remove for KF6)
 PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
+                         K_DOXYGEN \
                          Q_SLOTS="slots" \
                          Q_SIGNALS="signals" \
                          Q_DECL_CONSTEXPR="constexpr" \

@@ -50,8 +50,14 @@ a wrapper around the setup.py script.
 Writing dox is beyond the scope of this documentation -- see the notes at
 <https://community.kde.org/Frameworks/Frameworks_Documentation_Policy> and the [doxygen
 manual](http://doxygen.nl/manual/docblocks.html).
-However, the script expects certain things to be present in the directory it is
-run on.
+
+To allow code to handle the case of being processed by kapidox a C/C++ preprocessor macro
+is set as defined when run: `K_DOXYGEN` (since v5.67.0).
+For backward-compatibility the definition `DOXYGEN_SHOULD_SKIP_THIS` is also set, but
+its usage is deprecated.
+
+The kapidox scripts expects certain things to be present in the directory it is
+run on:
 
 ### README.md
 Most importantly, there should be a `README.md` file, like this page (backward
