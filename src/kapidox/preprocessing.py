@@ -163,7 +163,11 @@ def parse_tree(rootdir):
         # We don't want to do the recursion in the dotdirs
         dirs[:] = [d for d in dirs if not d[0] == '.']
         if sys.version_info.major < 3:
-            path = path.decode(sys.getfilesystemencoding())
+            # hardcoding UTF-8 here as sys.getfilesystemencoding() seems not reliable
+            # e.g. with api.kde.org's server this is 'ANSI_X3.4-1968', despite all locale vars having *.UTF-8
+            # And chance is low someone using kapixdox is using another filesystem encoding,
+            # they should just use Python3 anyway now so no run into this code branch :)
+            path = path.decode('utf-8')
         metainfo = create_metainfo(path)
         if metainfo is not None:
             if metainfo['public_lib'] or 'group_info' in metainfo:
