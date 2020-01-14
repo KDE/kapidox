@@ -31,7 +31,7 @@ import re
 import gv
 import yaml
 
-import kapidox.depdiagram.gvutils
+from kapidox.depdiagram import gvutils
 from kapidox.depdiagram.framework import Framework
 
 
