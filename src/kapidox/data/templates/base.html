@@ -45,43 +45,24 @@
     <li><a href="#cp-menu" accesskey="5">Skip to link menu</a></li>
   </ul>
 
-  <nav id="navbar" class="navbar navbar-static-top bg-primary">
+  <nav id="navbar" class="navbar navbar-static-top">
     <div class="container">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">
-          <img alt="Brand" id="navbar-logo" src="{{ resources }}/kde-white.svg"/>
-        </a>
-      </div>
-      <p id="navbar-title" class="navbar-text">
-        {{title}} {#% block title %}{% endblock %#}
-      </p>
-    </div>
-  </nav>
-
-  <nav class="navbar">
-    <div class="container">
-      <ol class="breadcrumb navbar-nav">
-      {% for entry in breadcrumbs.entries %}
-        <li{% if loop.last %} class="active"{% endif %}><a href="{{ entry.href }}">{{ entry.text }}</a></li>
-      {% endfor %}
-      </ol>
-
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="https://www.kde.org/">KDE Home</a></li>
-          <li><a href="https://kde.org/contact/">Contact Us</a></li>
-        </ul>
-      </div>
+        <ol class="breadcrumb navbar-nav">
+        {% for entry in breadcrumbs.entries %}
+          <li{% if loop.last %} class="active"{% endif %}><a href="{{ entry.href }}">{{ entry.text }}</a></li>
+        {% endfor %}
+        </ol>
     </div>
   </nav> <!-- /header -->
 
-  <div id="body_wrapper" class="container">
-    <div class="row">
-      <div id="left" class="col-md-3">
-        {% block sidebar %}{% endblock %}
-      </div> <!-- /left -->
+  <div id="api-kde-org-sidebar">
+    {% block sidebar %}{% endblock %}
+  </div>
 
+  <div id="body_wrapper" class="container">
+    <div id="kde-main-row" class="row">
       <!-- begin main content -->
-      <div id="right" class="col-md-9">
+      <div id="main-column" class="col-md-9">
         <div class="row-fluid">
           <div class="page-header">
 
