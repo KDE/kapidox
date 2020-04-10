@@ -13,6 +13,31 @@
     --on-base: black;
     --plasma-blue: #54a3d8;
     --on-plasma-blue: white;
+    --card: white;
+    --on-card: black;
+    --borders: rgba(0,0,0,0.3);
+    --borders-faint: rgba(0,0,0,0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    table tr:nth-child(odd) {
+        background-color: transparent !important;
+    }
+    .mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+        background-color: transparent !important;
+    }
+    :root {
+        --base: #232629;
+        --on-base: #eff0f1;
+        --card: rgba(255,255,255,0.1);
+        --on-card: #eff0f1;
+        --borders: rgba(255,255,255,0.2);
+        --borders-faint: rgba(255,255,255,0.05);
+        --plasma-blue: #98c8e8;
+        --on-plasma-blue: black;
+
+        background-color: var(--base);
+    }
 }
 
 html {
@@ -20,7 +45,7 @@ html {
 }
 
 body {
-    background: url("bg.png") repeat;
+    background: var(--base);
 }
 
 body, table, div, p, dl {
@@ -49,6 +74,7 @@ body, table, div, p, dl {
     display: flex;
     flex-direction: row;
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .navbar-nav.breadcrumb a {
@@ -79,33 +105,69 @@ li.active a {
     min-height: 100vh;
 }
 
+.api-kde-org-sidebar {
+    margin-top: 60px;
+}
+
+.navbar {
+    width: 100%;
+    min-width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: var(--base);
+}
+
+section {
+    margin-left: auto;
+    margin-right: auto;
+    width: 80vw;
+    max-width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+}
+
+.api-kde-org-sidebar {
+    background-color: var(--base);
+}
+
 @media (min-width: 768px) {
-    #api-kde-org-sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 300px;
+    .api-kde-org-sidebar {
+        min-width: 300px;
+        max-width: 300px;
         box-shadow: 0 1px 4px 0 rgba(0,0,0,.37);
         z-index: 9999;
         scrollbar-width: none;
         overflow-y: scroll;
         padding-bottom: 40px;
+        margin-top: 0;
+        scrollbar-width: 0;
     }
-    #api-kde-org-sidebar::-webkit-scrollbar {
-        display: none;
+    .api-kde-org-sidebar::-webkit-scrollbar {
+        width: 0;
     }
-    #body_wrapper.container {
-        margin-left: 300px;
-        width: 100%;
-        max-width: calc(99vw - 300px);
+
+    .navbar {
+        padding-left: 300px;
     }
-    #navbar {
-        margin-left: 300px;
+    
+    aside {
+        margin-top: 60px;
     }
-    .footer {
-        margin-left: 300px;
-        max-width: calc(100vw - 300px);
+
+    .body {
+        flex-direction: row;
+    }
+
+    main section {
+        margin-top: 60px;
+        width: 60vw;
     }
 }
 
@@ -116,6 +178,13 @@ li.active a {
     align-items: center;
     background-color: var(--plasma-blue);
     color: var(--on-plasma-blue);
+}
+
+@media (prefers-color-scheme: dark) {
+    #sidebar-header {
+        background-color: var(--card);
+        color: var(--on-card);
+    }
 }
 
 #sidebar-header a {
@@ -145,11 +214,11 @@ h1, h2, h3, h4, h5, h6, legend {
     font-family: "Noto Sans", "Helvetica Neue", Arial, sans-serif;
     margin-top: 0;
     font-weight: 700;
-    color: var(--on-base);
+    color: var(--on-base) !important;
 }
 
 h2.groupheader {
-    color: var(--on-base);
+    color: var(--on-base) !important;
     border-bottom: 0;
     margin-bottom: 8px;
 }
@@ -214,17 +283,29 @@ footer {
 }
 
 .bg-primary {
-    background-color: var(--plasma-blue);
-    color: var(--on-plasma-blue);
+    background-color: var(--plasma-blue) !important;
+    color: var(--on-plasma-blue) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bg-primary {
+        background-color: var(--card) !important;
+        color: var(--on-card) !important;
+    }
+}
+
+footer.bg-primary {
+    background-color: transparent !important;
+    color: var(--on-base) !important;
 }
 
 footer a {
     font-weight: bold;
-    color: #ffffff;
+    color: var(--on-base);
 }
 
 footer a:hover {
-    color: #ffffff;
+    color: var(--on-base);
 }
 
 #left h2 {
@@ -253,13 +334,39 @@ footer a:hover {
     background-color: var(--plasma-blue);
 }
 
+.sidebar-header .menu-title {
+    background-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+    .menu-title {
+        color: var(--on-card);
+        background-color: var(--card);
+    }
+}
+
 .menu-title h2 {
     margin: 0;
     padding: 0.4em 1.3em 0.2em 1.3em;
     line-height:1.2em;
     font-size: 1.2em;
     font-weight: normal;
-    color: var(--on-plasma-blue);
+    color: var(--on-plasma-blue) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .menu-title h2 {
+        color: var(--on-card) !important;
+        background-color: transparent;
+    }
+    #sidebar-header .menu-title {
+        background-color: transparent;
+        color: var(--on-card);
+    }
+}
+
+a {
+    color: var(--plasma-blue);
 }
 
 .menu-content dl {
@@ -280,8 +387,9 @@ footer a:hover {
  */
 
 .product-row {
-    background: #ffffff;
-    border: 1px solid rgba(0,0,0,.2);
+    background: var(--card);
+    color: var(--on-card);
+    border: 1px solid var(--borders);
     border-radius: 3px;
     padding: 12px;
     margin-bottom: 15px;
@@ -297,7 +405,7 @@ footer a:hover {
 
 table.fieldtable {
     width: initial;
-    border: 1px solid rgba(0,0,0,.2);
+    border: 1px solid var(--borders);
     border-radius: 0px;
     box-shadow: none;
 }
@@ -305,16 +413,16 @@ table.fieldtable {
 .fieldtable th {
     background-image: none;
     background-color: rgba(0,0,0,.2);
-    border-bottom: 1px solid rgba(0,0,0,.1);
+    border-bottom: 1px solid var(--borders-faint);
 }
 
 .fieldtable td.fieldtype, .fieldtable td.fieldname {
-    border-bottom: 1px solid rgba(0,0,0,.1);
-    border-right: 1px solid rgba(0,0,0,.1);
+    border-bottom: 1px solid var(--borders-faint);
+    border-right: 1px solid var(--borders-faint);
 }
 
 .fieldtable td.fielddoc {
-    border-bottom: 1px solid rgba(0,0,0,.1);
+    border-bottom: 1px solid var(--borders-faint);
 }
 
 table.params .paramname {
@@ -352,9 +460,11 @@ table.params .paramname {
 table.libraries {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 12px;
 }
+
 table.libraries td, table.libraries th {
-    border: solid 1px #0057ae;
+    border: solid 1px var(--borders);
 }
 
 table.libraries h3 {
@@ -367,11 +477,18 @@ table.libraries td {
 }
 
 table.libraries th {
-    background: #0057ae;
-    color:white;
+    background: var(--plasma-blue);
+    color: var(--on-plasma-blue);
     font-size: 1.1em;
     line-height: 1.7em;
     text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    table.libraries th {
+        background: var(--card);
+        color: var(--on-card);
+    }
 }
 
 .library-main-column {
@@ -429,7 +546,7 @@ table.libraries th {
 }
 
 .not-available {
-    background-color: #f8f8f8;
+    background-color: rgba(233, 61, 87, 0.2);
 }
 
 .not-available .library-description {
@@ -469,11 +586,15 @@ a.note-close, a.note-close:active, a.note-close:visited {
 
 
 .copyrights {
-    border-top: 1px solid #dddddd;
+    border-top: 1px solid var(--borders);
     margin-top: 20px;
     padding-top: 5px;
     text-align: center;
-    color: #555555;
+    color: var(--on-base);
+}
+
+hr {
+    border-color: var(--borders-faint);
 }
 
 /****
@@ -543,6 +664,42 @@ div.header {
     text-shadow: none;
 }
 
+@media (prefers-color-scheme: dark) {
+    table {
+        background-color: transparent !important;
+        color: var(--on-base) !important;
+    }
+    .memproto, dl.reflist dt {
+        background: var(--card) !important;
+        color: var(--on-card) !important;
+    }
+    .memname {
+        color: var(--on-card);
+    }
+    table.mlabels tr, table.memberdecls tr.heading, .mlabels tr, .memproto table tr, table.params tr {
+        background-color: transparent !important;
+        color: var(--on-base) !important;
+    }
+    div.memproto {
+        border: 0;
+    }
+}
+
+.memdoc, dl.refllist dd {
+    background: var(--card);
+    color: var(--on-card);
+}
+
+.memSeparator {
+    border-color: var(--borders);
+}
+
+.mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+    background: var(--card);
+    color: var(--on-card);
+    border-color: var(--borders);
+}
+
 .memproto a.elRef{
     color: #aaaabb;
     font-weight: bold;
@@ -570,6 +727,19 @@ div.header {
     color: var(--on-base);
 }
 
+.additional_info {
+    margin-top: 10px;
+}
+
+table.directory tr {
+    background-color: transparent !important;
+    color: var(--on-base);
+}
+table.directory tr.even {
+    background-color: transparent !important;
+    color: var(--on-base);
+}
+
 /**
  * Fragments
  */
@@ -580,13 +750,26 @@ div.header {
 
 /* Use div.fragment, not pre.fragment. pre.fragment is used for @verbatim blocks, which must keep their border */
 div.fragment {
-    background-color: #eff0f1;
-    border: 1px solid rgba(0,0,0,.2);
+    background-color: var(--card);
+    color: var(--on-card);
+    border: 1px solid var(--borders);
     border-radius: 10px;
     padding: 10px;
     margin-top: 10px;
     margin-bottom: 10px;
     box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
+}
+
+pre.fragment {
+    background-color: var(--card);
+    color: var(--on-card);
+    border-color: var(--borders);
+    white-space: pre;
+    scrollbar-width: 0;
+}
+pre.fragment::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 span.icona {
@@ -601,11 +784,33 @@ table.directory td {
 * Listing
 */
 span.lineno {
-    border-right: 1px solid #ddd;
+    border-right: 1px solid var(--borders);
     background-color: transparent;
-    color: #666;
+    color: var(--on-card);
 }
 
 span.lineno a {
     background-color: transparent;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.PageDoc .header::after, section .header::after, header.page-header::after {
+    display: none !important;
+}
+
+div.summary {
+    float: none;
+    width: auto;
+    margin-left: auto;
+}
+
+div.header {
+    background: none;
+}
+
+h1 {
+    word-wrap: break-word;
 }
