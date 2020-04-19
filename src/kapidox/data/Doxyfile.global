@@ -179,6 +179,7 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          Q_DECL_OVERRIDE="override" \
                          Q_DECL_HIDDEN=""\
                          Q_REQUIRED_RESULT="" \
+                         "Q_DECLARE_FLAGS(Flags, Enum)=typedef QFlags<Enum> Flags;" \
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references
