@@ -9,20 +9,16 @@
     </div>
     <div class="menu-content">
     <ul>
-        <li>
-        <ul>
-            {% if group.libraries | selectattr('subproducts', 'none') | list | length > 0 %}
-            {% if group.subproduct | length > 0 %}
-            <li><a href="#sg-{{ nosubproduct }}">Without subgroup</a></li>
-            {% else  %}
-            <li><a href="#content">All</a></li>
-            {% endif %}
-            {% endif %}
-            {% for subproduct in group.subproducts | sort(attribute='order') %}
-            <li><a href="#sg-{{ subproduct.name }}">{{ subproduct.fancyname }}</a></li>
-            {% endfor %}
-        </ul>
-        </li>
+      {% if group.libraries | selectattr('subproducts', 'none') | list | length > 0 %}
+      {% if group.subproduct | length > 0 %}
+      <li><a href="#sg-{{ nosubproduct }}">Without subgroup</a></li>
+      {% else  %}
+      <li><a href="#content">All</a></li>
+      {% endif %}
+      {% endif %}
+      {% for subproduct in group.subproducts | sort(attribute='order') %}
+      <li><a href="#sg-{{ subproduct.name }}">{{ subproduct.fancyname }}</a></li>
+      {% endfor %}
     </ul>
     </div>
 </div>
