@@ -175,6 +175,8 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          Q_SIGNALS="signals" \
                          Q_DECL_CONSTEXPR="constexpr" \
                          Q_DECL_FINAL="final" \
+                         "Q_DECL_EQ_DEFAULT= = default" \
+                         "Q_DECL_EQ_DELETE= = delete" \
                          Q_DECL_NULLPTR="0" \
                          Q_DECL_OVERRIDE="override" \
                          Q_DECL_HIDDEN=""\
