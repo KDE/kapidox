@@ -171,16 +171,16 @@ EXPAND_ONLY_PREDEF     = YES
 # DOXYGEN_SHOULD_SKIP_THIS is the deprecated variant (remove for KF6)
 PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          K_DOXYGEN \
-                         Q_SLOTS="slots" \
-                         Q_SIGNALS="signals" \
-                         Q_DECL_CONSTEXPR="constexpr" \
-                         Q_DECL_FINAL="final" \
+                         Q_SLOTS=slots \
+                         Q_SIGNALS=signals \
+                         Q_DECL_CONSTEXPR=constexpr \
+                         Q_DECL_FINAL=final \
                          "Q_DECL_EQ_DEFAULT= = default" \
                          "Q_DECL_EQ_DELETE= = delete" \
-                         Q_DECL_NULLPTR="0" \
-                         Q_DECL_OVERRIDE="override" \
-                         Q_DECL_HIDDEN=""\
-                         Q_REQUIRED_RESULT="" \
+                         Q_DECL_NULLPTR=nullptr \
+                         Q_DECL_OVERRIDE=override \
+                         Q_DECL_HIDDEN= \
+                         Q_REQUIRED_RESULT= \
                          "Q_DECLARE_FLAGS(Flags, Enum)=typedef QFlags<Enum> Flags;" \
 
 #---------------------------------------------------------------------------
