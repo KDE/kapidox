@@ -47,7 +47,7 @@ KDE Products
                     </div>
                     {% if product.platforms %}
                     <p>
-                        <b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b>{{ product.platforms | sort | join(' | ') }}
+                        <b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b> {{ product.platforms | sort | join(' | ') }}
                     </p>
                     {% endif %}
                     {% if qch or man %}
