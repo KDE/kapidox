@@ -34,6 +34,7 @@ import os
 import shutil
 import sys
 import tempfile
+import json
 
 if sys.version_info.major < 3:
     from urllib import urlretrieve
@@ -141,6 +142,14 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
             logging.info('# Merge qch files'
                          .format(lib.fancyname))
             generator.create_qch(products, tagfiles)
+        logging.info("# Writing metadata... ")
+        with open('metadata.json', 'w') as file:
+            json.dump(metalist, file)
+        libs = []
+        for lib in libraries:
+            libs.append({"name": lib.name, "outputdir": lib.outputdir})
+        with open('outputs.json', 'w') as file:
+            json.dump(libs, file)
         logging.info('# Done')
     finally:
         if args.keep_temp_dirs:
