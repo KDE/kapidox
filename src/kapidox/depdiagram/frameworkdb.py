@@ -164,14 +164,13 @@ class FrameworkDb(object):
         for dot_file in dot_files:
             yaml_file = dot_file.replace(".dot", ".yaml")
             with open(yaml_file) as f:
-                dct = yaml.load(f)
+                dct = yaml.safe_load(f)
 
             if 'tier' not in dct:
                 # This mean it's not a frameworks
                 continue
 
             tier = dct["tier"]
-            dot_file = dot_file.encode("utf-8")
             fw = parser.parse(tier, dot_file)
 
             _add_extra_dependencies(fw, dct)

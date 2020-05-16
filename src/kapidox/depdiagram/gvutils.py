@@ -42,11 +42,11 @@ class Node(object):
 
     @property
     def label(self):
-        return gv.getv(self.handle, b"label")
+        return gv.getv(self.handle, "label")
 
     @property
     def shape(self):
-        return gv.getv(self.handle, b"shape")
+        return gv.getv(self.handle, "shape")
 
 
 class Edge(object):

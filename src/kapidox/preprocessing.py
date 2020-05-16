@@ -108,7 +108,7 @@ def create_metainfo(path):
         return None
 
     try:
-        metainfo = yaml.load(open(metainfo_file))
+        metainfo = yaml.safe_load(open(metainfo_file))
     except Exception as e:
         print(e)
         logging.warning('Could not load metainfo.yaml for {}, skipping it'

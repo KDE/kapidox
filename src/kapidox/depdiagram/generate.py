@@ -24,6 +24,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import logging
 import itertools
+from functools import cmp_to_key
 
 from kapidox.depdiagram.block import Block, quote
 from kapidox.depdiagram.framework import Framework
@@ -112,7 +113,7 @@ class DotWriter(Block):
                     # depend on other frameworks from that tier are listed after
                     # their dependees.
                     frameworks = list(frameworks)
-                    for fw in sorted(frameworks, cmp=FrameworkCmp(self.db)):
+                    for fw in sorted(frameworks, key=cmp_to_key(FrameworkCmp(self.db))):
                         if self.detailed:
                             self.write_detailed_framework(tier_block, fw)
                         else:
