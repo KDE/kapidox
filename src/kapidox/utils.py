@@ -109,12 +109,13 @@ def parse_fancyname(fw_dir):
                 return f[:-4]
         logging.error("No CMakeLists.txt in {}".format(fw_dir))
         return None
-    project_re = re.compile(r"project\s*\(\s*([\w\-\_]+)", re.I)
+    project_re = re.compile(r"^[^#]*project\s*\(\s*([\w\-\_]+)", re.I | re.M)
     with open(cmakelists_path) as f:
-        for line in f.readlines():
-            match = project_re.search(line)
-            if match:
-                return match.group(1)
+        cmakelists_content = f.read()
+        match = project_re.search(cmakelists_content)
+        if match:
+            return match.group(1)
+
     logging.error("Failed to find framework name: Could not find a "
                   "'project()' command in {}.".format(cmakelists_path))
     return None
