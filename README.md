@@ -49,7 +49,7 @@ a wrapper around the setup.py script.
 
 Writing dox is beyond the scope of this documentation -- see the notes at
 <https://community.kde.org/Frameworks/Frameworks_Documentation_Policy> and the [doxygen
-manual](http://doxygen.nl/manual/docblocks.html).
+manual](https://doxygen.nl/manual/docblocks.html).
 
 To allow code to handle the case of being processed by kapidox a C/C++ preprocessor macro
 is set as defined when run: `K_DOXYGEN` (since v5.67.0).

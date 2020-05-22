@@ -1,5 +1,5 @@
 # Default settings for KDE projects
-# See http://www.doxygen.nl/manual/config.html for help
+# See https://www.doxygen.nl/manual/config.html for help
 
 QUIET = YES
 
