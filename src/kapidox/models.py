@@ -116,6 +116,9 @@ class Library(object):
         self.cmakename = metainfo.get('cmakename', '')
         self.irc = metainfo.get('irc', self.product.irc)
         self.mailinglist = metainfo.get('mailinglist', self.product.mailinglist)
+        # current assumption is that reponame also used for local clone and that it matches the KDE project id
+        # possibly should get an override in the metainfo
+        self.repopath = utils.set_repopath(self.name)
 
     def _extend_parent(self, metainfo, key, key_obj, default):
         if key in metainfo:

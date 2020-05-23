@@ -35,6 +35,7 @@ import subprocess
 import shutil
 import sys
 import tempfile
+import requests
 
 ## @package kapidox.utils
 #
@@ -68,6 +69,23 @@ def serialize_name(name):
     else:
         return None
 
+def set_repopath(id):
+    """ Return the repopath for the repo id, queried from projects.kde.org
+
+    Args:
+        id: unique KDE repo identifier
+    """
+    if id is None:
+        return None
+
+    try:
+        r = requests.get('https://projects.kde.org/api/v1/identifier/' + id)
+        return r.json()['repo']
+    except Exception as exc:
+        # Catch all exceptions here: whatever fails in this function should not
+        # cause the code to fail
+        logging.warning("Failed to get repository url for '{}' from projects.kde.org: {}".format(id, exc))
+        return None
 
 def set_maintainers(maintainer_keys, all_maintainers):
     """ Expend the name of the maintainers.

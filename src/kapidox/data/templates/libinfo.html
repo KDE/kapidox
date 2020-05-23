@@ -36,10 +36,14 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
         <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
     {% endif %}
 
-      <dt>Clone</dt>
-        <dd><pre class="fragment">git clone git://anongit.kde.org/{{ fwinfo.name }}.git</pre></dd>
+    {% if fwinfo.repopath %}
+      <dt>Clone with SSH</dt>
+        <dd><pre class="fragment">git clone git@invent.kde.org:{{ fwinfo.repopath }}.git</pre></dd>
+      <dt>Clone with HTTPS</dt>
+        <dd><pre class="fragment">git clone https://invent.kde.org/{{ fwinfo.repopath }}.git</pre></dd>
       <dt>Browse source</dt>
-        <dd>{{ fwinfo.fancyname }} on <a href="https://cgit.kde.org/{{ fwinfo.name }}.git/tree">cgit.kde.org</a></dd>
+        <dd>{{ fwinfo.fancyname }} on <a href="https://invent.kde.org/{{ fwinfo.repopath }}.git">invent.kde.org</a></dd>
+    {% endif %}
     </dl>
   </div>
 </div>
