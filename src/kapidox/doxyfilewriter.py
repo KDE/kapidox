@@ -25,9 +25,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Python 2/3 compatibility (NB: we require at least 2.7)
-from __future__ import division, absolute_import, print_function, unicode_literals
-
 def _quote(txt):
     return '"' + txt + '"'
 

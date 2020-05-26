@@ -27,8 +27,6 @@
 A set of classes and functions to make it easier to work with Graphviz graphs
 """
 
-from __future__ import division, absolute_import, print_function, unicode_literals
-
 import gv
 
 

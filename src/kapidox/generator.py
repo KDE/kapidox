@@ -26,9 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Python 2/3 compatibility (NB: we require at least 2.7)
-from __future__ import division, absolute_import, print_function, unicode_literals
-
 import codecs
 from distutils.spawn import find_executable
 import datetime
@@ -42,10 +39,7 @@ import xml.etree.ElementTree as ET
 
 import jinja2
 
-if sys.version_info.major < 3:
-    from urlparse import urljoin
-else:
-    from urllib.parse import urljoin
+from urllib.parse import urljoin
 
 import xml.etree.ElementTree as xmlET
 import json

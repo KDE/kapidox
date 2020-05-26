@@ -15,8 +15,8 @@ documentation.
 ## Dependencies
 
 ### Required
-Python 2 or 3 is required to run the scripts.  Whichever version of python you
-use needs to have the jinja2 and yaml (or pyyaml) modules.
+Python 3 is required to run the scripts. Additionally you
+need to have the jinja2 and yaml (or pyyaml) modules.
 
 The following command should install them for the current user:
 

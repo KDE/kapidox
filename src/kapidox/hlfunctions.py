@@ -26,9 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Python 2/3 compatibility (NB: we require at least 2.7)
-from __future__ import division, absolute_import, print_function, unicode_literals
-
 import logging
 import os
 import shutil
@@ -36,10 +33,7 @@ import sys
 import tempfile
 import json
 
-if sys.version_info.major < 3:
-    from urllib import urlretrieve
-else:
-    from urllib.request import urlretrieve
+from urllib.request import urlretrieve
 
 from . import generator, utils, argparserutils, preprocessing
 
