@@ -550,7 +550,7 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
         writer.write_entries(
                 INPUT=input_list,
                 DOTFILE_DIRS=find_src_subdir(ctx.fwinfo.docdir, 'dot'),
-                EXAMPLE_PATH=find_src_subdir(ctx.fwinfo.exampledir),
+                EXAMPLE_PATH=find_src_subdir(ctx.fwinfo.exampledirs),
                 IMAGE_PATH=image_path_list)
 
         # Other input settings

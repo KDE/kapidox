@@ -26,7 +26,7 @@ public_source_dirs:  # optional, default to src, must be a list
   - src1
   - src2
 public_doc_dir: docs  # optional, default to docs
-public_example_dir: examples  # optional, default to examples
+public_example_dirs: examples  # optional, default to examples, must be a list
 
 portingAid: true/false  # optional, default to false
 deprecated: true/false  # optional, default to false

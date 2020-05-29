@@ -107,7 +107,11 @@ class Library(object):
         self.path = metainfo['path']
         self.srcdirs = utils.tolist(metainfo.get('public_source_dirs', ['src']))
         self.docdir = utils.tolist(metainfo.get('public_doc_dir', ['docs']))
-        self.exampledir = utils.tolist(metainfo.get('public_example_dir', ['examples']))
+        if 'public_example_dirs' in metainfo:
+            self.exampledirs = utils.tolist(metainfo.get('public_example_dirs', ['examples']))
+        else:
+            # backward compat
+            self.exampledirs = utils.tolist(metainfo.get('public_example_dir', ['examples']))
         self.dependency_diagram = None
         self.type = metainfo.get('type', '')
         self.portingAid = metainfo.get('portingAid', False)
