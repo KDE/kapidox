@@ -17,7 +17,7 @@ maintainer: ochurlaud  # optional, replaced by The KDE Community
 group: frameworks # optional
 subgroup: tier 1 # optional, a group must be defined
 type: functional  # optional
-logo: relative/path/to/logo.png # Used only if not part of a group
+logo: relative/path/to/logo.png # Used only if not part of a group, defaults to logo.png if present
 platforms:  # optional, name accepted: all, Linux, Windows, MacOSX
     - name: Linux
       note: Functional only with running BlueZ 5 # optional
@@ -51,7 +51,7 @@ group_info: # optional, only once per group
     - Windows (partial)
     - MacOSX (partial)
   description: Providing everything from simple utility classes to ..
-  logo: relative/path/to/logo.png
+  logo: relative/path/to/logo.png # optional, defaults to logo.png if present
   long_description: # optional, one item per paragraph, html authorized
     - The KDE Frameworks build on the <a href="https://www.qt.io">Qt
       framework</a>, providing everything from simple utility classes (such as

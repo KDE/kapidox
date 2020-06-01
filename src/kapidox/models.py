@@ -220,16 +220,26 @@ class Product(object):
             return None
 
     def _set_logo_src(self, path, dct):
+        defined_not_found = False
         if 'logo' in dct:
             logo_url = os.path.join(path, dct['logo'])
             if os.path.isfile(logo_url):
                 return logo_url
             else:
-                logging.warning("{} logo file doesn't exist, set back to None"
+                defined_not_found = True
+
+        logo_url = os.path.join(path, 'logo.png')
+        if os.path.isfile(logo_url):
+            if defined_not_found:
+                logging.warning("Defined {} logo file doesn't exist, set back to found logo.png"
                                 .format(self.fancyname))
-                return None
-        else:
-            return None
+            return logo_url
+
+        if defined_not_found:
+            logging.warning("Defined {} logo file doesn't exist, set back to None"
+                            .format(self.fancyname))
+
+        return None
 
 class Subproduct(object):
     """ Subproduct
