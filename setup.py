@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
+from setuptools import setup
 import os
 
 # Walk list of data files to install to ensure we install everything. This
@@ -47,4 +47,5 @@ setup(
             'Programming Language :: Python',
             'Topic :: Software Development'
         ],
+        install_requires=open("requirements.txt").readlines()
     )
