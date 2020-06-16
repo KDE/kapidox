@@ -18,7 +18,7 @@ setup(
         description='KDE API documentation generation tools',
         maintainer = 'Olivier Churlaud',
         maintainer_email = 'olivier@churlaud.com',
-        url='https://cgit.kde.org/kapidox.git',
+        url='https://commits.kde.org/kapidox',
         packages = [
             'kapidox',
             'kapidox.depdiagram'
