@@ -13,6 +13,7 @@ the other keys are optionals. See below for a simplier example.
 ~~~{.yaml}
 description: Library doing X and Y
 fancyname: The FancyName # optional, else replaced by the `project()` value of the `CMakeLists.txt`
+repo_id: klib  # optional, defaults to base name of directory with the metainfo.yaml file
 maintainer: ochurlaud  # optional, replaced by The KDE Community
 group: frameworks # optional
 subgroup: tier 1 # optional, a group must be defined

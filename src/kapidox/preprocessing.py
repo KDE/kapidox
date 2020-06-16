@@ -118,7 +118,7 @@ def create_metainfo(path):
                         .format(path))
         return None
 
-    name = os.path.basename(path)
+    dirname = os.path.basename(path)
     if 'fancyname' in metainfo:
         fancyname = metainfo['fancyname']
     else:
@@ -130,9 +130,16 @@ def create_metainfo(path):
         return None
     # A fancyname has 1st char capitalized
     fancyname = fancyname[0].capitalize() + fancyname[1:]
+
+    if 'repo_id' in metainfo:
+        repo_id = metainfo['repo_id']
+    else:
+        repo_id = dirname
+
     metainfo.update({
         'fancyname': fancyname,
-        'name': name,
+        'name': dirname,
+        'repo_id': repo_id,
         'public_lib': metainfo.get('public_lib', False),
         'dependency_diagram': None,
         'path': path,
