@@ -19,7 +19,7 @@ group: frameworks # optional
 subgroup: tier 1 # optional, a group must be defined
 type: functional  # optional
 logo: relative/path/to/logo.png # Used only if not part of a group, defaults to logo.png if present
-platforms:  # optional, name accepted: all, Linux, Windows, MacOSX
+platforms:  # optional, name accepted: all, Linux, FreeBSD, Windows, macOS, Android
     - name: Linux
       note: Functional only with running BlueZ 5 # optional
 public_lib: true  # if not defined, the library is ignored
@@ -50,7 +50,7 @@ group_info: # optional, only once per group
   platforms:
     - Linux
     - Windows (partial)
-    - MacOSX (partial)
+    - macOS (partial)
   description: Providing everything from simple utility classes to ..
   logo: relative/path/to/logo.png # optional, defaults to logo.png if present
   long_description: # optional, one item per paragraph, html authorized

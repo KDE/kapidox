@@ -145,6 +145,28 @@ def create_metainfo(path):
         'path': path,
         })
 
+    # replace legacy platform names
+    if 'platforms' in metainfo:
+        platforms = metainfo['platforms']
+        for index, x in enumerate(platforms):
+            if x['name'] == "MacOSX":
+                x['name'] = "macOS";
+                platforms[index] = x
+                logging.warning('{} uses outdated platform name, please replace "MacOSX" with "macOS".'
+                        .format(metainfo['fancyname']))
+        metainfo.update({ 'platforms': platforms })
+    if 'group_info' in metainfo:
+        group_info = metainfo['group_info']
+        if 'platforms' in group_info:
+            platforms = group_info['platforms']
+            for index, x in enumerate(platforms):
+                if "MacOSX" in x:
+                    x = x.replace("MacOSX", "macOS");
+                    platforms[index] = x
+                    logging.warning('Group {} uses outdated platform name, please replace "MacOSX" with "macOS".'
+                            .format(group_info['fancyname']))
+            group_info.update({ 'platforms': platforms })
+
     return metainfo
 
 
@@ -189,7 +211,7 @@ def sort_metainfo(metalist, all_maintainers):
     products = dict()
     groups = []
     libraries = []
-    available_platforms = set(['Windows', 'MacOSX', 'Linux', 'Android', 'FreeBSD'])
+    available_platforms = set(['Windows', 'macOS', 'Linux', 'Android', 'FreeBSD'])
 
     # First extract the structural info
     for metainfo in metalist:

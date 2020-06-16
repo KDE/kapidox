@@ -6,7 +6,7 @@ platforms:
     - name: Linux
     - name: FreeBSD
     - name: Windows
-    - name: MacOSX
+    - name: macOS
 portingAid: false
 deprecated: false
 release: true
@@ -26,7 +26,7 @@ group_info:
       - Linux
       - FreeBSD (partial)
       - Windows (partial)
-      - MacOSX (partial)
+      - macOS (partial)
       - Android (partial)
     description: Providing everything from simple utility classes to integrated solutions for common requirements of desktop applications
     logo: konqi_frameworks.png
