@@ -14,7 +14,7 @@ for root, dirs, files in os.walk('src/kapidox/data/'):
 
 setup(
         name='kapidox',
-        version='5.72.0',
+        version='5.73.0',
         description='KDE API documentation generation tools',
         maintainer = 'Olivier Churlaud',
         maintainer_email = 'olivier@churlaud.com',
