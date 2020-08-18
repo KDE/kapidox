@@ -36,6 +36,11 @@ target_link_libraries(yourapp{% for lib in fwinfo.libraries %} {{ lib.cmake }}{%
         <dd><pre class="fragment">QT +={% for lib in fwinfo.libraries|selectattr("qmake") %} {{ lib.qmake }}{% endfor %} {% for line in fwinfo.qmakepro %}<br/>{{ line }} {% endfor %}</pre></dd>
     {% endif %}
 
+    {% if fwinfo.libraries|selectattr("license")|list|count != 0 %}
+      <dt>Licenses</dt>
+        <dd>{% for lib in fwinfo.libraries|selectattr("license") %}<dd>{{ lib.cmake }}: {{ lib.license }}</dd> {% endfor %}
+    {% endif %}
+
     {% if fwinfo.repopath %}
       <dt>Clone with SSH</dt>
         <dd><pre class="fragment">git clone git@invent.kde.org:{{ fwinfo.repopath }}.git</pre></dd>
