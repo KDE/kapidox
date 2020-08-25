@@ -34,6 +34,7 @@
     <link rel="stylesheet" type="text/css" href="{{doxygencss}}" />
   {% endif %}
   <link rel="stylesheet" type="text/css" href="https://cdn.kde.org/aether-devel/aether-sidebar.css" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.kde.org/breeze-icons/icons.css" />
   {% block head %}{% endblock %}
 </head>
 
@@ -65,16 +66,14 @@
     </aside>
 
     <article class="content">
-      <h1 class="content-title">
+      <h1 class="content-title px-0">
         {% block title %}{% endblock %}
         <form action="search.html" method="get" class="form-inline">
           <div id="search" class="input-group ml-auto">
             <input type="text" id="search-input" name="query" aria-label="Search input" class="form-control" placeholder="Search...">
-            <span class="input-group-btn">
-              <button type="submit" class="btn btn-default" aria-label="Search">
-                <span class="glyphicon glyphicon-search"></span>
-              </button>
-            </span>
+            <button type="submit" class="btn btn-default sr-only">
+              Submit
+            </button>
           </div>
         </form>
       </h1>

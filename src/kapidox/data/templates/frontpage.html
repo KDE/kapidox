@@ -17,54 +17,47 @@ KDE Products
 
 {% block content %}
 <div class="textblock">
-    {% for para in intro %}
+  {% for para in intro %}
     <p>{{ para }}</p>
-    {% endfor %}
+  {% endfor %}
 </div>
 
-{% for product in product_list | sort(attribute='name')%}
-<div class="row">
-    <div class="col-md-9">
-        <div class="product-row">
-            <div class="kde-product-row">
-
-                <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}"
-                    width="80px" />
-
-                <div class="kde-product-column">
-                    <h4><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></h4>
-                    <p>
-                        {{ product.description }}
-                    </p>
-                    <div>
-                        <b>Maintainer{% if product.maintainers | length > 1 %}s{% endif %}:</b>
-                        {% for maintainer in product.maintainers %}
-                        <a
-                            href="mailto:{{ maintainer.email }}">{{ maintainer.name }}</a>{% if not loop.last %},{% endif %}
-                        {% else %}
-                        <a href="mailto:kde-devel@kde.org">The KDE Community</a>
-                        {% endfor %}
-                    </div>
-                    {% if product.platforms %}
-                    <p>
-                        <b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b> {{ product.platforms | sort | join(' | ') }}
-                    </p>
-                    {% endif %}
-                    {% if qch or man %}
-                    <li class="prod-download">
-                        {% if qch %} [<a href="qch/{{product.name}}.qch">QCH file</a>]{% endif %}
-                        {% if man %} <a href="qch/{{product.name}}.man">MAN</a>{% endif %}
-                    </li>
-                    {% endif %}
-                </div>
-            </div> <!-- row -->
-        </div> <!-- product-row -->
+<section class="products">
+  {% for product in product_list | sort(attribute='name')%}
+    <div class="product my-3 shadow py-2">
+      <h2 class="h2 mt-0"><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></h2>
+      <div class="d-flex">
+        <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}"
+             style="min-width:80px; width: 80px;" class="align-self-start my-0 mr-2" />
+        <div>
+          <p>{{ product.description }}</p>
+          <div>
+            <b>Maintainer{% if product.maintainers | length > 1 %}s{% endif %}:</b>
+            {% for maintainer in product.maintainers %}
+              <a href="mailto:{{ maintainer.email }}">{{ maintainer.name }}</a>
+              {% if not loop.last %},{% endif %}
+            {% else %}
+              <a href="mailto:kde-devel@kde.org">The KDE Community</a>
+            {% endfor %}
+          </div>
+          {% if product.platforms %}
+            <p>
+              <b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b> {{ product.platforms | sort | join(' | ') }}
+            </p>
+          {% endif %}
+          {% if qch or man %}
+            <p class="prod-download">
+              {% if qch %} [<a href="qch/{{product.name}}.qch">QCH file</a>]{% endif %}
+              {% if man %} <a href="qch/{{product.name}}.man">MAN</a>{% endif %}
+            </p>
+          {% endif %}
+        </div>
+      </div>
     </div>
-</div> <!-- row -->
-{% endfor %}
-
+  {% endfor %}
+</section>
 {% endblock content %}
 
 {% block sidebar %}
-{% include "frontpage-sidebar.html" %}
+  {% include "frontpage-sidebar.html" %}
 {% endblock %}
