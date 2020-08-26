@@ -25,7 +25,15 @@ KDE Products
 <section class="products px-0">
   {% for product in product_list | sort(attribute='name')%}
     <div class="product my-3 shadow p-4">
-      <h2 class="h2 mt-0 mb-3"><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></h2>
+      <h2 class="h2 mt-0 mb-3 d-flex">
+        <a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a>
+        {% if qch or man %}
+          <p class="prod-download ml-auto h6">
+            {% if qch %} [<a href="qch/{{product.name}}.qch">QCH file</a>]{% endif %}
+            {% if man %} <a href="qch/{{product.name}}.man">MAN</a>{% endif %}
+          </p>
+        {% endif %}
+      </h2>
       <div class="d-flex">
         <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}"
              style="min-width:80px; width: 80px;" class="align-self-start my-0 mr-4" />
@@ -43,12 +51,6 @@ KDE Products
           {% if product.platforms %}
             <p>
               <b>Platform{% if product.platforms | length > 1 %}s{% endif %}:</b> {{ product.platforms | sort | join(' | ') }}
-            </p>
-          {% endif %}
-          {% if qch or man %}
-            <p class="prod-download">
-              {% if qch %} [<a href="qch/{{product.name}}.qch">QCH file</a>]{% endif %}
-              {% if man %} <a href="qch/{{product.name}}.man">MAN</a>{% endif %}
             </p>
           {% endif %}
         </div>
