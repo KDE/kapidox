@@ -22,13 +22,13 @@ KDE Products
   {% endfor %}
 </div>
 
-<section class="products">
+<section class="products px-0">
   {% for product in product_list | sort(attribute='name')%}
-    <div class="product my-3 shadow py-2">
-      <h2 class="h2 mt-0"><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></h2>
+    <div class="product my-3 shadow p-4">
+      <h2 class="h2 mt-0 mb-3"><a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a></h2>
       <div class="d-flex">
         <img src="{% if product.logo_url %} {{ product.logo_url }} {% else %}{{resources}}/default_product.png{% endif %}"
-             style="min-width:80px; width: 80px;" class="align-self-start my-0 mr-2" />
+             style="min-width:80px; width: 80px;" class="align-self-start my-0 mr-4" />
         <div>
           <p>{{ product.description }}</p>
           <div>
