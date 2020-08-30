@@ -36,6 +36,7 @@ libraries: KF5::MyLib  # optional
 libraries:  # optional
   - qmake: BluezQt
     cmake: KF5::BluezQt
+    license: LGPL-2.1-only OR LGPL-3.0-only # optional, SPDX expression that states outbound license of library
 cmakename: KF5BluezQt  # optional
 
 irc: kde  # optional, overwrite group field, if both not defined, default to kde-devel
