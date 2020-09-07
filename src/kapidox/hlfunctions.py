@@ -56,6 +56,7 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
         shutil.rmtree(dirdest)
     shutil.copytree(dirsrc, dirdest)
     os.rename(dirdest+'/favicon.ico', './favicon.ico')
+    os.rename(dirdest+'/worker.js', './worker.js')
 
     generator.process_toplevel_html_file('index.html',
                                args.doxdatadir,

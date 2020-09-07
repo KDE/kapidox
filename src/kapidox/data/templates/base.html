@@ -15,6 +15,44 @@
 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="manifest" href="/resources/ako.webmanifest">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register("worker.js", {
+        "scope": "/"
+      }).then(registration => {
+        console.log(`Installed service worker: ${registration}`)
+      }, error => {
+        console.log(`Failed to install service worker: ${error}`)
+      })
+      navigator.serviceWorker.ready.then((_registration) => {
+        navigator.serviceWorker.controller.postMessage({
+          type: "CONSIDER_CACHING",
+          url: window.location.href
+        })
+      })
+    }
+  </script>
+  <style>
+    @media (display-mode: standalone) {
+      .header, #sidebar-header {
+        background-color: #3daee9 !important;
+        color: black !important;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+      .header a, #sidebar-header a {
+        color: black !important;
+      }
+      #sidebar-header {
+        height: initial !important;
+        min-height: 46px !important;
+        border-bottom: 5px solid #3daee9;
+      }
+    }
+  </style>
   <link rel="meta" href="https://www.kde.org/labels.rdf" type="application/rdf+xml" title="ICRA labels" />
   <meta name="trademark" content="KDE e.V." />
   <meta name="description" content="KDE products API documentation" />
