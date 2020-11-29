@@ -103,11 +103,14 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
             shutil.rmtree(lib.outputdir)
             ctx = generator.create_fw_context(args, lib, tagfiles, copyright)
             generator.gen_fw_apidocs(ctx, tmp_dir)
-            generator.finish_fw_apidocs(ctx, None)
-            logging.info('# Generate indexing files')
-            generator.indexer(lib)
+            generator.finish_fw_apidocs(ctx)
+            if not ctx.is_qdoc:
+                logging.info('# Generate indexing files')
+                generator.indexer(lib)
         for product in products:
-            generator.create_product_index(product)
+            if not product.metainfo['qdoc']:
+                generator.create_product_index(product)
+
             if product.logo_url is not None:
                 logodir = os.path.dirname(product.logo_url)
                 if not os.path.isdir(logodir):

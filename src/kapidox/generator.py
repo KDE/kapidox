@@ -12,11 +12,17 @@ from distutils.spawn import find_executable
 import datetime
 import os
 import logging
+from os import environ
 import shutil
 import subprocess
 import tempfile
 import sys
+import pathlib
+from typing import Any, Dict
 import xml.etree.ElementTree as ET
+import re
+import glob
+from pathlib import Path
 
 import jinja2
 
@@ -24,6 +30,8 @@ from urllib.parse import urljoin
 
 import xml.etree.ElementTree as xmlET
 import json
+
+from jinja2.environment import Template
 
 from kapidox import utils
 try:
@@ -73,6 +81,7 @@ class Context(object):
         'tagfiles',
         'dependency_diagram',
         'copyright',
+        'is_qdoc',
         # Output
         'outputdir',
         'htmldir',
@@ -405,6 +414,34 @@ def parse_dox_html(stream):
     dct['content'] = '\n'.join(body)
     return dct
 
+def postprocess_internal_qdoc(htmldir: str, tmpl: Template, env: Dict[str, Any]):
+    """Substitute text in HTML files
+
+    Performs text substitutions on each line in each .html file in a directory.
+
+    Args:
+        htmldir: (string) the directory containing the .html files.
+        mapping: (dict) a dict of mappings.
+
+    """
+    for path in glob.glob(os.path.join(htmldir, "*.html")):
+        newpath = f"{path}.new"
+
+        txt = Path(path).read_text()
+        env['docs'] = txt.partition('body')[2].partition('</body>')[0]
+
+        with codecs.open(newpath, 'w', 'utf-8') as outf:
+            try:
+                html = tmpl.render(env)
+            except BaseException:
+                logging.error(f"Postprocessing {path} failed")
+                raise
+
+            outf.write(html)
+
+        os.remove(path)
+        os.rename(newpath, path)
+
 
 def postprocess_internal(htmldir, tmpl, mapping):
     """Substitute text in HTML files
@@ -481,9 +518,21 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
+def generate_apidocs_qdoc(ctx: Context, tmp_dir: str, doxyfile_entries=None, keep_temp_dirs=False):
+    absolute = pathlib.Path(os.path.join(ctx.outputdir, 'html')).absolute()
 
-def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
+    environ['KAPIDOX_DIR'] = ctx.doxdatadir
+
+    logging.info(f'Running QDoc (qdoc {ctx.fwinfo.path}/.qdocconf --outputdir={absolute}')
+    ret = subprocess.call(['qdoc', ctx.fwinfo.path + "/.qdocconf", f"--outputdir={absolute}"])
+    if ret != 0:
+        raise Exception("QDoc exited with a non-zero status code")
+
+def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
+
+    if ctx.is_qdoc:
+        return generate_apidocs_qdoc(ctx, tmp_dir, doxyfile_entries, keep_temp_dirs)
 
     def find_src_subdir(dirlist, deeper_subd=None):
         returnlist = []
@@ -580,26 +629,6 @@ def generate_apidocs(ctx, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     logging.info('Running Doxygen')
     subprocess.call([ctx.doxygen, doxyfile_path])
 
-
-def postprocess(ctx, classmap, template_mapping=None):
-    mapping = {
-            'doxygencss': 'doxygen.css',
-            'resources': ctx.resourcedir,
-            'title': ctx.title,
-            'fwinfo': ctx.fwinfo,
-            'copyright': ctx.copyright,
-            'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
-            'class_map': {'classes': classmap},
-            'kapidox_version': utils.get_kapidox_version(),
-        }
-    if template_mapping:
-        mapping.update(template_mapping)
-    logging.info('Postprocessing')
-
-    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('doxygen.html')
-    postprocess_internal(ctx.htmldir, tmpl, mapping)
-
-
 def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
     """Generate a dependency diagram for a framework.
     """
@@ -673,6 +702,7 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
                    dependency_diagram=lib.dependency_diagram,
                    # Output
                    outputdir=lib.outputdir,
+                   is_qdoc=lib.metainfo['qdoc'],
                    )
 
 
@@ -696,54 +726,62 @@ def create_fw_tagfile_tuple(lib):
         prefix = '../../'
     return (tagfile, prefix + lib.outputdir + '/html/')
 
+def finish_fw_apidocs_doxygen(ctx: Context, env: Dict[str, Any]):
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('library.html')
+    postprocess_internal(ctx.htmldir, tmpl, env)
 
-def finish_fw_apidocs(ctx, group_menu):
+    tmpl2 = create_jinja_environment(ctx.doxdatadir).get_template('search.html')
+    search_output = ctx.fwinfo.outputdir + "/html/search.html"
+    with codecs.open(search_output, 'w', 'utf-8') as outf:
+        outf.write(tmpl2.render(env))
+
+def finish_fw_apidocs_qdoc(ctx: Context, env: Dict[str, Any]):
+    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('qdoc-wrapper.html')
+    postprocess_internal_qdoc(ctx.htmldir, tmpl, env)
+
+def gen_template_environment(ctx: Context) -> Dict[str, Any]:
     classmap = build_classmap(ctx.tagfile)
 
     entries = [{
         'href': '../../index.html',
         'text': 'KDE API Reference'
-        }]
-    if  ctx.fwinfo.part_of_group:
+    }]
+
+    if ctx.fwinfo.part_of_group:
         entries[0]['href'] = '../' + entries[0]['href']
-        entries.append({
-            'href': '../../index.html',
-            'text': ctx.fwinfo.product.fancyname
-            })
-    entries.append({
-        'href': 'index.html',
-        'text': ctx.fancyname
-        })
+        entries.append({'href': '../../index.html', 'text': ctx.fwinfo.product.fancyname })
 
-    template_mapping = {
-                'breadcrumbs': {
-                    'entries': entries
-                    },
-                }
-    copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
+    entries.append({'href': 'index.html', 'text': ctx.fancyname })
+
     mapping = {
-            'qch': ctx.qhp,
-            'doxygencss': 'doxygen.css',
-            'resources': ctx.resourcedir,
-            'title': ctx.title,
-            'fwinfo': ctx.fwinfo,
-            'copyright': copyright,
-            'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
-            'class_map': {'classes': classmap},
-            'kapidox_version': utils.get_kapidox_version(),
-        }
-    if template_mapping:
-        mapping.update(template_mapping)
-    logging.info('Postprocessing')
+        'qch': ctx.qhp,
+        'doxygencss': 'doxygen.css',
+        'resources': ctx.resourcedir,
+        'title': ctx.title,
+        'fwinfo': ctx.fwinfo,
+        'copyright': f"1996-{datetime.date.today().year} The KDE developers",
+        'doxygen_menu': {'entries': menu_items(ctx.htmldir, ctx.modulename)},
+        'class_map': {'classes': classmap},
+        'kapidox_version': utils.get_kapidox_version(),
+        'breadcrumbs': {
+            'entries': entries
+        },
+    }
 
-    tmpl = create_jinja_environment(ctx.doxdatadir).get_template('library.html')
-    postprocess_internal(ctx.htmldir, tmpl, mapping)
+    return mapping
 
-    tmpl2 = create_jinja_environment(ctx.doxdatadir).get_template('search.html')
-    search_output = ctx.fwinfo.outputdir + "/html/search.html"
-    with codecs.open(search_output, 'w', 'utf-8') as outf:
-        outf.write(tmpl2.render(mapping))
+def finish_fw_apidocs(ctx: Context):
+    env = gen_template_environment(ctx)
 
+    if ctx.is_qdoc:
+        logging.info('Postprocessing QtDoc...')
+
+        finish_fw_apidocs_qdoc(ctx, env)
+
+    else:
+        logging.info('Postprocessing Doxygen...')
+
+        finish_fw_apidocs_doxygen(ctx, env)
 
 def indexer(lib):
     """ Create json index from xml
@@ -814,6 +852,9 @@ def create_product_index(product):
 def create_global_index(products):
     doclist = []
     for product in products:
+        if product.metainfo['qdoc']:
+            continue
+
         with open(product.outputdir+'/searchdata.json', 'r') as f:
             prodindex = json.load(f)
             for proditem in prodindex['libraries']:

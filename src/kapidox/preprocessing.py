@@ -10,6 +10,7 @@
 import logging
 import os
 import sys
+from typing import Any, Dict, Optional
 
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
@@ -60,7 +61,7 @@ def expand_platform_all(dct, available_platforms):
                 dct[platform] = note
 
 
-def create_metainfo(path):
+def create_metainfo(path) -> Optional[Dict[str,Any]]:
     """Look for a `metadata.yaml` file and create a dictionary out it.
 
     Args:
@@ -69,6 +70,8 @@ def create_metainfo(path):
         A dictionary containing all the parsed information, or `None` if it
     did not fulfill some conditions.
     """
+
+    metainfo: Optional[Dict[str,Any]]
 
     if not os.path.isdir(path):
         return None
@@ -117,6 +120,11 @@ def create_metainfo(path):
     else:
         repo_id = dirname
 
+    qdoc: bool = False
+
+    if 'qdoc' in metainfo:
+        qdoc = metainfo['qdoc']
+
     metainfo.update({
         'fancyname': fancyname,
         'name': dirname,
@@ -124,6 +132,7 @@ def create_metainfo(path):
         'public_lib': metainfo.get('public_lib', False),
         'dependency_diagram': None,
         'path': path,
+        'qdoc': qdoc,
         })
 
     # replace legacy platform names

@@ -78,6 +78,7 @@ class Library(object):
             self.parent = self.product
         self.product.libraries.append(self)
 
+        self.metainfo = metainfo
         self.name = metainfo['name']
         self.fancyname = metainfo['fancyname']
         self.description = metainfo.get('description')
@@ -140,6 +141,7 @@ class Product(object):
                                 
         """
         
+        self.metainfo = metainfo
         self.parent = None
         # if there is a group, the product is the group
         # else the product is directly the library
