@@ -1,2 +1,5 @@
 doxypypy
 doxyqml
+requests
+jinja2
+pyyaml
