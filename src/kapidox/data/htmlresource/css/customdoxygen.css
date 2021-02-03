@@ -335,24 +335,20 @@ a.note-close, a.note-close:active, a.note-close:visited {
 }
 
 html, body, table, div, p, dl {
- font-size:5.625vw;
- font-weight:400
+  font: 400 5.625vw/20px Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
 }
 @media (min-width:320px) {
  html, body, table, div, p, dl {
-  font-size:17px
+  font: 400 17px/20px Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
  }
 }
 @media (min-width:900px) {
  html, body, table, div, p, dl {
-  font-size:16px
+  font: 400 16px/20px Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
  }
 }
 @media print {
  html, body, table, div, p, dl {
-  font-size:14px
+  font: 400 14px/20px Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
  }
-}
-body, table, div, p, dl {
-  font-family: Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
 }
