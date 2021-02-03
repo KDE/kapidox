@@ -21,8 +21,12 @@
          </dd>
 
       <dt>Community</dt>
+        {% if fwinfo.irc %}
         <dd>IRC: <a href="irc://freenode/#{{ fwinfo.irc }}">#{{ fwinfo.irc }}</a> on Freenode</dd>
+        {% endif %}
+        {% if fwinfo.mailinglist %}
         <dd>Mailing list: <a href="https://mail.kde.org/mailman/listinfo/{{ fwinfo.mailinglist }}">{{ fwinfo.mailinglist }}</a></dd>
+        {% endif %}
 
     {% if fwinfo.libraries is iterable and fwinfo.libraries|count != 0 %}
       <dt>Use with <a href="https://techbase.kde.org/Development/Tutorials/CMake">CMake</a></dt>

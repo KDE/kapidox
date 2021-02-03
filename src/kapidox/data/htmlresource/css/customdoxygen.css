@@ -21,13 +21,13 @@
   table tr:nth-child(odd) {
     background-color: transparent !important;
   }
-  .mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+  .mdescLeft, .mdescRight, .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
     background-color: transparent !important;
   }
   :root {
     --base: #232629;
     --on-base: #eff0f1;
-    --card: rgba(255,255,255,0.1);
+    --card: rgba(255,255,255,0.02);
     --on-card: #eff0f1;
     --borders: rgba(255,255,255,0.2);
     --borders-faint: rgba(255,255,255,0.05);
@@ -37,6 +37,9 @@
 
     background-color: var(--base);
   }
+}
+.memItemLeft, .memItemRight {
+  background-color: var(--base);
 }
 .memtitle {
  display:none
@@ -50,6 +53,8 @@ dl.reflist dt {
  background:var(--plasma-blue);
  color:var(--on-plasma-blue);
  border-radius:0;
+ border-top-left-radius: 4px;
+ border-top-right-radius: 4px;
  text-shadow:none
 }
 .memproto a.el,
@@ -59,7 +64,8 @@ dl.reflist dt a.el {
 
 .memname {
  color:var(--on-plasma-blue);
- text-shadow:none
+ text-shadow:none;
+ word-break: break-word;
 }
 @media (prefers-color-scheme:dark) {
  table {
@@ -85,8 +91,8 @@ dl.reflist dt a.el {
  div.memproto {
   border:0
  }
- .stringliteral {
-   color: #0443ff;
+ span.stringliteral {
+    color: #0040ff;
  }
  .comment {
    color: #ff0202;
@@ -94,6 +100,27 @@ dl.reflist dt a.el {
  .keyword {
    color: #00ff00;
  }
+ span.lineno, span.lineno a {
+   background-color: transparent;
+ }
+ span.comment {
+   color: #fdaaaa;
+ }
+ a.code, a.code:visited, a.line, a.line:visited {
+   color: #6a9cff;
+ }
+ span.keywordtype {
+   color: #ffa143;
+ }
+ .dyncontent img {
+   filter: invert(0.85);
+ }
+ .classindex dl.odd {
+   background-color: var(--base);
+ }
+}
+.dyncontent img {
+  filter: invert(0.01);
 }
 .memdoc,
 dl.refllist dd {
@@ -102,6 +129,11 @@ dl.refllist dd {
 }
 .memSeparator {
  border-color:var(--borders)
+}
+@media (max-width: 900px) {
+  .td-toc {
+    height: auto;
+  }
 }
 .mdescLeft,
 .mdescRight,
@@ -125,6 +157,9 @@ dl.refllist dd {
 .memproto .paramname {
  color:#f7800a;
  font-weight:700
+}
+.paramname {
+  padding-right: 6px;
 }
 .memproto span.mlabel {
  padding:6px;
@@ -275,6 +310,12 @@ table.libraries th {
   width: 15px;
 }
 
+.fieldtable th {
+  background: var(--plasma-blue);
+  border-radius: 0;
+  color: var(--on-plasma-blue);
+}
+
 /* Platform note -------------------------------------*/
 .note-tip {
   display: none;
@@ -311,4 +352,7 @@ html, body, table, div, p, dl {
  html, body, table, div, p, dl {
   font-size:14px
  }
+}
+body, table, div, p, dl {
+  font-family: Noto Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
 }

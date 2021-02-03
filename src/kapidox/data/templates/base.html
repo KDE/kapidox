@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block page_title %}{% endblock %}</title>
 
-  <link rel="manifest" href="/resources/ako.webmanifest">
+  <link rel="manifest" href="{{resources}}/ako.webmanifest">
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register("worker.js", {
@@ -41,7 +41,7 @@
   <!-- CSS can be edited in https://invent.kde.org/websites/aether-sass -->
   <link href="https://cdn.kde.org//aether-devel/aether-docsy.css" rel="stylesheet">
   <link href="https://cdn.kde.org/breeze-icons/icons.css" rel="stylesheet">
-  <link href="/resources/css/customdoxygen.css" rel="stylesheet">
+  <link href="{{resources}}/css/customdoxygen.css" rel="stylesheet">
   {% block head %}{% endblock %}
   <style>
 .td-content .header, #nav-path {
@@ -84,7 +84,7 @@ div.contents {
         <!-- left sidebar -->
         <div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none">
           <div id="td-sidebar-menu" class="td-sidebar__inner">
-            <form action="search.html" method="get" class="td-sidebar__search d-flex px-2 align-items-center">
+            <form action="search.html" method="get" class="td-sidebar__search d-flex p-2 pt-0 align-items-center">
               <input type="text" id="SearchBox" name="query" aria-label="Search input" class="form-control" placeholder="Search..."></input>
               <button class="btn btn-link td-sidebar__toggle d-md-none p-0 m-0 ml-3 icon icon_application-menu" type="button" data-toggle="collapse" data-target="#td-section-nav" aria-controls="td-docs-nav" aria-expanded="false" style="font-size: 1.5rem; height: 40px; width: 40px; border-width: 0" aria-label="Toggle section navigation"></button>
             </form>
@@ -131,12 +131,12 @@ div.contents {
   </div>
 
   <script src="https://cdn.kde.org/aether-devel/bootstrap.js"></script>
-  <script src="/resources/js/main.js"></script>
+  <script src="{{resources}}/js/main.js"></script>
   <script src="dynsections.js"></script>
   <script>
     document.querySelectorAll('h1, .dynheader, el').forEach(h => {
-      h.innerText = h.innerText.replace('org::kde::kirigami::templates::', 'Kirigami.Templates.');
-      h.innerText = h.innerText.replace('org::kde::kirigami::', 'Kirigami.');
+      h.innerHTML = h.innerHTML.replace('org::kde::kirigami::templates::', 'Kirigami.<wbr>Templates.<wbr>');
+      h.innerHTML = h.innerHTML.replace('org::kde::kirigami::', 'Kirigami.<wbr>');
     });
     document.querySelectorAll('.memname, #class-picker option').forEach(h => {
       h.innerText = h.innerText.replace('org::kde::kirigami::templates::', 'Templates.');

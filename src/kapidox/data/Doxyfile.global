@@ -78,6 +78,9 @@ SORT_MEMBERS_CTORS_1ST = YES
 # Do not create a test list from \test commands
 GENERATE_TESTLIST      = NO
 
+# Show comment in source code browser
+STRIP_CODE_COMMENTS    = NO
+
 
 #---------------------------------------------------------------------------
 # configuration options related to the input files
