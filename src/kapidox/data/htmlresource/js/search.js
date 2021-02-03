@@ -72,6 +72,12 @@ function search_json(type, json, query)
 
     $( '.loader' ).remove()
     $( '#results' ).append(results_html)
+
+    document.querySelectorAll('h1, .dynheader, el, #results li a').forEach(h => {
+      h.innerText = h.innerText.replace('org::kde::kirigami::templates::', 'Kirigami.Templates.');
+      h.innerText = h.innerText.replace('org::kde::kirigami::', 'Kirigami.');
+    });
+
 }
 
 function search_json_library(json, query)
