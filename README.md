@@ -11,39 +11,18 @@ documentation more convenient (including reading settings from the target
 framework or other module) and a standard template for the generated
 documentation.
 
+## Usage
 
-## Dependencies
+kapidox uses Poetry to manage its dependencies. Once you have Poetry installed,
+you can simply
 
-### Required
-Python 3 is required to run the scripts. Additionally you
-need to have the jinja2 and yaml (or pyyaml) modules.
+```
+poetry install
+poetry shell
+```
 
-The following command should install them for the current user:
-
-    pip install --user PyYAML jinja2
-
-Of course, you need Doxygen!
-
-### Optional
-Doxyqml and doxypypy might be needed to let doxygen document qml
-and python sources respectively.
-
-To generate the dependency diagrams, you need the Graphviz Python bindings.
-They are currently not available from pip, but most distributions provide them.
-You can get binaries and source archives from
-<https://www.graphviz.org/download/>.
-
-## Installation
-
-Unlike almost every other KDE module, kapidox does not use CMake.  This is
-because it is purely written in Python, and so uses distutils.  While it does
-not need to be installed to be used (see below), you can install kapidox with
-
-    python setup.py install
-
-Note: For consistency, kapidox provides a CMakeLists.txt file, but this is just
-a wrapper around the setup.py script.
-
+to enter a shell with kapidox_installed. You'll also need Doxygen and
+QDoc installed, as they provide the core documentation extraction from code.
 
 ## Writing documentation
 
@@ -138,7 +117,7 @@ about them in [depdiagrams](@ref depdiagrams).
 
 - KDE API documentation: <https://api.kde.org/>
 
-## Licensing 
+## Licensing
 
 This project is licensed under BSD-2-Clause. But the specific theme used inside KDE
 is licensed under AGPL-3.0-or-later. If you find the AGPL to restrictive you can

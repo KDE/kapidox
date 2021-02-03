@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "kapidox"
+version = "5.79.0"
+description = "KDE API documentation generation tools"
+authors = ["Jan Blackquill <uhhadd@gmail.com>, Olivier Churlaud <olivier@churlaud.com>, Carl Schwan <carl@carlschwan.eu>"]
+license = "BSD-2-Clause"
+packages = [
+    { include = "kapidox", from = "src" },
+]
+classifiers = [
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python',
+    'Topic :: Software Development'
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+doxypypy = "^0.8.8"
+doxyqml = "^0.5.1"
+jinja2 = "^2.11.3"
+requests = "^2.25.1"
+pyyaml = "^5.4.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
