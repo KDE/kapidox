@@ -55,10 +55,10 @@
 
 {% block page_title %}{{ title }}{% endblock %}
 
-{% block head %}
+{% block footer %}
   <script type="text/javascript" src="{{resources}}/js/notetip.js"></script>
   <script type="text/javascript" src="{{resources}}/js/subgroup.js"></script>
-  <script>
+  <script defer>
   $(document).ready(main);
   </script>
 {% endblock %}
