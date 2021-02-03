@@ -1,4 +1,6 @@
-maintainer: ochurlaud
+maintainer:
+- cblack
+- carlschwan
 description: Scripts and data for building API documentation (dox) in a standard format and style
 tier: 1
 type: functional
