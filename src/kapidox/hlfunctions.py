@@ -13,6 +13,7 @@ import shutil
 import sys
 import tempfile
 import json
+import asyncio
 
 from urllib.request import urlretrieve
 
@@ -25,7 +26,7 @@ except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
 
-def do_it(maintainers_fct, copyright, searchpaths=None):
+async def do_it(maintainers_fct, copyright, searchpaths=None):
     utils.setup_logging()
     if searchpaths is None:
         searchpaths = searchpaths=['/usr/share/doc/qt5', '/usr/share/doc/qt']
@@ -77,24 +78,18 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
         if args.depdiagram_dot_dir:
             dot_files = utils.find_dot_files(args.depdiagram_dot_dir)
             assert(dot_files)
+        else:
+            dot_files = ""
+
+        tasks = []
+
         for lib in libraries:
-            logging.info('# Generating doc for {}'.format(lib.fancyname))
-            if args.depdiagram_dot_dir:
-                png_path = os.path.join(tmp_dir, lib.name) + '.png'
-                ok = generator.generate_diagram(png_path, lib.fancyname,
-                                      dot_files, tmp_dir)
-                if ok:
-                    lib.dependency_diagram = png_path
+            task = asyncio.create_task(generate_doc(lib, args, tmp_dir, dot_files, tagfiles))
+            tasks.append(task)
 
-            # store this as we won't use that every time
-            create_qhp = args.qhp
-            args.qhp = False
-            ctx = generator.create_fw_context(args, lib, tagfiles)
-            # set it back
-            args.qhp = create_qhp
-
-            generator.gen_fw_apidocs(ctx, tmp_dir)
-            tagfiles.insert(0, generator.create_fw_tagfile_tuple(lib))
+        for task in tasks:
+            print("awaiting ", task)
+            tagfiles.insert(0, await task)
 
         # Rebuild for interdependencies
         for lib in libraries:
@@ -102,7 +97,7 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
                          .format(lib.fancyname))
             shutil.rmtree(lib.outputdir)
             ctx = generator.create_fw_context(args, lib, tagfiles, copyright)
-            generator.gen_fw_apidocs(ctx, tmp_dir)
+            await generator.gen_fw_apidocs(ctx, tmp_dir)
             generator.finish_fw_apidocs(ctx)
             if not ctx.is_qdoc:
                 logging.info('# Generate indexing files')
@@ -135,3 +130,23 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
             logging.info('Kept temp dir at {}'.format(tmp_dir))
         else:
             shutil.rmtree(tmp_dir)
+
+async def generate_doc(lib, args, dot_files, tmp_dir, tagfiles):
+    logging.info('# Generating doc for {}'.format(lib.fancyname))
+    if args.depdiagram_dot_dir:
+        png_path = os.path.join(tmp_dir, lib.name) + '.png'
+        ok = generator.generate_diagram(png_path, lib.fancyname,
+                              dot_files, tmp_dir)
+        if ok:
+            lib.dependency_diagram = png_path
+
+    # store this as we won't use that every time
+    create_qhp = args.qhp
+    args.qhp = False
+    ctx = generator.create_fw_context(args, lib, tagfiles, dot_files)
+    # set it back
+    args.qhp = create_qhp
+
+    await generator.gen_fw_apidocs(ctx, tmp_dir)
+    return generator.create_fw_tagfile_tuple(lib)
+

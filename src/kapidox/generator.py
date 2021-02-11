@@ -21,6 +21,7 @@ import pathlib
 from typing import Any, Dict
 import xml.etree.ElementTree as ET
 import re
+import asyncio
 import glob
 from pathlib import Path
 
@@ -518,21 +519,21 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
-def generate_apidocs_qdoc(ctx: Context, tmp_dir: str, doxyfile_entries=None, keep_temp_dirs=False):
+async def generate_apidocs_qdoc(ctx: Context, tmp_dir: str, doxyfile_entries=None, keep_temp_dirs=False):
     absolute = pathlib.Path(os.path.join(ctx.outputdir, 'html')).absolute()
 
     environ['KAPIDOX_DIR'] = ctx.doxdatadir
 
     logging.info(f'Running QDoc (qdoc {ctx.fwinfo.path}/.qdocconf --outputdir={absolute}')
-    ret = subprocess.call(['qdoc', ctx.fwinfo.path + "/.qdocconf", f"--outputdir={absolute}"])
-    if ret != 0:
+    ret = await create_subprocess_exec('qdoc', ctx.fwinfo.path + "/.qdocconf", f"--outputdir={absolute}")
+    if ret.returncode != 0:
         raise Exception("QDoc exited with a non-zero status code")
 
-def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
+async def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
 
     if ctx.is_qdoc:
-        return generate_apidocs_qdoc(ctx, tmp_dir, doxyfile_entries, keep_temp_dirs)
+        return await generate_apidocs_qdoc(ctx, tmp_dir, doxyfile_entries, keep_temp_dirs)
 
     def find_src_subdir(dirlist, deeper_subd=None):
         returnlist = []
@@ -627,7 +628,7 @@ def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dir
                         doxyfile.write(line)
 
     logging.info('Running Doxygen')
-    subprocess.call([ctx.doxygen, doxyfile_path])
+    await asyncio.create_subprocess_exec(ctx.doxygen, doxyfile_path)
 
 def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
     """Generate a dependency diagram for a framework.
@@ -706,13 +707,13 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
                    )
 
 
-def gen_fw_apidocs(ctx, tmp_base_dir):
+async def gen_fw_apidocs(ctx, tmp_base_dir):
     create_dirs(ctx)
     # tmp_dir is deleted when tmp_base_dir is
     tmp_dir = tempfile.mkdtemp(prefix=ctx.modulename + '-', dir=tmp_base_dir)
-    generate_apidocs(ctx, tmp_dir,
-                     doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
-                     )
+    await generate_apidocs(ctx, tmp_dir,
+                           doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
+                           )
 
 def create_fw_tagfile_tuple(lib):
     tagfile = os.path.abspath(
