@@ -4,3 +4,4 @@ __pycache__
 .cmake/
 venv
 /.clang-format
+/compile_commands.json
