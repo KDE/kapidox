@@ -137,3 +137,12 @@ about them in [depdiagrams](@ref depdiagrams).
 ## Examples of generated pages:
 
 - KDE API documentation: <https://api.kde.org/>
+
+## Licensing 
+
+This project is licensed under BSD-2-Clause. But the specific theme used inside KDE
+is licensed under AGPL-3.0-or-later. If you find the AGPL to restrictive you can
+alternatively use the theme from [Docsy](https://github.com/google/docsy) (APACHE-2.0).
+For that you need to replace the style and js script present in `src/kapidox/data/templates/base.html`.
+
+If you need support or licensing clarification, feel free to contact the maintainers.
