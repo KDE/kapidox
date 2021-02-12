@@ -134,7 +134,7 @@ div.contents {
   <script src="{{resources}}/js/main.js"></script>
   <script src="dynsections.js"></script>
   <script>
-    document.querySelectorAll('h1, .dynheader, el').forEach(h => {
+    document.querySelectorAll('h1, .dynheader, .el').forEach(h => {
       h.innerHTML = h.innerHTML.replace('org::kde::kirigami::templates::', 'Kirigami.<wbr>Templates.<wbr>');
       h.innerHTML = h.innerHTML.replace('org::kde::kirigami::', 'Kirigami.<wbr>');
     });
