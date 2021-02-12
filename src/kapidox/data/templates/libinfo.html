@@ -5,7 +5,7 @@
   <div class="menu-content">
     <p>{{ fwinfo.description }}</p>
 
-    <dl>
+    <dl class="pl-0">
       <dt>Maintainer{% if fwinfo.maintainers|count > 1 %}s{% endif %}</dt>
         <dd>{% set product = fwinfo %}{% include "maintainers.html" %}</dd>
 
