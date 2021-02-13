@@ -5,25 +5,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block page_title %}{% endblock %}</title>
-
-  <link rel="manifest" href="{{resources}}/ako.webmanifest">
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register("worker.js", {
-        "scope": "/"
-      }).then(registration => {
-        console.log(`Installed service worker: ${registration}`)
-      }, error => {
-        console.log(`Failed to install service worker: ${error}`)
-      })
-      navigator.serviceWorker.ready.then((_registration) => {
-        navigator.serviceWorker.controller.postMessage({
-          type: "CONSIDER_CACHING",
-          url: window.location.href
-        })
-      })
-    }
-  </script>
   <link rel="meta" href="https://www.kde.org/labels.rdf" type="application/rdf+xml" title="ICRA labels" />
   <meta name="trademark" content="KDE e.V." />
   <meta name="description" content="KDE products API documentation" />
