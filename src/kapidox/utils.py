@@ -104,6 +104,9 @@ def parse_fancyname(fw_dir):
     """
     cmakelists_path = os.path.join(fw_dir, "CMakeLists.txt")
     if not os.path.exists(cmakelists_path):
+        for f in os.listdir(fw_dir):
+            if ".qbs" in f and not "Test" in f:
+                return f[:-4]
         logging.error("No CMakeLists.txt in {}".format(fw_dir))
         return None
     project_re = re.compile(r"project\s*\(\s*([\w\-\_]+)", re.I)
