@@ -37,6 +37,9 @@
 
     background-color: var(--base);
   }
+  .blockquote {
+    background-color: var(--card);
+  }
 }
 .memItemLeft, .memItemRight {
   background-color: var(--base);
