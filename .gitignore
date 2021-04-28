@@ -1,5 +1,7 @@
 *.pyc
 /build/
+dist/
+*.egg-info/
 __pycache__
 .cmake/
 venv
