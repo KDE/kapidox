@@ -118,7 +118,15 @@ def create_jinja_environment(doxdatadir):
 
 def process_toplevel_html_file(outputfile, doxdatadir, products, title, qch_enabled=False):
 
-    products.sort(key=lambda x: x.fancyname.lower())
+    def sort_product(product):
+        print(product.fancyname)
+        if product.fancyname == "The KDE Frameworks":
+            return 'aa'
+        if product.fancyname == "KDE PIM":
+            return 'ab'
+        return product.fancyname.lower()
+
+    products.sort(key=sort_product)
     mapping = {
             'resources': './resources',
             # steal the doxygen css from one of the frameworks

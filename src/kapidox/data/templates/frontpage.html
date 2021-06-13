@@ -23,7 +23,7 @@ KDE Products
 </div>
 
 <section class="products px-0">
-  {% for product in product_list | sort(attribute='name')%}
+  {% for product in product_list %}
     <div class="product my-3 ae-card p-4">
       <h2 class="h2 mt-0 mb-3 d-flex">
         <a name="prod-{{ product.name }}" href="{{ product.href }}">{{ product.fancyname }}</a>
