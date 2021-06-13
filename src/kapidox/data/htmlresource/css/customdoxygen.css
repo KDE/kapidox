@@ -185,7 +185,7 @@ div.fragment {
 }
 
 pre.fragment {
-  overflow-x: scroll;
+  overflow-x: auto;
   background-color: var(--card);
   color: var(--on-card);
   border-color: var(--borders);
