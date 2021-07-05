@@ -25,8 +25,8 @@ The following command should install them for the current user:
 Of course, you need Doxygen!
 
 ### Optional
-Doxyqml and doxypypy might be needed to let doxygen document respectevely qml
-and python sources.
+Doxyqml and doxypypy might be needed to let doxygen document qml
+and python sources respectively.
 
 To generate the dependency diagrams, you need the Graphviz Python bindings.
 They are currently not available from pip, but most distributions provide them.
