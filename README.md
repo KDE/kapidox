@@ -66,8 +66,8 @@ is particularly important, as it will be used as the title of the documentation.
 
 ### metainfo.yaml
 A `metainfo.yaml` file is needed for the library to be generated. It should
-contain some metainformations about the library itself, its maintainers, where
-the sources are etc..
+contain some meta information about the library itself, its maintainers, where
+the sources are, etc.
 
 A very simple example can be:
 
@@ -101,11 +101,11 @@ For example, if you have a checkout of KCoreAddons at
 
     ~/src/frameworks/kapidox/src/kapidox_generate ~/src/frameworks/kcoreaddons
 
-and it would create a documentation in the current directory.
+and it would create a documentation in the current directory, which needs to be empty before executing the command.
 
 The folders are recursively walked through, so you can also run it on
 `~/src/frameworks` or `~/src`. For a lot of libraries, the generation can last
-15-30 minutes and be several hundreds of Mb, so be prepared!
+15-30 minutes and be several hundreds of MB, so be prepared!
 
 Pass the --help argument to see options that control the behaviour of the
 script.
