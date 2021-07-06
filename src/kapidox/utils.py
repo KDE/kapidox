@@ -109,7 +109,7 @@ def parse_fancyname(fw_dir):
                 return f[:-4]
         logging.error("No CMakeLists.txt in {}".format(fw_dir))
         return None
-    project_re = re.compile(r"^[^#]*project\s*\(\s*([\w\-\_]+)", re.I | re.M)
+    project_re = re.compile(r"^\s*project\s*\(\s*([\w\-\_]+)", re.I | re.M)
     with open(cmakelists_path) as f:
         cmakelists_content = f.read()
         match = project_re.search(cmakelists_content)
