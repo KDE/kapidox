@@ -62,6 +62,11 @@ def set_repopath(id):
         # Catch all exceptions here: whatever fails in this function should not
         # cause the code to fail
         logging.warning("Failed to get repository url for '{}' from projects.kde.org: {}".format(id, exc))
+        # This means there is no canonical repo identifier for this repo:
+        # generally that means that the repo was checked out into a non-
+        # canonical pathname (e.g. kitemviews checkout out into a directory
+        # called KItemViews, or kitemviews.git .. anything other than
+        # kitemviews is not recognized).
         return None
 
 def set_maintainers(maintainer_keys, all_maintainers):
