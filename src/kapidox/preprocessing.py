@@ -102,7 +102,11 @@ def create_metainfo(path) -> Optional[Dict[str,Any]]:
                         .format(path))
         return None
 
-    dirname = os.path.basename(path)
+    # Suppose we get a relative path passed in (e.g. on the command-line,
+    # path .. because we're building the dox in a subdirectory of a source
+    # checkout) then we don't want dirname to be "..", but the name that
+    # that resolves to.
+    dirname = os.path.basename(os.path.abspath(path))
     if 'fancyname' in metainfo:
         fancyname = metainfo['fancyname']
     else:
