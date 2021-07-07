@@ -187,9 +187,8 @@ def parse_tree(rootdir):
             #
             # There are exceptions: messagelib (KDE PIM) contains
             # multiple subdirectories with their own metainfo.yaml,
-            # so do **not** suppress recursion.
-            #
-            # dirs[:] = []
+            # which are listed as public sources.
+            dirs[:] = [d for d in dirs if d in metainfo.get('public_source_dirs', [])]
             if metainfo['public_lib'] or 'group_info' in metainfo:
                 metalist.append(metainfo)
             else:
