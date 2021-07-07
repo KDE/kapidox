@@ -175,11 +175,21 @@ def parse_tree(rootdir):
 
     """
     metalist = []
-    for path, dirs, _ in os.walk(rootdir):
+    for path, dirs, _ in os.walk(rootdir, topdown=True):
         # We don't want to do the recursion in the dotdirs
         dirs[:] = [d for d in dirs if not d[0] == '.']
         metainfo = create_metainfo(path)
         if metainfo is not None:
+            # There was a metainfo.yaml, which means it was
+            # the top of a checked-out repository. Stop processing,
+            # because we do not support having repo B checked out (even
+            # as a submodule) inside repo A.
+            #
+            # There are exceptions: messagelib (KDE PIM) contains
+            # multiple subdirectories with their own metainfo.yaml,
+            # so do **not** suppress recursion.
+            #
+            # dirs[:] = []
             if metainfo['public_lib'] or 'group_info' in metainfo:
                 metalist.append(metainfo)
             else:
