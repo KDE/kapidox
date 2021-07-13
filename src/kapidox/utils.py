@@ -163,7 +163,7 @@ def svn_export(remote, local, overwrite=False):
 
     Args:
         remote:     (string) the remote url.
-        local:      (string) the local path where to dowload.
+        local:      (string) the local path where to download.
         overwrite:  (bool) whether to overwrite `local` or not. (optional,
     default = False)
 

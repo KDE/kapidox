@@ -12,7 +12,7 @@ ALWAYS_DETAILED_SEC    = YES
 # to NO the shortest path that makes the file name unique will be used.
 FULL_PATH_NAMES        = NO
 
-# Do not require explicity @brief command for brief description
+# Do not require explicitly @brief command for brief description
 JAVADOC_AUTOBRIEF      = YES
 
 # A bunch of useful aliases

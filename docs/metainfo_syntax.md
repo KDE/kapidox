@@ -6,7 +6,7 @@ Each group must contain one and only one library with the `group_info` block. If
 more are defined, the behavior is unknown.
 
 **Be sure to to set `public_lib` to true, or the library will be ignored.** Most of
-the other keys are optionals. See below for a simplier example.
+the other keys are optionals. See below for a simpler example.
 
 ## All possible keys.
 

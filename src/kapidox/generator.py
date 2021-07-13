@@ -686,7 +686,7 @@ def create_fw_context(args, lib, tagfiles, copyright=''):
     if lib.part_of_group:
         corrected_tagfiles = []
         for k in range(len(tagfiles)):
-            # tagfiles are tupples like:
+            # tagfiles are tuples like:
             # ('/usr/share/doc/qt/KF5Completion.tags', '/usr/share/doc/qt')
             # ('/where/the/tagfile/is/Name.tags', '/where/the/root/folder/is')
             if tagfiles[k][1].startswith("http://") or tagfiles[k][1].startswith("https://"):
