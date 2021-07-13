@@ -48,8 +48,10 @@ def parse_args(depdiagram_available):
 
 
 def add_sources_group(parser):
-    return parser.add_argument_group('sources')
-
+    group = parser.add_argument_group('sources')
+    group.add_argument('--accountsfile', type=normalized_path,
+            help='File with accounts information for SVN contributors.')
+    return group
 
 def add_output_group(parser):
     group = parser.add_argument_group('output options')

@@ -15,8 +15,6 @@ import sys
 import time
 import datetime
 
-from urllib.request import urlretrieve
-
 from kapidox import generator, utils, argparserutils, preprocessing, hlfunctions
 
 try:
@@ -26,56 +24,34 @@ except ImportError:
     DEPDIAGRAM_AVAILABLE = False
 
 
-def download_kde_identities():
+def get_identities():
     """Download the "accounts" file on the KDE SVN repository in order to get
        the KDE identities with their name and e-mail address
     """
-    cache_file = os.path.join(utils.cache_dir(), 'kde-accounts')
-    needs_download = True
-    if os.path.exists(cache_file):
-        logging.debug("Found cached identities file at %s", cache_file)
-        # not quite a day, so that generation on api.kde.org gets a fresh
-        # copy every time the daily cron job runs it
-        yesterday = time.time() - (23.5 * 3600)
-        if os.path.getmtime(cache_file) > yesterday:
-            needs_download = False
-        else:
-            logging.debug("Cached file too old; updating")
-    if needs_download:
-        logging.info("Downloading KDE identities")
-        try:
-            if not utils.svn_export(
-                    'svn://anonsvn.kde.org/home/kde/trunk/kde-common/accounts',
-                    cache_file,
-                    overwrite=True):
-                logging.debug("Falling back to using websvn to fetch "
-                              "identities file")
-                urlretrieve('https://websvn.kde.org/*checkout*/trunk/kde-common/accounts',
-                            cache_file)
-        except Exception as e:
-            if os.path.exists(cache_file):
-                logging.error('Failed to update KDE identities: %s', e)
-            else:
-                logging.error('Failed to fetch KDE identities: %s', e)
-                return None
-
     maintainers = {}
 
-    with codecs.open(cache_file, 'r', encoding='utf8') as f:
-        for line in f:
-            parts = line.strip().split()
-            if len(parts) >= 3:
-                maintainers[parts[0]] = {
-                    'name': ' '.join(parts[1:-1]),
-                    'email': parts[-1]
-                    }
+    args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
+    if args.accountsfile and os.path.exists(args.accountsfile):
+        logging.debug("Found contributor identities file at %s", args.accountsfile)
+        with codecs.open(args.accountsfile, 'r', encoding='utf8') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 3:
+                    maintainers[parts[0]] = {
+                        'name': ' '.join(parts[1:-1]),
+                        'email': parts[-1]
+                        }
+
+    else:
+        logging.debug("No contributor identities file found. Without the file, maintainer information will be incomplete. For generating KDE API documentation you can download the KDE accounts file from https://websvn.kde.org/*checkout*/trunk/kde-common/accounts and specify it with the --accountsfile argument.")
+
 
     return maintainers
 
 
 def main():
     kde_copyright = '1996-' + str(datetime.date.today().year) + ' The KDE developers'
-    get_maintainers = download_kde_identities
+    get_maintainers = get_identities
 
     hlfunctions.do_it(maintainers_fct=get_maintainers,
                       copyright=kde_copyright)
