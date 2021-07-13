@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(KApiDox NONE)
 
-find_package(PythonInterp REQUIRED)
+find_package(Python3 COMPONENTS Interpreter)
 
 if(WIN32)
     # Needs native path and extra escaping of spaces
@@ -11,7 +11,7 @@ else()
 endif()
 
 add_custom_target(build ALL
-    COMMAND ${PYTHON_EXECUTABLE} setup.py build --build-base ${BINARY_DIR}
+    COMMAND ${Python3_EXECUTABLE} setup.py build --build-base ${BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
@@ -30,7 +30,7 @@ install(CODE
      endif()
     file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} INSTALL_PREFIX)
      execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix \"\${INSTALL_PREFIX}\" \${_root_arg}
+        COMMAND ${Python3_EXECUTABLE} setup.py install --prefix \"\${INSTALL_PREFIX}\" \${_root_arg}
         WORKING_DIRECTORY \"${CMAKE_SOURCE_DIR}\"
         )"
     )
