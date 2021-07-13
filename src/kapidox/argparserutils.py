@@ -17,7 +17,7 @@ def parse_args(depdiagram_available):
     import textwrap
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=textwrap.dedent('''Generate API documentations of complex projects.
+        description=textwrap.dedent('''Generate API documentation of complex projects.
 
 >> This function must be run from an empty directory (where the documentation will be build).''')
         )
