@@ -50,7 +50,12 @@ def get_identities():
                         }
 
     else:
-        logging.debug("No contributor identities file found. Without the file, maintainer information will be incomplete. For generating KDE API documentation you can download the KDE accounts file from https://websvn.kde.org/*checkout*/trunk/kde-common/accounts and specify it with the --accountsfile argument.")
+        logging.debug("No contributor identities file specified. Without the "
+                      "file, maintainer information will be incomplete. For "
+                      "generating KDE API documentation you can download the "
+                      "KDE accounts file from https://websvn.kde.org/*check"
+                      "out*/trunk/kde-common/accounts and specify it with the "
+                      "--accountsfile argument.")
 
 
     return maintainers
