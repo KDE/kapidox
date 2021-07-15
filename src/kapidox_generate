@@ -25,8 +25,15 @@ except ImportError:
 
 
 def get_identities():
-    """Download the "accounts" file on the KDE SVN repository in order to get
-       the KDE identities with their name and e-mail address
+    """Extract account information from the file (if any) specified with
+       the `--accountsfile` command-line argument.
+       An account file is a whitespace-separated file with a first "column"
+       specifying the account name, the last "column" specifying an email
+       address, and all the columns in between are a name, e.g.
+
+       adridg Adriaan de Groot groot@kde.org
+
+       This line has three "columns" for the name.
     """
     maintainers = {}
 
