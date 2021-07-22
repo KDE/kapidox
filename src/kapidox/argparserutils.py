@@ -19,7 +19,7 @@ def parse_args(depdiagram_available):
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent('''Generate API documentation of complex projects.
 
->> This function must be run from an empty directory (where the documentation will be build).''')
+>> This function must be run from an empty directory (where the documentation will be built).''')
         )
     group = add_sources_group(parser)
     group.add_argument('sourcesdir', type=normalized_path,
