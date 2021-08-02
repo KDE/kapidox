@@ -4,9 +4,10 @@
 
 This framework contains scripts and data for building API documentation (dox) in
 a standard format and style.
+https://api.kde.org holds the result.
 
-The Doxygen tool is used to do the actual documentation extraction and
-formatting, but this framework provides a wrapper script to make generating the
+The [Doxygen](https://www.doxygen.nl) tool performs the actual documentation extraction and
+formatting. This framework provides a wrapper script to make generating the
 documentation more convenient (including reading settings from the target
 framework or other module) and a standard template for the generated
 documentation.
@@ -15,7 +16,7 @@ documentation.
 ## Dependencies
 
 ### Required
-Python 3 is required to run the scripts. Additionally you
+You need Python 3 to run the scripts. Additionally you
 need to have the jinja2 and yaml (or pyyaml) modules.
 
 The following command should install them for the current user:
@@ -88,24 +89,25 @@ Images should be in `docs/pics`, and snippets of example code should be in
 `examples`.  See the doxygen documentation for help on how to refer to these
 files from the dox comments in the source files.
 
-If you need to override any doxygen settings, put them in `docs/Doxyfile.local`.
-A global settings file is defined in `src/kapidox/data/Doxyfile.global`.
+If you need to override any doxygen settings, put them in a `docs/Doxyfile.local` in your project.
+Global settings are defined in `src/kapidox/data/Doxyfile.global`.
 
 ## Generating the documentation
 
-The tool for generating dox is `src/kapidox_generate`.  Simply point it at the
-folder you want to generate dox for (such as a framework checkout).
+The tool for generating dox is `src/kapidox_generate`.
+Change to an empty directory, then simply point it at the
+folder you want to generate dox for (such as a frameworks checkout).
 
 For example, if you have a checkout of KCoreAddons at
-~/src/frameworks/kcoreaddons, you could run
+~/kde/src/frameworks/kcoreaddons, you could run
 
-    ~/src/frameworks/kapidox/src/kapidox_generate ~/src/frameworks/kcoreaddons
+    ~/kde/src/frameworks/kapidox/src/kapidox_generate ~/kde/src/frameworks/kcoreaddons
 
 and it would create a documentation in the current directory, which needs to be empty before executing the command.
 
-The folders are recursively walked through, so you can also run it on
-`~/src/frameworks` or `~/src`. For a lot of libraries, the generation can last
-15-30 minutes and be several hundreds of MB, so be prepared!
+kapidox recursively walks through folders, so you can also run it on
+`~/kde/src/frameworks` or `~/src`. For a lot of libraries, the generation can last
+15-30 minutes and use several hundreds of MB, so be prepared!
 
 Pass the --help argument to see options that control the behaviour of the
 script.
@@ -121,14 +123,14 @@ frameworks.  To do so, you must first generate Graphviz .dot files for all
 frameworks with the `depdiagram-prepare` tool, like this:
 
     mkdir dot
-    ~/src/frameworks/kapidox/src/depdiagram-prepare --all ~/src/frameworks dot
+    ~/kde/src/frameworks/kapidox/src/depdiagram-prepare --all ~/kde/src/frameworks dot
 
 Then call `kgenframeworksapidox` with the `--depdiagram-dot-dir` option, like
 this:
 
     mkdir frameworks-apidocs
     cd frameworks-apidocs
-    ~/src/frameworks/kapidox/src/kapidox_generate --depdiagram-dot-dir ../dot ~/src/frameworks
+    ~/kde/src/frameworks/kapidox/src/kapidox_generate --depdiagram-dot-dir ../dot ~/kde/src/frameworks
 
 More fine-grained tools are available for dependency diagrams. You can learn
 about them in [depdiagrams](@ref depdiagrams).
