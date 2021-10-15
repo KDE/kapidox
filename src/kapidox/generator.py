@@ -842,7 +842,7 @@ def create_product_index(product):
             libindex = json.load(f)
             for item in libindex['docfields']:
                 if lib.part_of_group:
-                    item['url'] = lib.name + '/html/' + item['url']
+                    item['url'] = lib.name.lower() + '/html/' + item['url']
                 else:
                     item['url'] = 'html/' + item['url']
             doclist.append(libindex)
