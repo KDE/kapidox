@@ -43,7 +43,7 @@ except ImportError:
 from .doxyfilewriter import DoxyfileWriter
 
 
-## @package kapidox.generator
+# @package kapidox.generator
 #
 # The generator
 
@@ -323,7 +323,6 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
     return []
 
 
-
 def menu_items(htmldir, modulename):
     """Menu items for standard Doxygen files
 
@@ -332,7 +331,7 @@ def menu_items(htmldir, modulename):
 
     Args:
         htmldir:    (string) the directory the HTML files are contained in.
-        modulname:  (string) the name of the library
+        modulename: (string) the name of the library
 
     Returns:
         A list of maps with 'text' and 'href' keys.
@@ -421,6 +420,7 @@ def parse_dox_html(stream):
 
     dct['content'] = '\n'.join(body)
     return dct
+
 
 def postprocess_internal_qdoc(htmldir: str, tmpl: Template, env: Dict[str, Any]):
     """Substitute text in HTML files
@@ -526,6 +526,7 @@ def generate_dependencies_page(tmp_dir, doxdatadir, modulename, dependency_diagr
         outf.write(txt)
     return out_path
 
+
 def generate_apidocs_qdoc(ctx: Context, tmp_dir: str, doxyfile_entries=None, keep_temp_dirs=False):
     absolute = pathlib.Path(os.path.join(ctx.outputdir, 'html')).absolute()
 
@@ -535,6 +536,7 @@ def generate_apidocs_qdoc(ctx: Context, tmp_dir: str, doxyfile_entries=None, kee
     ret = subprocess.call(['qdoc', ctx.fwinfo.path + "/.qdocconf", f"--outputdir={absolute}"])
     if ret != 0:
         raise Exception("QDoc exited with a non-zero status code")
+
 
 def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dirs=False):
     """Generate the API documentation for a single directory"""
@@ -637,6 +639,7 @@ def generate_apidocs(ctx: Context, tmp_dir, doxyfile_entries=None, keep_temp_dir
     logging.info('Running Doxygen')
     subprocess.call([ctx.doxygen, doxyfile_path])
 
+
 def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
     """Generate a dependency diagram for a framework.
     """
@@ -722,6 +725,7 @@ def gen_fw_apidocs(ctx, tmp_base_dir):
                      doxyfile_entries=dict(WARN_IF_UNDOCUMENTED=True)
                      )
 
+
 def create_fw_tagfile_tuple(lib):
     tagfile = os.path.abspath(
                 os.path.join(
@@ -734,6 +738,7 @@ def create_fw_tagfile_tuple(lib):
         prefix = '../../'
     return (tagfile, prefix + lib.outputdir + '/html/')
 
+
 def finish_fw_apidocs_doxygen(ctx: Context, env: Dict[str, Any]):
     tmpl = create_jinja_environment(ctx.doxdatadir).get_template('library.html')
     postprocess_internal(ctx.htmldir, tmpl, env)
@@ -743,9 +748,11 @@ def finish_fw_apidocs_doxygen(ctx: Context, env: Dict[str, Any]):
     with codecs.open(search_output, 'w', 'utf-8') as outf:
         outf.write(tmpl2.render(env))
 
+
 def finish_fw_apidocs_qdoc(ctx: Context, env: Dict[str, Any]):
     tmpl = create_jinja_environment(ctx.doxdatadir).get_template('qdoc-wrapper.html')
     postprocess_internal_qdoc(ctx.htmldir, tmpl, env)
+
 
 def gen_template_environment(ctx: Context) -> Dict[str, Any]:
     classmap = build_classmap(ctx.tagfile)
@@ -778,6 +785,7 @@ def gen_template_environment(ctx: Context) -> Dict[str, Any]:
 
     return mapping
 
+
 def finish_fw_apidocs(ctx: Context):
     env = gen_template_environment(ctx)
 
@@ -790,6 +798,7 @@ def finish_fw_apidocs(ctx: Context):
         logging.info('Postprocessing Doxygen...')
 
         finish_fw_apidocs_doxygen(ctx, env)
+
 
 def indexer(lib):
     """ Create json index from xml
@@ -835,6 +844,7 @@ def indexer(lib):
         for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)
 
+
 def create_product_index(product):
     doclist = []
     for lib in product.libraries:
@@ -857,6 +867,7 @@ def create_product_index(product):
         for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)
 
+
 def create_global_index(products):
     doclist = []
     for product in products:
@@ -876,6 +887,7 @@ def create_global_index(products):
     with open('searchdata.json', 'w') as f:
         for chunk in json.JSONEncoder().iterencode(indexdic):
             f.write(chunk)
+
 
 def create_qch(products, tagfiles):
     tag_root = "QtHelpProject"
@@ -933,11 +945,11 @@ def create_qch(products, tagfiles):
             if product.part_of_group:
                 resources.extend([
                     product.name + "/*.html",
-                    product.name + "/" + lib.name +"/html/*.html",
-                    product.name + "/" + lib.name +"/html/*.png",
-                    product.name + "/" + lib.name +"/html/*.css",
-                    product.name + "/" + lib.name +"/html/*.js",
-                    product.name + "/" + lib.name +"/html/*.json"
+                    product.name + "/" + lib.name + "/html/*.html",
+                    product.name + "/" + lib.name + "/html/*.png",
+                    product.name + "/" + lib.name + "/html/*.css",
+                    product.name + "/" + lib.name + "/html/*.js",
+                    product.name + "/" + lib.name + "/html/*.json"
                     ])
 
             else:

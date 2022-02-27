@@ -15,15 +15,13 @@ documentation.
 
 ## Dependencies
 
-### Required
-You need Python 3 to run the scripts. Additionally you
+## Installation
+Python 3 is required to run the scripts. Additionally you
 need to have the jinja2 and yaml (or pyyaml) modules.
 
-The following command should install them for the current user:
+The following command creates a venv and installs the tool:
 
-    pip install --user PyYAML jinja2
-
-Of course, you need Doxygen!
+    $ ./bootstrap-devenv.sh
 
 ### Optional
 Doxyqml and doxypypy might be needed to let doxygen document qml
@@ -34,17 +32,30 @@ They are currently not available from pip, but most distributions provide them.
 You can get binaries and source archives from
 <https://www.graphviz.org/download/>.
 
-## Installation
+## Usage
 
-Unlike almost every other KDE module, kapidox does not use CMake.  This is
-because it is purely written in Python, and so uses distutils.  While it does
-not need to be installed to be used (see below), you can install kapidox with
+Although it should be possible to use kapidox directly it is recommended to run the tool in the docker container.
 
-    python setup.py install
+You can build the docker image like this:
 
-Note: For consistency, kapidox provides a CMakeLists.txt file, but this is just
-a wrapper around the setup.py script.
+    docker build . -t kapidox_generate:latest
 
+To run `kapidox-generate` with a project that you want to generate the docs from you need an empty folder for the results (`/path/to/build/folder`). The build directory inside the container is set as `BUILD_DIR` in `Dockerfile`, and must stay in sync with what is used as `CONTAINER_BUILD_DIR` in the volume mapping.
+
+For this example we use `libksane` checked out to `/path/to/libksane`:
+
+```bash
+export HOST_PROJECT_SRC=/path/to/libksane
+export HOST_BUILD_DIR=/path/to/build/folder
+export CONTAINER_PROJECT_SRC=/home/kapidox/libksane
+export CONTAINER_BUILD_DIR=/home/kapidox/apidox-build
+mkdir $HOST_BUILD_DIR
+docker run \
+    --volume $HOST_PROJECT_SRC:$CONTAINER_PROJECT_SRC \
+    --volume $HOST_BUILD_DIR:$CONTAINER_BUILD_DIR \
+    kapidox_generate:latest \
+    kapidox-generate $CONTAINER_PROJECT_SRC
+```
 
 ## Writing documentation
 
@@ -140,7 +151,7 @@ about them in [depdiagrams](@ref depdiagrams).
 
 - KDE API documentation: <https://api.kde.org/>
 
-## Licensing 
+## Licensing
 
 This project is licensed under BSD-2-Clause. But the specific theme used inside KDE
 is licensed under AGPL-3.0-or-later. If you find the AGPL to restrictive you can

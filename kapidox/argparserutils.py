@@ -13,6 +13,7 @@ import sys
 def normalized_path(inputpath):
     return os.path.normpath(inputpath)
 
+
 def parse_args(depdiagram_available):
     import textwrap
     parser = argparse.ArgumentParser(
@@ -52,6 +53,7 @@ def add_sources_group(parser):
     group.add_argument('--accountsfile', type=normalized_path,
             help='File with accounts information of SVN contributors.')
     return group
+
 
 def add_output_group(parser):
     group = parser.add_argument_group('output options')

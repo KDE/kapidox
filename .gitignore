@@ -11,3 +11,4 @@ venv
 .idea
 /cmake-build*
 .cache
+.venv/
