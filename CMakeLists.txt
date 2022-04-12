@@ -15,3 +15,5 @@ add_custom_target(build ALL
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
+# A dummy install part to fulfill needs of kdesrc-build and possible make installs
+install(RUNTIME_DEPENDENCY_SET kapidox OPTIONAL)
