@@ -20,6 +20,7 @@ from . import generator, utils, argparserutils, preprocessing
 
 try:
     from kapidox import depdiagram
+
     DEPDIAGRAM_AVAILABLE = True
 except ImportError:
     DEPDIAGRAM_AVAILABLE = False
@@ -28,7 +29,7 @@ except ImportError:
 def do_it(maintainers_fct, copyright, searchpaths=None):
     utils.setup_logging()
     if searchpaths is None:
-        searchpaths = searchpaths=['/usr/share/doc/qt5', '/usr/share/doc/qt']
+        searchpaths = searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt']
     args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
 
     if len(os.listdir(os.getcwd())) > 0:
@@ -55,34 +56,34 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
     if os.path.isdir(dirdest):
         shutil.rmtree(dirdest)
     shutil.copytree(dirsrc, dirdest)
-    os.rename(dirdest+'/favicon.ico', './favicon.ico')
-    os.rename(dirdest+'/worker.js', './worker.js')
+    os.rename(dirdest + '/favicon.ico', './favicon.ico')
+    os.rename(dirdest + '/worker.js', './worker.js')
 
     generator.process_toplevel_html_file('index.html',
-                               args.doxdatadir,
-                               title=args.title,
-                               products=products,
-                               qch_enabled=args.qhp
-                               )
+                                         args.doxdatadir,
+                                         title=args.title,
+                                         products=products,
+                                         qch_enabled=args.qhp
+                                         )
     generator.process_subgroup_html_files('index.html',
-                                args.doxdatadir,
-                                title=args.title,
-                                groups=groups,
-                                available_platforms=available_platforms,
-                                qch_enabled=args.qhp
-                                )
+                                          args.doxdatadir,
+                                          title=args.title,
+                                          groups=groups,
+                                          available_platforms=available_platforms,
+                                          qch_enabled=args.qhp
+                                          )
     tmp_dir = tempfile.mkdtemp(prefix='kapidox-')
 
     try:
         if args.depdiagram_dot_dir:
             dot_files = utils.find_dot_files(args.depdiagram_dot_dir)
-            assert(dot_files)
+            assert dot_files
         for lib in libraries:
-            logging.info('# Generating doc for {}'.format(lib.fancyname))
+            logging.info(f'# Generating doc for {lib.fancyname}')
             if args.depdiagram_dot_dir:
                 png_path = os.path.join(tmp_dir, lib.name) + '.png'
                 ok = generator.generate_diagram(png_path, lib.fancyname,
-                                      dot_files, tmp_dir)
+                                                dot_files, tmp_dir)
                 if ok:
                     lib.dependency_diagram = png_path
 
@@ -98,8 +99,7 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
 
         # Rebuild for interdependencies
         for lib in libraries:
-            logging.info('# Rebuilding {} for interdependencies'
-                         .format(lib.fancyname))
+            logging.info(f'# Rebuilding {lib.fancyname} for interdependencies')
             shutil.rmtree(lib.outputdir)
             ctx = generator.create_fw_context(args, lib, tagfiles, copyright)
             generator.gen_fw_apidocs(ctx, tmp_dir)
@@ -118,10 +118,9 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
                 shutil.copy(product.logo_url_src, product.logo_url)
         generator.create_global_index(products)
         if args.qhp:
-            logging.info('# Merge qch files'
-                         .format(lib.fancyname))
+            logging.info('# Merge qch files')
             generator.create_qch(products, tagfiles)
-        logging.info("# Writing metadata... ")
+        logging.info("# Writing metadata...")
         with open('metadata.json', 'w') as file:
             json.dump(metalist, file)
         libs = []
@@ -132,6 +131,6 @@ def do_it(maintainers_fct, copyright, searchpaths=None):
         logging.info('# Done')
     finally:
         if args.keep_temp_dirs:
-            logging.info('Kept temp dir at {}'.format(tmp_dir))
+            logging.info(f'Kept temp dir at {tmp_dir}')
         else:
             shutil.rmtree(tmp_dir)

@@ -14,6 +14,7 @@ import sys
 import tempfile
 import requests
 
+
 ## @package kapidox.utils
 #
 # Multiple usage utils.
@@ -25,6 +26,7 @@ import requests
 # Python because this module is used by depdiagram-prepare, which must be able
 # to run on builds.kde.org, which may not have all the required dependencies.
 #
+
 
 def setup_logging():
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
@@ -45,6 +47,7 @@ def serialize_name(name):
         return '_'.join(name.lower().split(' '))
     else:
         return None
+
 
 def set_repopath(id):
     """ Return the repopath for the repo id, queried from projects.kde.org
@@ -69,12 +72,12 @@ def set_repopath(id):
         # kitemviews is not recognized).
         return None
 
+
 def set_maintainers(maintainer_keys, all_maintainers):
     """ Expend the name of the maintainers.
 
     Args:
-        dictionary: (dict) Dictionary from which the name to expend will be read.
-        key: (string) Key of the dictionary where the name to expend is saved.
+        maintainer_keys: (string) Key of the dictionary where the name to expend is saved.
         all_maintainers: (dict of dict) Look-up table where the names and emails of
     the maintainers are stored.
 
@@ -87,14 +90,14 @@ def set_maintainers(maintainer_keys, all_maintainers):
                                'email: 'toto123@example.com'}
                       }
 
-        >>> set_maintainers(maintainer_keys, my_team)
+        >>> set_maintainers(maintainer_keys, all_maintainers)
     """
 
     if not maintainer_keys:
         maintainers = []
     elif isinstance(maintainer_keys, list):
         maintainers = map(lambda x: all_maintainers.get(x, None),
-                             maintainer_keys)
+                          maintainer_keys)
     else:
         maintainers = [all_maintainers.get(maintainer_keys, None)]
 
@@ -110,7 +113,7 @@ def parse_fancyname(fw_dir):
     cmakelists_path = os.path.join(fw_dir, "CMakeLists.txt")
     if not os.path.exists(cmakelists_path):
         for f in os.listdir(fw_dir):
-            if ".qbs" in f and not "Test" in f:
+            if ".qbs" in f and "Test" not in f:
                 return f[:-4]
         logging.error("No CMakeLists.txt in {}".format(fw_dir))
         return None
@@ -121,8 +124,7 @@ def parse_fancyname(fw_dir):
         if match:
             return match.group(1)
 
-    logging.error("Failed to find framework name: Could not find a "
-                  "'project()' command in {}.".format(cmakelists_path))
+    logging.error(f"Failed to find framework name: Could not find a 'project()' command in {cmakelists_path}.")
     return None
 
 
@@ -141,8 +143,8 @@ def cache_dir():
             # NSUserDomainMask = 1
             # True for expanding the tilde into a fully qualified path
             cachedir = os.path.join(
-                    NSSearchPathForDirectoriesInDomains(14, 1, True)[0],
-                    'KApiDox')
+                NSSearchPathForDirectoriesInDomains(14, 1, True)[0],
+                'KApiDox')
         except:
             pass
     elif os.name == "posix":
@@ -230,6 +232,8 @@ def copy_dir_contents(directory, dest):
 
 
 _KAPIDOX_VERSION = None
+
+
 def get_kapidox_version():
     """Get commit id of running code if it is running from git repository.
 
@@ -255,7 +259,7 @@ def get_kapidox_version():
 
     git_HEAD = os.path.join(git_dir, "HEAD")
     if not os.path.isfile(git_HEAD):
-        logging.warning("Getting git info failed: {} is not a file".format(git_HEAD))
+        logging.warning(f'Getting git info failed: {git_HEAD} is not a file')
         return _KAPIDOX_VERSION
 
     try:
@@ -266,7 +270,7 @@ def get_kapidox_version():
     except Exception as exc:
         # Catch all exceptions here: whatever fails in this function should not
         # cause the code to fail
-        logging.warning("Getting git info failed: {}".format(exc))
+        logging.warning(f'Getting git info failed: {exc}')
     return _KAPIDOX_VERSION
 
 

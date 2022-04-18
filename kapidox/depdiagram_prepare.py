@@ -20,6 +20,7 @@ DESCRIPTION = """
 Generate Graphviz dot files for one or all frameworks.
 """
 
+
 def generate_dot(fw_dir, fw_name, output_dir):
     """Calls cmake to generate the dot file for a framework.
 
@@ -28,8 +29,8 @@ def generate_dot(fw_dir, fw_name, output_dir):
     build_dir = tempfile.mkdtemp(prefix="depdiagram-prepare-build-")
     try:
         ret = subprocess.call(["cmake", fw_dir, "--graphviz={}".format(dot_path)],
-            stdout=open("/dev/null", "w"),
-            cwd=build_dir)
+                              stdout=open("/dev/null", "w"),
+                              cwd=build_dir)
         if ret != 0:
             if os.path.exists(dot_path):
                 os.remove(dot_path)
@@ -53,7 +54,7 @@ def prepare_one(fw_dir, output_dir):
 
     yaml_path = os.path.join(fw_dir, "metainfo.yaml")
     if not os.path.exists(yaml_path):
-        logging.error("'{}' is not a framework: '{}' does not exist.".format(fw_dir, yaml_path))
+        logging.error(f"'{fw_dir}' is not a framework: '{yaml_path}' does not exist.")
         return False
 
     if not os.path.exists(output_dir):
@@ -79,7 +80,7 @@ def prepare_all(fw_base_dir, dot_dir):
             continue
 
         progress = int(100 * (idx + 1) / len(lst))
-        print("{}% {}".format(progress, fw_name))
+        print(f'{progress}% {fw_name}')
         if not prepare_one(fw_dir, dot_dir):
             fails.append(fw_name)
     return fails
@@ -90,13 +91,13 @@ def main():
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-s", "--single",
-        help="Generate dot files for the framework stored in DIR",
-        metavar="DIR")
+                       help="Generate dot files for the framework stored in DIR",
+                       metavar="DIR")
     group.add_argument("-a", "--all",
-        help="Generate dot files for all frameworks whose dir is in BASE_DIR",
-        metavar="BASE_DIR")
+                       help="Generate dot files for all frameworks whose dir is in BASE_DIR",
+                       metavar="BASE_DIR")
     parser.add_argument("dot_dir",
-        help="Destination dir where dot files will be generated")
+                        help="Destination dir where dot files will be generated")
 
     args = parser.parse_args()
 

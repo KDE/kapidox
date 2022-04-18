@@ -304,7 +304,7 @@ def search_for_tagfiles(suggestion=None, doclink=None, flattenlinks=False, searc
         A list of pairs of (tag_file,link_path)
     """
 
-    if not suggestion is None:
+    if suggestion is not None:
         if not os.path.isdir(suggestion):
             logging.warning(suggestion + " is not a directory")
         else:
@@ -387,7 +387,7 @@ def parse_dox_html(stream):
     for example if the documentation contains raw HTML.
 
     The key/value block is kept in a comment so that it does not appear in Qt
-    Compressed Help output, which is not postprocessed by ourself.
+    Compressed Help output, which is not post processed by ourself.
     """
     dct = {}
     body = []
@@ -647,8 +647,7 @@ def generate_diagram(png_path, fancyname, dot_files, tmp_dir):
         try:
             subprocess.check_call(cmd, **kwargs)
         except subprocess.CalledProcessError as exc:
-            logging.error('Command {exc.cmd} failed with error code {}.'
-                          .format(exc.returncode))
+            logging.error(f'Command {exc.cmd} failed with error code {exc.returncode}.')
             return False
         return True
 
@@ -736,7 +735,7 @@ def create_fw_tagfile_tuple(lib):
         prefix = '../../'
     else:
         prefix = '../../'
-    return (tagfile, prefix + lib.outputdir + '/html/')
+    return tagfile, prefix + lib.outputdir + '/html/'
 
 
 def finish_fw_apidocs_doxygen(ctx: Context, env: Dict[str, Any]):
@@ -810,7 +809,7 @@ def indexer(lib):
           <field name="keywords"></field>
           <field name="text"></field>
         </doc>
-      </add
+      </add>
     """
 
     doclist = []
@@ -821,7 +820,7 @@ def indexer(lib):
             if child.attrib['name'] == "type":
                 if child.text == 'source':
                     field = None
-                    break; # We go to next <doc>
+                    break  # We go to next <doc>
                 field['type'] = child.text
             elif child.attrib['name'] == "name":
                 field['name'] = child.text
@@ -878,7 +877,7 @@ def create_global_index(products):
             prodindex = json.load(f)
             for proditem in prodindex['libraries']:
                 for item in proditem['docfields']:
-                    item['url'] = product.name + '/' + item['url']
+                    item['url'] = os.path.join(product.name, item['url'])
             doclist.append(prodindex)
 
     indexdic = {
@@ -892,7 +891,7 @@ def create_global_index(products):
 def create_qch(products, tagfiles):
     tag_root = "QtHelpProject"
     tag_files = "files"
-    tag_filterSection = "filterSection"
+    tag_filter_section = "filterSection"
     tag_keywords = "keywords"
     tag_toc = "toc"
     for product in products:
@@ -901,17 +900,17 @@ def create_qch(products, tagfiles):
         root_out.set("version", "1.0")
         namespace = ET.SubElement(root_out, "namespace")
         namespace.text = "org.kde." + product.name
-        virtualFolder = ET.SubElement(root_out, "virtualFolder")
-        virtualFolder.text = product.name
-        filterSection = ET.SubElement(root_out, tag_filterSection)
-        filterAttribute = ET.SubElement(filterSection, "filterAttribute")
-        filterAttribute.text = "doxygen"
-        toc = ET.SubElement(filterSection, "toc")
-        keywords = ET.SubElement(filterSection, tag_keywords)
+        virtual_folder = ET.SubElement(root_out, "virtualFolder")
+        virtual_folder.text = product.name
+        filter_section = ET.SubElement(root_out, tag_filter_section)
+        filter_attribute = ET.SubElement(filter_section, "filterAttribute")
+        filter_attribute.text = "doxygen"
+        toc = ET.SubElement(filter_section, "toc")
+        keywords = ET.SubElement(filter_section, tag_keywords)
         if len(product.libraries) > 0:
             if product.libraries[0].part_of_group:
-                product_indexSection = ET.SubElement(toc, "section", {'ref': product.name + "/index.html", 'title': product.fancyname})
-        files = ET.SubElement(filterSection, tag_files)
+                product_index_section = ET.SubElement(toc, "section", {'ref': product.name + "/index.html", 'title': product.fancyname})
+        files = ET.SubElement(filter_section, tag_files)
 
         for lib in sorted(product.libraries, key=lambda lib: lib.name):
             tree = ET.parse(lib.outputdir + '/html/index.qhp')
@@ -921,11 +920,11 @@ def create_qch(products, tagfiles):
                     child.attrib['ref'] = lib.name + "/html/" + child.attrib['ref']
                 else:
                     child.attrib['ref'] = "html/" + child.attrib['ref']
-                child.attrib['ref'] = product.name + '/' +child.attrib['ref']
+                child.attrib['ref'] = product.name + '/' + child.attrib['ref']
 
             for child in root.find(".//"+tag_toc):
                 if lib.part_of_group:
-                    product_indexSection.append(child)
+                    product_index_section.append(child)
                 else:
                     toc.append(child)
 

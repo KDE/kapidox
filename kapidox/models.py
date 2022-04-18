@@ -17,7 +17,7 @@ from kapidox import utils
 class Library(object):
     """ Library
     """
-    
+
     def __init__(self, metainfo, products, platforms, all_maintainers):
         """
             Constructor of the Library object
@@ -57,19 +57,19 @@ class Library(object):
             del metainfo['group']
             products[utils.serialize_name(metainfo['name'])] = Product(metainfo, all_maintainers)
             self.part_of_group = False
-            logging.warning("Group of {} not found: dropped.".format(metainfo['fancyname']))
+            logging.warning("Group of {fancyname} not found: dropped.".format_map(metainfo))
         self.product = products[utils.serialize_name(productname)]
         if self.product is None:
-            raise ValueError("'{}' does not belong to a product."
-                             .format(metainfo['name']))
+            raise ValueError("'{name}' does not belong to a product."
+                             .format_map(metainfo))
 
         if 'subgroup' in metainfo and self.part_of_group:
             for sp in self.product.subproducts:
                 if sp.name == utils.serialize_name(metainfo['subgroup']):
                     self.subproduct = sp
             if self.subproduct is None:
-                logging.warning("Subgroup {} of library {} not documented, subgroup will be None"
-                                .format(metainfo['subgroup'], metainfo['name']))
+                logging.warning("Subgroup {subgroup} of library {name} not documented, subgroup will be None"
+                                .format_map(metainfo))
 
         if self.subproduct is not None:
             self.parent = self.subproduct
@@ -115,7 +115,7 @@ class Library(object):
     def _set_outputdir(self, grouped):
         outputdir = self.name
         if grouped:
-            outputdir = self.product.outputdir + '/' + outputdir
+            outputdir = os.path.join(self.product.outputdir, outputdir)
         return outputdir.lower()
 
 
@@ -181,14 +181,13 @@ class Product(object):
             self.mailinglist = None
             self.part_of_group = False
         else:
-            raise ValueError("I do not recognize a product in {}."
-                             .format(metainfo['name']))
+            raise ValueError("I do not recognize a product in {name}."
+                             .format_map(metainfo))
 
     def _extract_subproducts(self, groupinfo):
         subproducts = []
         if 'subgroups' in groupinfo:
             for sg in groupinfo['subgroups']:
-                sg
                 if 'name' in sg:
                     subproducts.append(Subproduct(sg, self))
         return subproducts
@@ -196,7 +195,7 @@ class Product(object):
     def _set_logo(self):
         if self.logo_url_src is not None:
             filename, ext = os.path.splitext(self.logo_url_src)
-            return self.outputdir + '/' + self.name + ext
+            return os.path.join(self.outputdir, self.name) + ext
         else:
             return None
 
@@ -212,15 +211,14 @@ class Product(object):
         logo_url = os.path.join(path, 'logo.png')
         if os.path.isfile(logo_url):
             if defined_not_found:
-                logging.warning("Defined {} logo file doesn't exist, set back to found logo.png"
-                                .format(self.fancyname))
+                logging.warning(f'Defined {self.fancyname} logo file does not exist, set back to found logo.png')
             return logo_url
 
         if defined_not_found:
-            logging.warning("Defined {} logo file doesn't exist, set back to None"
-                            .format(self.fancyname))
+            logging.warning(f'Defined {self.fancyname} logo file does not exist, set back to None')
 
         return None
+
 
 class Subproduct(object):
     """ Subproduct

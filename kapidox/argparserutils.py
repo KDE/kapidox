@@ -21,13 +21,13 @@ def parse_args(depdiagram_available):
         description=textwrap.dedent('''Generate API documentation of complex projects.
 
 >> This function must be run from an empty directory (where the documentation will be built).''')
-        )
+    )
     group = add_sources_group(parser)
     group.add_argument('sourcesdir', type=normalized_path,
-            help='Location of the sources.')
+                       help='Location of the sources.')
     group.add_argument('--depdiagram-dot-dir', type=normalized_path,
-            help='Generate dependency diagrams, using the .dot files from DIR.',
-            metavar="DIR")
+                       help='Generate dependency diagrams, using the .dot files from DIR.',
+                       metavar="DIR")
     add_output_group(parser)
     add_qt_doc_group(parser)
     add_paths_group(parser)
@@ -51,43 +51,43 @@ def parse_args(depdiagram_available):
 def add_sources_group(parser):
     group = parser.add_argument_group('sources')
     group.add_argument('--accountsfile', type=normalized_path,
-            help='File with accounts information of SVN contributors.')
+                       help='File with accounts information of SVN contributors.')
     return group
 
 
 def add_output_group(parser):
     group = parser.add_argument_group('output options')
     group.add_argument('--title', default='API Documentation',
-            help='String to use for page titles.')
+                       help='String to use for page titles.')
     group.add_argument('--man-pages', action='store_true',
-            help='Generate man page documentation.')
+                       help='Generate man page documentation.')
     group.add_argument('--qhp', action='store_true',
-            help='Generate Qt Compressed Help documentation.')
+                       help='Generate Qt Compressed Help documentation.')
     return group
 
 
 def add_qt_doc_group(parser):
     group = parser.add_argument_group('Qt documentation')
     group.add_argument('--qtdoc-dir', type=normalized_path,
-            help='Location of (local) Qt documentation; this is searched ' +
-                 'for tag files to create links to Qt classes.')
+                       help='Location of (local) Qt documentation; this is searched ' +
+                            'for tag files to create links to Qt classes.')
     group.add_argument('--qtdoc-link',
-            help='Override Qt documentation location for the links in the ' +
-                 'html files.  May be a path or URL.')
+                       help='Override Qt documentation location for the links in the ' +
+                            'html files.  May be a path or URL.')
     group.add_argument('--qtdoc-flatten-links', action='store_true',
-            help='Whether to assume all Qt documentation html files ' +
-                 'are immediately under QTDOC_LINK (useful if you set ' +
-                 'QTDOC_LINK to the online Qt documentation).  Ignored ' +
-                 'if QTDOC_LINK is not set.')
+                       help='Whether to assume all Qt documentation html files ' +
+                            'are immediately under QTDOC_LINK (useful if you set ' +
+                            'QTDOC_LINK to the online Qt documentation).  Ignored ' +
+                            'if QTDOC_LINK is not set.')
     return group
 
 
 def add_paths_group(parser):
     group = parser.add_argument_group('paths')
     group.add_argument('--doxygen', default='doxygen', type=normalized_path,
-            help='(Path to) the doxygen executable.')
+                       help='(Path to) the doxygen executable.')
     group.add_argument('--qhelpgenerator', default='qhelpgenerator', type=normalized_path,
-            help='(Path to) the qhelpgenerator executable.')
+                       help='(Path to) the qhelpgenerator executable.')
     return group
 
 
@@ -97,15 +97,15 @@ def add_misc_group(parser):
 
     group = parser.add_argument_group('misc')
     group.add_argument('--doxdatadir', default=doxdatadir, type=normalized_path,
-            help='Location of the HTML header files and support graphics.')
+                       help='Location of the HTML header files and support graphics.')
     group.add_argument('--keep-temp-dirs', action='store_true',
-            help='Do not delete temporary dirs, useful for debugging.')
+                       help='Do not delete temporary dirs, useful for debugging.')
     return parser
 
 
 def check_common_args(args):
     if not _is_doxdatadir(args.doxdatadir):
-        logging.error("{} is not a valid doxdatadir".format(args.doxdatadir))
+        logging.error(f'{args.doxdatadir} is not a valid doxdatadir')
         sys.exit(1)
 
 

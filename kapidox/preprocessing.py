@@ -24,7 +24,6 @@ __all__ = (
     "create_metainfo",
     "parse_tree")
 
-
 PLATFORM_ALL = "All"
 PLATFORM_UNKNOWN = "UNKNOWN"
 
@@ -61,7 +60,7 @@ def expand_platform_all(dct, available_platforms):
                 dct[platform] = note
 
 
-def create_metainfo(path) -> Optional[Dict[str,Any]]:
+def create_metainfo(path) -> Optional[Dict[str, Any]]:
     """Look for a `metadata.yaml` file and create a dictionary out it.
 
     Args:
@@ -71,7 +70,7 @@ def create_metainfo(path) -> Optional[Dict[str,Any]]:
     did not fulfill some conditions.
     """
 
-    metainfo: Optional[Dict[str,Any]]
+    metainfo: Optional[Dict[str, Any]]
 
     if not os.path.isdir(path):
         return None
@@ -88,18 +87,15 @@ def create_metainfo(path) -> Optional[Dict[str,Any]]:
         metainfo = yaml.safe_load(open(metainfo_file))
     except Exception as e:
         print(e)
-        logging.warning('Could not load metainfo.yaml for {}, skipping it'
-                        .format(path))
+        logging.warning(f'Could not load metainfo.yaml for {path}, skipping it')
         return None
 
     if metainfo is None:
-        logging.warning('Empty metainfo.yaml for {}, skipping it'
-                        .format(path))
+        logging.warning(f'Empty metainfo.yaml for {path}, skipping it')
         return None
 
     if 'subgroup' in metainfo and 'group' not in metainfo:
-        logging.warning('Subgroup but no group in {}, skipping it'
-                        .format(path))
+        logging.warning(f'Subgroup but no group in {path}, skipping it')
         return None
 
     # Suppose we get a relative path passed in (e.g. on the command-line,
@@ -113,8 +109,7 @@ def create_metainfo(path) -> Optional[Dict[str,Any]]:
         fancyname = utils.parse_fancyname(path)
 
     if not fancyname:
-        logging.warning('Could not find fancy name for {}, skipping it'
-                        .format(path))
+        logging.warning(f'Could not find fancy name for {path}, skipping it')
         return None
     # A fancyname has 1st char capitalized
     fancyname = fancyname[0].capitalize() + fancyname[1:]
@@ -137,29 +132,29 @@ def create_metainfo(path) -> Optional[Dict[str,Any]]:
         'dependency_diagram': None,
         'path': path,
         'qdoc': qdoc,
-        })
+    })
 
     # replace legacy platform names
     if 'platforms' in metainfo:
         platforms = metainfo['platforms']
         for index, x in enumerate(platforms):
             if x['name'] == "MacOSX":
-                x['name'] = "macOS";
+                x['name'] = "macOS"
                 platforms[index] = x
-                logging.warning('{} uses outdated platform name, please replace "MacOSX" with "macOS".'
-                        .format(metainfo['fancyname']))
-        metainfo.update({ 'platforms': platforms })
+                logging.warning('{fancyname} uses outdated platform name, please replace "MacOSX" with "macOS".'
+                                .format_map(metainfo))
+        metainfo.update({'platforms': platforms})
     if 'group_info' in metainfo:
         group_info = metainfo['group_info']
         if 'platforms' in group_info:
             platforms = group_info['platforms']
             for index, x in enumerate(platforms):
                 if "MacOSX" in x:
-                    x = x.replace("MacOSX", "macOS");
+                    x = x.replace("MacOSX", "macOS")
                     platforms[index] = x
-                    logging.warning('Group {} uses outdated platform name, please replace "MacOSX" with "macOS".'
-                            .format(group_info['fancyname']))
-            group_info.update({ 'platforms': platforms })
+                    logging.warning('Group {fancyname} uses outdated platform name, please replace "MacOSX" with "macOS".'
+                                    .format_map(group_info))
+            group_info.update({'platforms': platforms})
 
     return metainfo
 
@@ -192,8 +187,7 @@ def parse_tree(rootdir):
             if metainfo['public_lib'] or 'group_info' in metainfo:
                 metalist.append(metainfo)
             else:
-                logging.warning("{} has no public libraries"
-                                .format(metainfo['name']))
+                logging.warning('{name} has no public libraries'.format_map(metainfo))
 
     return metalist
 
@@ -203,8 +197,7 @@ def sort_metainfo(metalist, all_maintainers):
     list.
 
     Args:
-        metalist: (list of dict) lists of the metainfo extracted in
-    parse_tree().
+        metalist: (list of dict) lists of the metainfo extracted in parse_tree().
         all_maintainers: (dict of dict)  all possible maintainers.
 
     Returns:
@@ -214,7 +207,7 @@ def sort_metainfo(metalist, all_maintainers):
     products = dict()
     groups = []
     libraries = []
-    available_platforms = set(['Windows', 'macOS', 'Linux', 'Android', 'FreeBSD'])
+    available_platforms = {'Windows', 'macOS', 'Linux', 'Android', 'FreeBSD'}
 
     # First extract the structural info
     for metainfo in metalist:
@@ -232,8 +225,8 @@ def sort_metainfo(metalist, all_maintainers):
 
             available_platforms.update(set(platform_lst))
         except (KeyError, TypeError):
-            logging.warning('{} library lacks valid platform definitions'
-                            .format(metainfo['fancyname']))
+            logging.warning('{fancyname} library lacks valid platform definitions'
+                            .format_map(metainfo))
             platforms = [dict(name=PLATFORM_UNKNOWN)]
 
         dct = dict((x['name'], x.get('note', '')) for x in platforms)
@@ -260,7 +253,7 @@ def extract_product(metainfo, all_maintainers):
 
     Args:
         metainfo: (dict) metainfo created by the create_metainfo() function.
-        all_maintainer: (dict of dict) all possible maintainers
+        all_maintainers: (dict of dict) all possible maintainers
 
     Returns:
         A Product or None if the metainfo does not describe a product.

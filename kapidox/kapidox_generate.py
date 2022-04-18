@@ -57,7 +57,6 @@ def get_identities():
                       "out*/trunk/kde-common/accounts and specify it with the "
                       "--accountsfile argument.")
 
-
     return maintainers
 
 

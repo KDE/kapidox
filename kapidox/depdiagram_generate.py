@@ -18,16 +18,16 @@ def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
     parser.add_argument("-o", "--output", dest="output", default="-",
-        help="Output to FILE", metavar="FILE")
+                        help="Output to FILE", metavar="FILE")
 
     parser.add_argument("--qt", dest="qt", action="store_true",
-        help="Show Qt libraries")
+                        help="Show Qt libraries")
 
     parser.add_argument("--detailed", dest="detailed", action="store_true",
-        help="Show targets within frameworks")
+                        help="Show targets within frameworks")
 
     parser.add_argument("--framework", dest="framework",
-        help="Only show dependencies of framework FRAMEWORK", metavar="FRAMEWORK")
+                        help="Only show dependencies of framework FRAMEWORK", metavar="FRAMEWORK")
 
     parser.add_argument("dot_files", nargs="+")
 
@@ -42,6 +42,7 @@ def main():
         return 0
     else:
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -9,6 +9,7 @@
 def _quote(txt):
     return '"' + txt + '"'
 
+
 class DoxyfileWriter(object):
     """Makes it easy to write entries in a Doxyfile, correctly handling quoting
     """
