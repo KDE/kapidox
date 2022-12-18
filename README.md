@@ -27,6 +27,10 @@ They are currently not available from pip, but most distributions provide them.
 You can get binaries and source archives from
 <https://www.graphviz.org/download/>.
 
+## (For maintainers) updating the package dependencies
+
+Run ./requirements-update.sh in this folder, review and test the updated requirements file and commit the changed file.
+
 ## Workflow
 
 This document describes two ways to use KApiDox to generate documentation for KDE software: the manual way, and the container way. Both can apply to standalone repositories or to projects built using [kdesrc-build](https://community.kde.org/Get_Involved/development#Set_up_kdesrc-build), but the main role of the manual method is mostly to learn how the tool works, whereas the container method should be the cleaner, more convenient way.
