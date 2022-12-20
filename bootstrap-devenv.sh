@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ue
 
 if ! [ -d "kapidox" ]; then
   echo "FATAL: this must be executed in the root of the kapidox project"

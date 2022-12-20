@@ -5,7 +5,7 @@
 # dependencies. If for any reason, ranged version restrictions need to be introduced, this should be done in
 # `install_requires` in `setup.py`.
 
-set -e
+set -ue
 
 if ! [ -d "kapidox" ]; then
   echo "FATAL: this must be executed in the root of the kapidox project"
