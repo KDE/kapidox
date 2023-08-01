@@ -22,7 +22,7 @@ public_source_dirs:
 group_info:
     name: frameworks
     fancyname: The KDE Frameworks
-    maintainer: dfaure
+    maintainer:
     mailinglist: kde-frameworks-devel
     platforms:
       - Linux
