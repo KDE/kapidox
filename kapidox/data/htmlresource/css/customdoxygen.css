@@ -363,3 +363,8 @@ html, body, table, div, p, dl {
 .memItemRight {
   vertical-align: middle;
 }
+
+dl.note {
+ margin-left: 0;
+ padding-left: 6px;
+}
