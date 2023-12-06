@@ -126,7 +126,7 @@ dl.reflist dt a.el {
   filter: invert(0.01);
 }
 .memdoc,
-dl.refllist dd {
+dl.reflist dd {
  background:var(--card);
  color:var(--on-card)
 }
