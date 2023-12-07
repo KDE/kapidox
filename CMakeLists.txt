@@ -3,7 +3,7 @@ project(KApiDox NONE)
 
 set(KF_VERSION "6.6.0") # handled by release scripts
 
-option(DO_BOOTSTRAP "Boostrap" TRUE)
+option(DO_BOOTSTRAP "Bootstrap development environment" TRUE)
 
 if(DO_BOOTSTRAP)
     include(FindUnixCommands)
