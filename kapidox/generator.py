@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import codecs
-from distutils.spawn import find_executable
 import datetime
 import os
 import logging
@@ -973,7 +972,7 @@ def create_qch(products, tagfiles):
         # On many distributions, qhelpgenerator from Qt5 is suffixed with
         # "-qt5". Look for it first, and fall back to unsuffixed one if
         # not found.
-        qhelpgenerator = find_executable("qhelpgenerator-qt5")
+        qhelpgenerator = shutil.which("qhelpgenerator-qt5")
 
         if qhelpgenerator is None:
             qhelpgenerator = "qhelpgenerator"
