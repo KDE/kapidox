@@ -8,7 +8,7 @@
 set -ue
 
 if ! [ -d "kapidox" ]; then
-  echo "FATAL: this must be executed in the root of the kapidox project"
+  echo "FATAL: this must be executed in the root directory of the kapidox project"
   exit 1
 fi
 

@@ -10,7 +10,7 @@ diagram generation or want to work on its code, read on.
 ## depdiagram tools
 
 Dependency diagram generation is done using two tools: `src/depdiagram-prepare`
-and `src/depdiagram-generate`.  The way you use it is as follow.
+and `src/depdiagram-generate`. The way you use it is as follows.
 
 ### 1. Prepare dot files
 
@@ -29,7 +29,7 @@ Or you can prepare dot files for a single framework with:
 ### 2. Generate the diagrams
 
 You can now generate the dependency diagrams with `src/depdiagram-generate`.
-This tool accepts a list of dot files and output a combined dot file to stdout.
+This tool accepts a list of dot files and outputs a combined dot file to stdout.
 
 Here is how to generate a dependency diagram for all the frameworks:
 

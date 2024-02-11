@@ -33,7 +33,7 @@ Run ./requirements-update.sh in this folder, review and test the updated require
 
 ## Workflow
 
-This document describes two ways to use KApiDox to generate documentation for KDE software: the manual way, and the container way. Both can apply to standalone repositories or to projects built using [kdesrc-build](https://community.kde.org/Get_Involved/development#Set_up_kdesrc-build), but the main role of the manual method is mostly to learn how the tool works, whereas the container method should be the cleaner, more convenient way.
+This document describes two ways to use KApiDox to generate documentation for KDE software: the manual way, and the container way. Both can apply to standalone repositories or to projects built using [kdesrc-build](https://community.kde.org/Get_Involved/development), but the main role of the manual method is mostly to learn how the tool works, whereas the container method should be the cleaner, more convenient way.
 
 ### The manual way
 
@@ -61,7 +61,9 @@ Run the script provided by the KApiDox repository. This only needs to be done on
 bash bootstrap-devenv.sh
 ```
 
-After the script is done, you should have a hidden folder called `.kapidox_venv/`, inside of which is a `bin/` folder containing the files we will be using. If the shell you are using is bash or zsh, you can run `./activate` to activate the Python virtual venv. If you are using csh or fish, you may use `./activate.csh` or `./activate.fish`, respectively.
+After the script is done, you should have a hidden folder called `.kapidox_venv/`, inside of which is a `bin/` folder containing the files we will be using.
+
+If the shell you are using is bash or zsh, you can run `source .kapidox_venv/bin/activate` to activate the Python virtual venv. If you are using csh or fish, you may use `source .kapidox_venv/bin/activate.csh` or `source .kapidox_venv/bin/activate.fish`, respectively.
 
 After activating the Python venv, your terminal prompt should change to that of a venv. Switch to the folder we created earlier and run kapidox-generate by pointing to the folder containing the target project repository (in this case, Kirigami):
 
@@ -79,7 +81,7 @@ After that, you may edit the Doxygen-formatted documentation in *.qml or *.h fil
 After you're finished editing, you can switch back to the venv in the `kirigamidocs/` folder, check that you are in the correct folder with `pwd`, and run the following to regenerate the locally edited documentation:
 
 ```bash
-pwd // outputs ~/kirigamidocs
+pwd # Outputs e.g. ~/kirigamidocs
 rm -rf * && kapidox-generate ../kirigami
 ```
 
@@ -227,7 +229,7 @@ about them in [depdiagrams](@ref depdiagrams).
 ## Licensing
 
 This project is licensed under BSD-2-Clause. But the specific theme used inside KDE
-is licensed under AGPL-3.0-or-later. If you find the AGPL to restrictive you can
+is licensed under AGPL-3.0-or-later. If you find the AGPL too restrictive you can
 alternatively use the theme from [Docsy](https://github.com/google/docsy) (APACHE-2.0).
 For that you need to replace the style and js script present in `src/kapidox/data/templates/base.html`.
 
