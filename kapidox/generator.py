@@ -396,6 +396,8 @@ def parse_dox_html(stream):
             return parse_key_value_block
         if line == "-->":
             return skip_head
+        if line.startswith("<!DOCTYPE html"):
+            return skip_head
         key, value = line.split(': ', 1)
         dct[key] = value
         return parse_key_value_block
