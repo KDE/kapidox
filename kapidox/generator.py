@@ -386,7 +386,7 @@ def parse_dox_html(stream):
     for example if the documentation contains raw HTML.
 
     The key/value block is kept in a comment so that it does not appear in Qt
-    Compressed Help output, which is not post processed by ourself.
+    Compressed Help output, which is not post processed by us.
     """
     dct = {}
     body = []

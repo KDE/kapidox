@@ -67,9 +67,9 @@ def set_repopath(id):
         logging.warning("Failed to get repository url for '{}' from projects.kde.org: {}".format(id, exc))
         # This means there is no canonical repo identifier for this repo:
         # generally that means that the repo was checked out into a non-
-        # canonical pathname (e.g. kitemviews checkout out into a directory
-        # called KItemViews, or kitemviews.git .. anything other than
-        # kitemviews is not recognized).
+        # canonical pathname. E.g. kitemviews checked out into a directory
+        # called KItemViews or kitemviews.git, anything other than
+        # kitemviews is not recognized.
         return None
 
 

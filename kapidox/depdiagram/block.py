@@ -6,10 +6,11 @@
 
 from contextlib import contextmanager
 
+
 class Block(object):
     INDENT_SIZE = 4
 
-    def __init__(self, out, depth = 0):
+    def __init__(self, out, depth=0):
         self.out = out
         self.depth = depth
 

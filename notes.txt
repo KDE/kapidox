@@ -30,7 +30,7 @@ frameworks-docs:
 Easy
 
 config.kapidox:
-    # info is taken from metainfo.yaml, CMakeLists.txt etc if available, but can be overridden here
+    # info is taken from metainfo.yaml, CMakeLists.txt etc. if available, but can be overridden here
     public_source_dirs:
         - src/lib
     private_source_dirs:

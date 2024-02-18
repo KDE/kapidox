@@ -72,4 +72,4 @@ frameworks at once:
 
 This command creates two pngs for each framework: "$framework.png" and
 "$framework-simplified.png" (same diagram, ran through `tred`). It also creates a
-diagram for all of the frameworks, named "kf5.png".
+diagram for all the frameworks, named "kf5.png".

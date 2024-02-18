@@ -99,7 +99,7 @@ def create_metainfo(path) -> Optional[Dict[str, Any]]:
         return None
 
     # Suppose we get a relative path passed in (e.g. on the command-line,
-    # path .. because we're building the dox in a subdirectory of a source
+    # path ".." because we're building the documentation in a subdirectory of a source
     # checkout) then we don't want dirname to be "..", but the name that
     # that resolves to.
     dirname = os.path.basename(os.path.abspath(path))
@@ -238,7 +238,6 @@ def sort_metainfo(metalist, all_maintainers):
             lib = Library(metainfo, products, platforms, all_maintainers)
             libraries.append(lib)
 
-    groups = []
     for key in products.copy():
         if len(products[key].libraries) == 0:
             del products[key]
