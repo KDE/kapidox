@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
         name='kapidox',
-        version='6.1.0',
+        version='6.2.0',
         description='KDE API documentation generation tools',
         maintainer='Olivier Churlaud',
         maintainer_email='olivier@churlaud.com',
