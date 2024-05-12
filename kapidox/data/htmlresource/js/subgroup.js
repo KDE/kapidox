@@ -1,14 +1,5 @@
 "use strict";
 
-function updateMaintainers() {
-    var checkbox = document.getElementById("showMaintainers");
-    if (checkbox.checked) {
-        $(".library-maintainer-column").show();
-    } else {
-        $(".library-maintainer-column").hide();
-    }
-}
-
 function updatePlatforms() {
     var doFilter = document.getElementById("platform-filter").checked;
     $(".library-platform").removeClass("library-platform-required");
@@ -68,9 +59,7 @@ function initNoteTip() {
 }
 
 function main() {
-    $("#showMaintainers").click(updateMaintainers);
     $("#platform-filter").click(updatePlatforms);
     $(".platform-checkbox").click(updatePlatforms);
     initNoteTip();
-    updateMaintainers();
 }
