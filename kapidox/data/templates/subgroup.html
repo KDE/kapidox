@@ -15,7 +15,6 @@
     <tr>
       <th class="library-main-column">Framework</th>
       <th class="library-detail-column library-maintainer-column">Maintainer</th>
-      <th class="library-detail-column library-type-column">Type</th>
     </tr>
   {% for lib in libs | sort(attribute='fancyname')%}
     <tr class="library-row" id="lib-{{ lib.name }}" data-platforms="{{ lib.platforms|join(',') }}">
@@ -46,7 +45,6 @@
         <span class="library-description">{{lib.description}}</span>
       </td>
       <td class="library-detail-column library-maintainer-column">{% set product = lib %}{% include "maintainers.html" %}</td>
-      <td class="library-detail-column library-type-column">{{ lib.type }}</td>
     </tr>
   {% endfor %}
   </table>
