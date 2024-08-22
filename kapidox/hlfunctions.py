@@ -29,7 +29,7 @@ except ImportError:
 def do_it(maintainers_fct, copyright, searchpaths=None):
     utils.setup_logging()
     if searchpaths is None:
-        searchpaths = searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt']
+        searchpaths = ['/usr/share/doc/qt5', '/usr/share/doc/qt']
     args = argparserutils.parse_args(DEPDIAGRAM_AVAILABLE)
 
     if len(os.listdir(os.getcwd())) > 0:
