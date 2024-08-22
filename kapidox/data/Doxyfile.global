@@ -140,9 +140,6 @@ VERBATIM_HEADERS       = NO
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
 
-# Number of columns for alphabetical index
-COLS_IN_ALPHA_INDEX    = 1
-
 # Ignore the "K" prefix when sorting
 IGNORE_PREFIX          = K
 
