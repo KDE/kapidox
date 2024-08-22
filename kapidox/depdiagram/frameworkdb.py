@@ -182,7 +182,7 @@ class FrameworkDb(object):
             for fw_name in wanted_fw.get_extra_frameworks():
                 fw = self.find_by_name(fw_name)
                 if not fw:
-                    logging.warning("Framework {} has an extra dependency on {}, but there is no such framework".format(wanted_fw, fw_name))
+                    logging.warning(f"Framework {wanted_fw} has an extra dependency on {fw_name}, but there is no such framework")
                     continue
                 if not fw in fw_set:
                     add_to_set(fw_set, fw)

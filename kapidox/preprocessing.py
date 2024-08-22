@@ -78,7 +78,7 @@ def create_metainfo(path) -> Optional[Dict[str, Any]]:
     try:
         metainfo_file = os.path.join(path, 'metainfo.yaml')
     except UnicodeDecodeError as e:
-        logging.warning('Unusual base path {!r} for metainfo.yaml'.format(path))
+        logging.warning(f"Unusual base path {path!r} for metainfo.yaml")
         return None
     if not os.path.isfile(metainfo_file):
         return None

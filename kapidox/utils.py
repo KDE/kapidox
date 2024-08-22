@@ -64,7 +64,7 @@ def set_repopath(id):
     except Exception as exc:
         # Catch all exceptions here: whatever fails in this function should not
         # cause the code to fail
-        logging.warning("Failed to get repository url for '{}' from projects.kde.org: {}".format(id, exc))
+        logging.warning(f"Failed to get repository url for {id!r} from projects.kde.org: {exc}")
         # This means there is no canonical repo identifier for this repo:
         # generally that means that the repo was checked out into a non-
         # canonical pathname. E.g. kitemviews checked out into a directory
@@ -115,7 +115,7 @@ def parse_fancyname(fw_dir):
         for f in os.listdir(fw_dir):
             if ".qbs" in f and "Test" not in f:
                 return f[:-4]
-        logging.error("No CMakeLists.txt in {}".format(fw_dir))
+        logging.error(f"No CMakeLists.txt in {fw_dir}")
         return None
     project_re = re.compile(r"^\s*project\s*\(\s*([\w\-_]+)", re.I | re.M)
     with open(cmakelists_path) as f:

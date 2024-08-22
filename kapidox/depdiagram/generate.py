@@ -88,7 +88,7 @@ class DotWriter(Block):
 
             lst = sorted([x for x in self.db], key=lambda x: x.tier)
             for tier, frameworks in itertools.groupby(lst, lambda x: x.tier):
-                cluster_title = "Tier {}".format(tier)
+                cluster_title = f"Tier {tier}"
                 with root.cluster_block(cluster_title, **GROUP_ATTRS) as tier_block:
                     tier_block.write_list_attrs("node", **FW_ATTRS)
                     # Sort frameworks within the tier to ensure frameworks which
@@ -118,8 +118,8 @@ class DotWriter(Block):
             edges.add((fw.name, dep))
         for dep_fw in fw.get_extra_frameworks():
             edges.add((fw.name, dep_fw))
-        for edge in edges:
-            tier_block.writeln('"{}" -> "{}";'.format(*edge))
+        for (fw_name, dep) in edges:
+            tier_block.writeln(f'"{fw_name}" -> "{dep}";')
 
     def write_detailed_framework(self, tier_block, fw):
         with tier_block.cluster_block(fw.name, **FW_ATTRS) as fw_block:
@@ -131,7 +131,7 @@ class DotWriter(Block):
             for target in targets:
                 deps = fw.get_dependencies_for_target(target)
                 for dep in sorted(deps):
-                    fw_block.writeln('"{}" -> "{}";'.format(target, dep))
+                    fw_block.writeln(f'"{target}" -> "{dep}";')
 
 
 def generate(out, dot_files, framework=None, with_qt=False, detailed=False):
@@ -141,7 +141,7 @@ def generate(out, dot_files, framework=None, with_qt=False, detailed=False):
     if framework:
         wanted_fw = db.find_by_name(framework)
         if wanted_fw is None:
-            logging.error("No framework named {}.".format(framework))
+            logging.error(f"No framework named {framework}.")
             return False
         db.remove_unused_frameworks(wanted_fw)
     else:

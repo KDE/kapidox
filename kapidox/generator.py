@@ -211,7 +211,7 @@ def load_template(path):
     try:
         return jinja2.Template(content)
     except jinja2.exceptions.TemplateSyntaxError:
-        logging.error('Failed to parse template {}'.format(path))
+        logging.error(f"Failed to parse template {path}")
         raise
 
 
@@ -484,7 +484,7 @@ def postprocess_internal(htmldir, tmpl, mapping):
                 try:
                     html = tmpl.render(mapping)
                 except Exception:
-                    logging.error('postprocessing {} failed'.format(path))
+                    logging.error(f"postprocessing {path} failed")
                     raise
                 outf.write(html)
             os.remove(path)

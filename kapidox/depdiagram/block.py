@@ -19,16 +19,16 @@ class Block(object):
 
     def write_attrs(self, **attrs):
         for key, value in attrs.items():
-            self.writeln('"{}" = "{}";'.format(key, value))
+            self.writeln(f'"{key}" = "{value}";')
 
     def write_list_attrs(self, name, **attrs):
         with self.square_block(name) as b:
             for key, value in attrs.items():
-                b.writeln('"{}" = "{}"'.format(key, value))
+                b.writeln(f'"{key}" = "{value}"')
 
     def write_nodes(self, nodes):
         for node in sorted(nodes):
-            self.writeln('"{}";'.format(node))
+            self.writeln(f'"{node}";')
 
     @contextmanager
     def block(self, opener, closer, **attrs):
@@ -49,4 +49,4 @@ class Block(object):
 
 
 def quote(txt):
-    return '"{}"'.format(txt)
+    return f'"{txt}"'

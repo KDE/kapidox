@@ -28,20 +28,20 @@ def generate_dot(fw_dir, fw_name, output_dir):
     dot_path = os.path.join(output_dir, fw_name + ".dot")
     build_dir = tempfile.mkdtemp(prefix="depdiagram-prepare-build-")
     try:
-        ret = subprocess.call(["cmake", fw_dir, "--graphviz={}".format(dot_path)],
+        ret = subprocess.call(["cmake", fw_dir, f"--graphviz={dot_path}"],
                               stdout=open("/dev/null", "w"),
                               cwd=build_dir)
         if ret != 0:
             if os.path.exists(dot_path):
                 os.remove(dot_path)
-            logging.error("Generating dot file for {} failed.".format(fw_name))
+            logging.error(f"Generating dot file for {fw_name} failed.")
             return False
         # Add a timestamp and version info to help with diagnostics
         with open(dot_path, "a") as f:
-            f.write("\n# Generated on {}\n".format(time.ctime()))
+            f.write(f"\n# Generated on {time.ctime()}\n")
             version = utils.get_kapidox_version()
             if version:
-                f.write("# By {} {}\n".format(sys.argv[0], version))
+                f.write(f"# By {sys.argv[0]} {version}\n")
     finally:
         shutil.rmtree(build_dir)
     return True
@@ -113,7 +113,7 @@ def main():
         fw_base_dir = os.path.abspath(args.all)
         fails = prepare_all(fw_base_dir, dot_dir)
         if fails:
-            logging.error("{} framework(s) failed: {}".format(len(fails), ", ".join(fails)))
+            logging.error(f"{len(fails)} framework(s) failed: {', '.join(fails)}")
             return 1
         else:
             return 0
