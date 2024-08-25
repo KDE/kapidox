@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools >= 64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kapidox"
+description = "KDE API documentation generation tools"
+version = "6.6.1"
+readme = "README.md"
+requires-python = ">= 3.8"
+dependencies = [
+"doxypypy", "doxyqml", "requests", "jinja2", "pyyaml"
+]
+authors = [
+  {name = "Alex Merry", email = "alex.merry@kdemail.net"},
+  {name = "Aurélien Gâteau", email = "agateau@kde.org"},
+  {name = "Alex Turbov", email = "i.zaufi@gmail.com"},
+  {name = "Olivier Churlaud", email = "olivier@churlaud.com"},
+]
+maintainers = [
+  {name = "Frederik Schwarzer", email = "schwarzer@kde.org"},
+]
+keywords = ["kde", "apidocs"]
+
+[project.scripts]
+kapidox-generate = "kapidox.kapidox_generate:main"
+kapidox-depdiagram-prepare = "kapidox.depdiagram_prepare:main"
+kapidox-depdiagram-generate = "kapidox.depdiagram_generate:main"
+
+[project.urls]
+Homepage = "https://invent.kde.org/frameworks/kapidox"
+#Documentation = ""
+Repository = "https://invent.kde.org/frameworks/kapidox.git"
+Issues = "https://invent.kde.org/frameworks/kapidox/-/issues"
+
+[tool.setuptools]
+packages = ["kapidox"]
+
