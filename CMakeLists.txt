@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.30)
 project(KApiDox NONE)
 
-set(KF_VERSION "6.31.0") # handled by release scripts
+set(KF_VERSION "6.32.0") # handled by release scripts
 
 if(DO_BOOTSTRAP)
     include(FindUnixCommands)
